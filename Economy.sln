@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy.Memory", "Economy.Memory\Economy.Memory.csproj", "{E40C646A-95C7-4AD2-A687-9801A517E827}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Economy.Memory", "Economy.Memory\Economy.Memory.csproj", "{E40C646A-95C7-4AD2-A687-9801A517E827}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy.Temp", "Economy.Temp\Economy.Temp.csproj", "{17B2F29C-89E4-4202-A189-B402D133D647}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Economy.Temp", "Economy.Temp\Economy.Temp.csproj", "{17B2F29C-89E4-4202-A189-B402D133D647}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy.Web", "Economy.Web\Economy.Web.csproj", "{542A2B7E-3E85-4E8E-9F7F-ECB08ACC6958}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{17B2F29C-89E4-4202-A189-B402D133D647}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17B2F29C-89E4-4202-A189-B402D133D647}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17B2F29C-89E4-4202-A189-B402D133D647}.Release|Any CPU.Build.0 = Release|Any CPU
+		{542A2B7E-3E85-4E8E-9F7F-ECB08ACC6958}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{542A2B7E-3E85-4E8E-9F7F-ECB08ACC6958}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{542A2B7E-3E85-4E8E-9F7F-ECB08ACC6958}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{542A2B7E-3E85-4E8E-9F7F-ECB08ACC6958}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
