@@ -67,6 +67,8 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
             throw new InvalidOperationException($"Entity has unresolved foreign keys: {string.Join(", ", unresolvedForeignKeys)}.");
         }
 
+        ValidateUpdate(oldEntity, entity);
+
         _entities[entity.Id] = entity;
 
         foreach (var removeTo in oldEntity.ForeignKeys.Except(entity.ForeignKeys).Distinct())
@@ -96,6 +98,10 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
         {
             repositories.RemoveForeignKey(id, to);
         }
+    }
+
+    protected virtual void ValidateUpdate(T oldEntity, T newEntity)
+    {
     }
 
     IEnumerable<EntityBase> IRepository.GetAll() => GetAll();

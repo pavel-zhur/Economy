@@ -13,7 +13,7 @@ public class Repositories
         Currencies = new Repository<Currency>(this, "C-");
         Wallets = new Repository<Wallet>(this, "W-");
         WalletAudits = new Repository<WalletAudit>(this, "A-");
-        Budgets = new Repository<Budget>(this, "B-");
+        Budgets = new BudgetsRepository(this, "B-");
         Transactions = new Repository<Transaction>(this, "Tn-");
         Events = new Repository<Event>(this, "E-");
         Categories = new Repository<Category>(this, "Ca-");
