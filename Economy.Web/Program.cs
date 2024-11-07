@@ -1,7 +1,13 @@
+using Economy.Memory.Containers.State;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services
+    .AddRazorPages();
+
+builder.Services
+    .AddMemory();
 
 var app = builder.Build();
 

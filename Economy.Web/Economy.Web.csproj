@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Economy.Memory\Economy.Memory.csproj" />
+  </ItemGroup>
+
 </Project>

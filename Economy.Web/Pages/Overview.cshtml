@@ -1,0 +1,81 @@
+﻿@page
+@using Economy.Memory.Containers.State
+@model Economy.Web.Pages.OverviewModel
+@inject State State
+
+@{
+    ViewData["Title"] = "Overview";
+}
+<h1>@ViewData["Title"]</h1>
+
+<h2>Wallets</h2>
+@foreach (var entity in State.Repositories.Wallets.GetAll())
+{
+    <p>
+        @(entity.ToLongString(State.Repositories))
+    </p>
+}
+
+<h2>Currencies</h2>
+@foreach (var entity in State.Repositories.Currencies.GetAll())
+{
+    <p>
+        @(entity.ToLongString(State.Repositories))
+    </p>
+}
+
+<h2>Events</h2>
+@foreach (var entity in State.Repositories.Events.GetAll())
+{
+    <p>
+        @(entity.ToLongString(State.Repositories))
+    </p>
+}
+
+<h2>Categories</h2>
+@foreach (var entity in State.Repositories.Categories.GetAll())
+{
+    <p>
+        @(entity.ToLongString(State.Repositories))
+    </p>
+}
+
+<h2>Wallet Audits</h2>
+@foreach (var entity in State.Repositories.WalletAudits.GetAll())
+{
+    <p>
+        @(entity.ToLongString(State.Repositories))
+    </p>
+}
+
+<h2>Budgets</h2>
+@foreach (var entity in State.Repositories.Budgets.GetAll())
+{
+    <p>
+        @(entity.ToLongString(State.Repositories))
+    </p>
+}
+
+<h2>Transactions</h2>
+@foreach (var entity in State.Repositories.Transactions.GetAll())
+{
+    <p>
+        @(entity.ToLongString(State.Repositories))
+    </p>
+}
+
+<h2>Conversions</h2>
+@foreach (var entity in State.Repositories.Conversions.GetAll())
+{
+    <p>
+        @(entity.ToLongString(State.Repositories))
+    </p>
+}
+
+<h2>Transfers</h2>
+@foreach (var entity in State.Repositories.Transfers.GetAll())
+{
+    <p>
+        @(entity.ToLongString(State.Repositories))
+    </p>
+}

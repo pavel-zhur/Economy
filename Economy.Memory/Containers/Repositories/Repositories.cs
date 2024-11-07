@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Economy.Memory.Models.State;
 
 namespace Economy.Memory.Containers.Repositories;
@@ -53,6 +54,11 @@ public class Repositories
     public string GetPrefix(string entityId) => entityId[..(entityId.IndexOf("-", StringComparison.Ordinal) + 1)];
 
     public IRepository GetRepository(string entityId) => AllByPrefix[GetPrefix(entityId)];
+
+    [return: NotNullIfNotNull(nameof(entityId))]
+    public EntityBase? GetEntity(string? entityId) => entityId == null ? null : GetRepository(entityId).GetById(entityId);
+
+    public EntityBase? TryGetEntity(string? entityId) => entityId == null ? null : GetRepository(entityId).TryGetById(entityId);
 
     public void AddForeignKey(string from, string to)
     {

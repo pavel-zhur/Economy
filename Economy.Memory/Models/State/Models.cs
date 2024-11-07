@@ -1,12 +1,17 @@
-﻿using OneShelf.Common;
+﻿using Economy.Memory.Containers.Repositories;
+using OneShelf.Common;
 
 namespace Economy.Memory.Models.State;
 
 public abstract record EntityBase(string Id)
 {
-    public virtual IEnumerable<string> ForeignKeys => Enumerable.Empty<string>();
+    public virtual IEnumerable<string> GetForeignKeys() => Enumerable.Empty<string>();
 
     public abstract void Validate();
+
+    public abstract string ToLongString(Repositories repositories);
+    
+    public abstract string ToShortString(Repositories repositories);
 }
 
 // Root entities
@@ -30,6 +35,12 @@ public record Currency(string Id, string LongName, string Abbreviation, char Cur
             throw new ArgumentException("Currency long name must be not empty.");
         }
     }
+
+    public override string ToShortString(Repositories repositories) 
+        => $"{Id}. {Abbreviation}";
+
+    public override string ToLongString(Repositories repositories)
+        => $"{Id}. {LongName} ({Abbreviation}, {CurrencySymbol})";
 }
 
 public record Wallet(string Id, string Name) : EntityBase(Id)
@@ -41,11 +52,17 @@ public record Wallet(string Id, string Name) : EntityBase(Id)
             throw new ArgumentException("Wallet name must be not empty.");
         }
     }
+
+    public override string ToShortString(Repositories repositories)
+        => $"{Id}. {Name}";
+
+    public override string ToLongString(Repositories repositories)
+        => $"{Id}. {Name}";
 }
 
 public record Event(string Id, string Name, string? Description, string? BudgetId, Date Date) : EntityBase(Id)
 {
-    public override IEnumerable<string> ForeignKeys => BudgetId.Once().Where(x => x != null)!;
+    public override IEnumerable<string> GetForeignKeys() => BudgetId.Once().Where(x => x != null)!;
 
     public override void Validate()
     {
@@ -61,6 +78,12 @@ public record Event(string Id, string Name, string? Description, string? BudgetI
 
         Date.Validate();
     }
+
+    public override string ToShortString(Repositories repositories)
+        => $"{Id}. {Name} @{BudgetId} @{Date}";
+
+    public override string ToLongString(Repositories repositories)
+        => $"{Id}. {Name} @{repositories.GetEntity(BudgetId)?.ToShortString(repositories)} @{Date} {Description}";
 }
 
 public record Category(string Id, string Name, string? Description) : EntityBase(Id)
@@ -77,29 +100,34 @@ public record Category(string Id, string Name, string? Description) : EntityBase
             throw new ArgumentException("Category description must be null or not empty.");
         }
     }
+
+    public override string ToShortString(Repositories repositories)
+        => $"{Id}. {Name}";
+
+    public override string ToLongString(Repositories repositories)
+        => $"{Id}. {Name} {Description}";
 }
 
-public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, IReadOnlyList<Amount> Amounts) : EntityBase(Id)
+public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, Amounts Amounts) : EntityBase(Id)
 {
-    public override IEnumerable<string> ForeignKeys => Amounts.Select(a => a.CurrencyId).Append(WalletId);
+    public override IEnumerable<string> GetForeignKeys() => Amounts.Select(a => a.CurrencyId).Append(WalletId);
 
     public override void Validate()
     {
-        if (Amounts.AnyDuplicates(x => x.CurrencyId, out _))
-        {
-            throw new ArgumentException("Wallet audit amounts must have unique currency IDs.");
-        }
-
-        foreach (var amount in Amounts)
-        {
-            amount.ValidatePositive();
-        }
+        Amounts.Validate();
+        Amounts.ValidatePositive();
 
         if (CheckTimestamp.Year < 2020 || CheckTimestamp.Year > 2040)
         {
             throw new ArgumentException("Check timestamp must be between 2020 and 2040.");
         }
     }
+
+    public override string ToShortString(Repositories repositories)
+        => $"{Id}. {WalletId} @{CheckTimestamp} {Amounts.ToShortString(repositories)}";
+
+    public override string ToLongString(Repositories repositories)
+        => $"{Id}. {repositories.GetEntity(WalletId).ToShortString(repositories)} @{CheckTimestamp} {Amounts.ToLongString(repositories)}";
 }
 
 public record Budget(
@@ -112,8 +140,8 @@ public record Budget(
     BudgetPlannedAmounts? PlannedAmounts)
     : EntityBase(Id)
 {
-    public override IEnumerable<string> ForeignKeys 
-        => (PlannedAmounts?.Amounts.Select(a => a.CurrencyId) ?? base.ForeignKeys)
+    public override IEnumerable<string> GetForeignKeys() =>
+        (PlannedAmounts?.Amounts.Select(a => a.CurrencyId) ?? base.GetForeignKeys())
         .SelectSingle(x => ParentBudgetId != null ? x.Append(ParentBudgetId) : x);
 
     public override void Validate()
@@ -143,6 +171,12 @@ public record Budget(
 
         PlannedAmounts?.Validate();
     }
+
+    public override string ToShortString(Repositories repositories)
+        => $"{Id}. {Name} @{Description} p={ParentBudgetId} [{StartDate}-{FinishDate}] @{PlannedAmounts?.ToShortString(repositories)}";
+
+    public override string ToLongString(Repositories repositories)
+        => $"{Id}. {Name} @{Description} p={(ParentBudgetId == null ? null : repositories.Budgets[ParentBudgetId].Name)} [{StartDate}-{FinishDate}] @{PlannedAmounts?.ToLongString(repositories)}";
 }
 
 public record Transaction(
@@ -154,8 +188,8 @@ public record Transaction(
     IReadOnlyList<TransactionEntry> Entries)
     : EntityBase(Id)
 {
-    public override IEnumerable<string> ForeignKeys
-        => Entries.SelectMany(e => new[]
+    public override IEnumerable<string> GetForeignKeys() =>
+        Entries.SelectMany(e => new[]
         {
             e.WalletId,
             e.BudgetId,
@@ -189,6 +223,12 @@ public record Transaction(
             entry.Validate();
         }
     }
+
+    public override string ToShortString(Repositories repositories)
+        => $"{Id}. {Name} @{Description} @{Timestamp} {Type} [{string.Join(", ", Entries.Select(e => e.ToShortString(repositories)))}]";
+
+    public override string ToLongString(Repositories repositories)
+        => $"{Id}. {Name} @{Description} @{Timestamp} {Type} [{string.Join(", ", Entries.Select(e => e.ToLongString(repositories)))}]";
 }
 
 public record Conversion(
@@ -199,7 +239,7 @@ public record Conversion(
     Amount ToAmount)
     : EntityBase(Id)
 {
-    public override IEnumerable<string> ForeignKeys =>
+    public override IEnumerable<string> GetForeignKeys() =>
     [
         FromWalletId,
         ToWalletId,
@@ -217,6 +257,12 @@ public record Conversion(
             throw new ArgumentException("Conversion currencies must be different.");
         }
     }
+
+    public override string ToShortString(Repositories repositories)
+        => $"{Id}. {FromWalletId} {FromAmount.ToShortString(repositories)} -> {ToWalletId} {ToAmount.ToShortString(repositories)}";
+
+    public override string ToLongString(Repositories repositories)
+        => $"{Id}. {repositories.GetEntity(FromWalletId).ToShortString(repositories)} {FromAmount.ToLongString(repositories)} -> {repositories.GetEntity(ToWalletId).ToShortString(repositories)} {ToAmount.ToLongString(repositories)}";
 }
 
 public record Transfer(
@@ -229,7 +275,7 @@ public record Transfer(
     Amount? ConvertedAmount)
     : EntityBase(Id)
 {
-    public override IEnumerable<string> ForeignKeys =>
+    public override IEnumerable<string> GetForeignKeys() =>
         new List<string?>
         {
             TransferredAmount.CurrencyId,
@@ -258,6 +304,12 @@ public record Transfer(
             throw new ArgumentException("Transfer between the same budget must have a converted amount.");
         }
     }
+
+    public override string ToShortString(Repositories repositories)
+        => $"{Id}. {FromBudgetId} -> {ToBudgetId} {TransferredAmount.ToShortString(repositories)} {Date} {TransferType} {ConvertedAmount?.ToShortString(repositories)}";
+
+    public override string ToLongString(Repositories repositories)
+        => $"{Id}. {repositories.GetEntity(FromBudgetId).ToShortString(repositories)} -> {repositories.GetEntity(ToBudgetId).ToShortString(repositories)} {TransferredAmount.ToLongString(repositories)} {Date} {TransferType} {ConvertedAmount?.ToLongString(repositories)}";
 }
 
 // Sub-entities
@@ -267,39 +319,42 @@ public record TransactionEntry(
     string? CategoryId,
     string? WalletId,
     string? Description,
-    IReadOnlyList<Amount> SpentAmounts)
+    Amounts SpentAmounts)
 {
     public void Validate()
     {
-        if (SpentAmounts.AnyDuplicates(a => a.CurrencyId, out _))
+        if (Description != null && string.IsNullOrWhiteSpace(Description))
         {
-            throw new ArgumentException("Transaction entry amounts must have unique currency IDs.");
+            throw new ArgumentException("Transaction entry description must be null or not empty.");
         }
 
-        foreach (var amount in SpentAmounts)
-        {
-            amount.ValidatePositive();
-        }
+        SpentAmounts.Validate();
+        SpentAmounts.ValidatePositive();
     }
+
+    public string ToShortString(Repositories repositories)
+        => $"{(BudgetId == null ? null : repositories.Budgets[BudgetId].Name)} {(WalletId == null ? null : repositories.Wallets[WalletId].Name)} {(CategoryId == null ? null : repositories.Categories[CategoryId].Name)} {SpentAmounts.ToShortString(repositories)}";
+
+    public string ToLongString(Repositories repositories)
+        => $"{repositories.GetEntity(BudgetId)?.ToShortString(repositories)} {repositories.GetEntity(WalletId)?.ToShortString(repositories)} {repositories.GetEntity(CategoryId)?.ToShortString(repositories)} {SpentAmounts.ToLongString(repositories)}";
 }
 
 public record BudgetPlannedAmounts(
-    IReadOnlyList<Amount> Amounts,
+    Amounts Amounts,
     TransactionType Type,
     bool IsCompleted)
 {
     public void Validate()
     {
-        if (Amounts.AnyDuplicates(x => x.CurrencyId, out _))
-        {
-            throw new ArgumentException("Budget planned amounts must have unique currency IDs.");
-        }
-
-        foreach (var amount in Amounts)
-        {
-            amount.ValidatePositive();
-        }
+        Amounts.Validate();
+        Amounts.ValidatePositive();
     }
+
+    public string ToShortString(Repositories repositories)
+        => $"{Amounts.ToShortString(repositories)} {Type} {(IsCompleted ? "c+" : "nc-")}";
+
+    public string ToLongString(Repositories repositories)
+        => $"{Amounts.ToLongString(repositories)} {Type} {(IsCompleted ? "completed" : "not completed")}";
 }
 
 // Value objects
@@ -316,6 +371,31 @@ public enum TransactionType
     Expense,
 }
 
+public class Amounts : List<Amount>
+{
+    public void Validate()
+    {
+        if (this.AnyDuplicates(a => a.CurrencyId, out _))
+        {
+            throw new ArgumentException("Amounts must have unique currency IDs.");
+        }
+    }
+
+    public void ValidatePositive()
+    {
+        foreach (var amount in this)
+        {
+            amount.ValidatePositive();
+        }
+    }
+
+    public string ToShortString(Repositories repositories) 
+        => string.Join(", ", this.Select(a => a.ToShortString(repositories)));
+
+    public string ToLongString(Repositories repositories) 
+        => string.Join(", ", this.Select(a => a.ToLongString(repositories)));
+}
+
 public record struct Amount(string CurrencyId, decimal Value)
 {
     public void ValidatePositive()
@@ -325,6 +405,11 @@ public record struct Amount(string CurrencyId, decimal Value)
             throw new ArgumentException("Amount value must be positive.");
         }
     }
+
+    public string ToShortString(Repositories repositories)
+        => $"{repositories.Currencies[CurrencyId].CurrencySymbol}{Value}";
+
+    public string ToLongString(Repositories repositories) => $"{Value} {repositories.Currencies[CurrencyId].Abbreviation}";
 }
 
 public record struct Date(int Year, int Month, int Day)
@@ -336,4 +421,7 @@ public record struct Date(int Year, int Month, int Day)
 
     public static bool operator <(Date left, Date right) => new DateTime(left.Year, left.Month, left.Day) < new DateTime(right.Year, right.Month, right.Day);
     public static bool operator >(Date left, Date right) => new DateTime(left.Year, left.Month, left.Day) > new DateTime(right.Year, right.Month, right.Day);
+
+    public override string ToString()
+        => $"{Year}-{Month:D2}-{Day:D2}";
 }

@@ -1,0 +1,16 @@
+﻿@page
+@using Economy.Memory.Containers.State
+@model Economy.Web.Pages.EventsModel
+@inject State State
+
+@{
+    ViewData["Title"] = "Events";
+}
+<h1>@ViewData["Title"]</h1>
+
+@foreach (var @event in State.Events)
+{
+    <p>
+        @(@event.ToShortString(State.Repositories))
+    </p>
+}

@@ -11,10 +11,12 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
 
     public string IdPrefix => idPrefix;
 
-    public T? GetById(string id)
+    public T? TryGetById(string id)
     {
         return _entities.GetValueOrDefault(id);
     }
+
+    public T this[string id] => _entities[id];
 
     public IEnumerable<T> GetAll()
     {
@@ -36,7 +38,7 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
             throw new InvalidOperationException($"Entity id {entity.Id} is not the next normal id, {nextNormalId} expected.");
         }
 
-        var unresolvedForeignKeys = entity.ForeignKeys.Where(x => repositories.GetRepository(x).GetById(x) == null || x == entity.Id).ToList();
+        var unresolvedForeignKeys = entity.GetForeignKeys().Where(x => repositories.GetRepository(x).TryGetById(x) == null || x == entity.Id).ToList();
         if (unresolvedForeignKeys.Any())
         {
             throw new InvalidOperationException($"Entity has unresolved foreign keys: {string.Join(", ", unresolvedForeignKeys)}.");
@@ -47,7 +49,7 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
             throw new InvalidOperationException($"Entity with id {entity.Id} already exists.");
         }
 
-        foreach (var foreignKey in entity.ForeignKeys.Distinct())
+        foreach (var foreignKey in entity.GetForeignKeys().Distinct())
         {
             repositories.AddForeignKey(entity.Id, foreignKey);
         }
@@ -62,7 +64,7 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
             throw new InvalidOperationException($"Entity with id {entity.Id} does not exist.");
         }
 
-        var unresolvedForeignKeys = entity.ForeignKeys.Where(x => repositories.GetRepository(x).GetById(x) == null || x == entity.Id).ToList();
+        var unresolvedForeignKeys = entity.GetForeignKeys().Where(x => repositories.GetRepository(x).TryGetById(x) == null || x == entity.Id).ToList();
         if (unresolvedForeignKeys.Any())
         {
             throw new InvalidOperationException($"Entity has unresolved foreign keys: {string.Join(", ", unresolvedForeignKeys)}.");
@@ -72,12 +74,12 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
 
         _entities[entity.Id] = entity;
 
-        foreach (var removeTo in oldEntity.ForeignKeys.Except(entity.ForeignKeys).Distinct())
+        foreach (var removeTo in oldEntity.GetForeignKeys().Except(entity.GetForeignKeys()).Distinct())
         {
             repositories.RemoveForeignKey(entity.Id, removeTo);
         }
 
-        foreach (var addTo in entity.ForeignKeys.Except(oldEntity.ForeignKeys).Distinct())
+        foreach (var addTo in entity.GetForeignKeys().Except(oldEntity.GetForeignKeys()).Distinct())
         {
             repositories.AddForeignKey(entity.Id, addTo);
         }
@@ -113,5 +115,7 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
 
     void IRepository.Update(EntityBase entity) => Update((T)entity);
 
-    EntityBase? IRepository.GetById(string id) => GetById(id);
+    EntityBase? IRepository.TryGetById(string id) => TryGetById(id);
+
+    EntityBase IRepository.GetById(string id) => this[id];
 }
