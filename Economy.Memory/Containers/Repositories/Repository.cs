@@ -5,8 +5,9 @@ namespace Economy.Memory.Containers.Repositories;
 public class Repository<T>(Repositories repositories, string idPrefix) : IRepository where T : EntityBase
 {
     private readonly Dictionary<string, T> _entities = new();
+    private int _deletedCount;
 
-    public string GetNextNormalId() => $"{idPrefix}{_entities.Count}";
+    public string GetNextNormalId() => $"{idPrefix}{_entities.Count + _deletedCount + 1}";
 
     public string IdPrefix => idPrefix;
 
@@ -98,6 +99,8 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
         {
             repositories.RemoveForeignKey(id, to);
         }
+
+        _deletedCount++;
     }
 
     protected virtual void ValidateUpdate(T oldEntity, T newEntity)
