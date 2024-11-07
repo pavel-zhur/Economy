@@ -2,13 +2,10 @@
 
 namespace Economy.Memory.Models.EventSourcing;
 
-public abstract record EventBase(int Id);
+public abstract record EventBase;
 
-public record Creation<T>(int Id, T Entity) : EventBase(Id)
-    where T : EntityBase;
+public record Creation(EntityBase Entity) : EventBase;
 
-public record Update<T>(int Id, T Entity) : EventBase(Id)
-    where T : EntityBase;
+public record Update(EntityBase Entity) : EventBase;
 
-public record Deletion<T>(int Id, string EntityId) : EventBase(Id)
-    where T : EntityBase;
+public record Deletion(string EntityId) : EventBase;

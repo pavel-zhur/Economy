@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="OneShelf.Common" Version="1.1.23-prerelease" />
+  </ItemGroup>
+
 </Project>

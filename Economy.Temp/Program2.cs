@@ -2,7 +2,6 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Economy.Memory.Models.State;
-using Economy.Memory.Repositories;
 using OpenAI;
 using OpenAI.Chat;
 
@@ -10,7 +9,6 @@ namespace Economy.Temp;
 
 class Program2
 {
-    private static IRepositories _repositories = new Repositories();
     public static string _apiKey;
 
     public static async Task Main2(string[] args)
