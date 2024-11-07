@@ -2,30 +2,30 @@ using Economy.Memory.Models.State;
 
 namespace Economy.Memory.Containers.Repositories;
 
-public class Repository<T>(string idPrefix) : IRepository where T : EntityBase
+public class Repository<T>(Repositories repositories, string idPrefix) : IRepository where T : EntityBase
 {
     private readonly Dictionary<string, T> _entities = new();
 
-    public Task<string> GetNextNormalId() => Task.FromResult($"{idPrefix}-{_entities.Count}");
+    public string GetNextNormalId() => $"{idPrefix}{_entities.Count}";
 
     public string IdPrefix => idPrefix;
 
-    public Task<T?> GetById(string id)
+    public T? GetById(string id)
     {
-        return Task.FromResult(_entities.GetValueOrDefault(id));
+        return _entities.GetValueOrDefault(id);
     }
 
-    public Task<IEnumerable<T>> GetAll()
+    public IEnumerable<T> GetAll()
     {
-        return Task.FromResult(_entities.Values.AsEnumerable());
+        return _entities.Values.AsEnumerable();
     }
 
-    public async Task Add(T entity)
+    public void Add(T entity)
     {
-        var nextNormalId = await GetNextNormalId();
-        if (!entity.Id.StartsWith($"{idPrefix}-"))
+        var nextNormalId = GetNextNormalId();
+        if (!entity.Id.StartsWith($"{idPrefix}"))
         {
-            throw new InvalidOperationException($"Entity id {entity.Id} prefix is not {idPrefix}-.");
+            throw new InvalidOperationException($"Entity id {entity.Id} prefix is not {idPrefix}.");
         }
 
         if (entity.Id != nextNormalId)
@@ -33,39 +33,72 @@ public class Repository<T>(string idPrefix) : IRepository where T : EntityBase
             throw new InvalidOperationException($"Entity id {entity.Id} is not the next normal id, {nextNormalId} expected.");
         }
 
+        var unresolvedForeignKeys = entity.ForeignKeys.Where(x => repositories.GetRepository(x).GetById(x) == null || x == entity.Id).ToList();
+        if (unresolvedForeignKeys.Any())
+        {
+            throw new InvalidOperationException($"Entity has unresolved foreign keys: {string.Join(", ", unresolvedForeignKeys)}.");
+        }
+
         if (!_entities.TryAdd(entity.Id, entity))
         {
             throw new InvalidOperationException($"Entity with id {entity.Id} already exists.");
         }
+
+        foreach (var foreignKey in entity.ForeignKeys.Distinct())
+        {
+            repositories.AddForeignKey(entity.Id, foreignKey);
+        }
     }
 
-    public Task Update(T entity)
+    public void Update(T entity)
     {
-        if (!_entities.ContainsKey(entity.Id))
+        if (!_entities.TryGetValue(entity.Id, out var oldEntity))
         {
             throw new InvalidOperationException($"Entity with id {entity.Id} does not exist.");
         }
 
+        var unresolvedForeignKeys = entity.ForeignKeys.Where(x => repositories.GetRepository(x).GetById(x) == null || x == entity.Id).ToList();
+        if (unresolvedForeignKeys.Any())
+        {
+            throw new InvalidOperationException($"Entity has unresolved foreign keys: {string.Join(", ", unresolvedForeignKeys)}.");
+        }
+
         _entities[entity.Id] = entity;
 
-        return Task.CompletedTask;
+        foreach (var removeTo in oldEntity.ForeignKeys.Except(entity.ForeignKeys).Distinct())
+        {
+            repositories.RemoveForeignKey(entity.Id, removeTo);
+        }
+
+        foreach (var addTo in entity.ForeignKeys.Except(oldEntity.ForeignKeys).Distinct())
+        {
+            repositories.AddForeignKey(entity.Id, addTo);
+        }
     }
 
-    public Task Delete(string id)
+    public void Delete(string id)
     {
+        if (repositories.GetIncomingForeignKeysTo(id).Any())
+        {
+            throw new InvalidOperationException($"Entity with id {id} has incoming foreign keys.");
+        }
+
         if (!_entities.Remove(id))
         {
             throw new InvalidOperationException($"Entity with id {id} does not exist.");
         }
 
-        return Task.CompletedTask;
+        foreach (var to in repositories.GetOutgoingForeignKeysFrom(id).ToList())
+        {
+            repositories.RemoveForeignKey(id, to);
+        }
     }
 
-    async Task<IEnumerable<EntityBase>> IRepository.GetAll() => await GetAll();
+    IEnumerable<EntityBase> IRepository.GetAll() => GetAll();
 
-    async Task IRepository.Add(EntityBase entity) => await Add((T)entity);
+    void IRepository.Add(EntityBase entity) => Add((T)entity);
 
-    async Task IRepository.Update(EntityBase entity) => await Update((T)entity);
+    void IRepository.Update(EntityBase entity) => Update((T)entity);
 
-    async Task<EntityBase?> IRepository.GetById(string id) => await GetById(id);
+    EntityBase? IRepository.GetById(string id) => GetById(id);
 }

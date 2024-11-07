@@ -10,23 +10,23 @@ public class State
 
     public Repositories Repositories { get; } = new();
 
-    public async Task Apply(EventBase @event)
+    public void Apply(EventBase @event)
     {
         switch (@event)
         {
             case Creation creation:
-                await Repositories
-                    .AllRepositories[creation.Entity.Id[..creation.Entity.Id.IndexOf("-", StringComparison.Ordinal)]]
+                Repositories
+                    .GetRepository(creation.Entity.Id)
                     .Add(creation.Entity);
                 break;
             case Deletion deletion:
-                await Repositories
-                    .AllRepositories[deletion.EntityId[..deletion.EntityId.IndexOf("-", StringComparison.Ordinal)]]
+                Repositories
+                    .GetRepository(deletion.EntityId)
                     .Delete(deletion.EntityId);
                 break;
             case Update update:
-                await Repositories
-                    .AllRepositories[update.Entity.Id[..update.Entity.Id.IndexOf("-", StringComparison.Ordinal)]]
+                Repositories
+                    .GetRepository(update.Entity.Id)
                     .Update(update.Entity);
                 break;
             default:

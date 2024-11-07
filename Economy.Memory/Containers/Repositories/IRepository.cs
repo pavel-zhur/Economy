@@ -4,11 +4,11 @@ namespace Economy.Memory.Containers.Repositories;
 
 public interface IRepository
 {
-    Task<string> GetNextNormalId();
+    string GetNextNormalId();
     string IdPrefix { get; }
-    Task<EntityBase?> GetById(string id);
-    Task<IEnumerable<EntityBase>> GetAll();
-    Task Add(EntityBase entity);
-    Task Update(EntityBase entity);
-    Task Delete(string id);
+    EntityBase? GetById(string id);
+    IEnumerable<EntityBase> GetAll();
+    void Add(EntityBase entity);
+    void Update(EntityBase entity);
+    void Delete(string id);
 }
