@@ -1,0 +1,220 @@
+[
+  {
+    "entity_type": "Currency",
+    "name": "create_or_update_currency",
+    "description": "Creates or updates a currency. An integer ID is required for updating existing currencies.",
+    "parameters": {
+      "type": "object",
+      "required": [
+        "id",
+        "long_name",
+        "abbreviation",
+        "currency_symbol"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the currency; required for updates but not for creation"
+        },
+        "long_name": {
+          "type": "string",
+          "description": "Long name of the currency"
+        },
+        "abbreviation": {
+          "type": "string",
+          "description": "Abbreviation of the currency"
+        },
+        "currency_symbol": {
+          "type": "string",
+          "description": "Symbol of the currency"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "entity_type": "Wallet",
+    "name": "create_or_update_wallet",
+    "description": "Creates or updates a wallet. An integer ID is required for updating existing wallets.",
+    "parameters": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the wallet; required for updates but not for creation"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the wallet"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "entity_type": "Wish",
+    "name": "create_or_update_wish",
+    "description": "Creates or updates a wish. An integer ID is required for updating existing wishes.",
+    "parameters": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "amounts"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the wish; required for updates but not for creation"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the wish"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the wish"
+        },
+        "budget_id": {
+          "type": "integer",
+          "description": "ID of the associated budget"
+        },
+        "amounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "currency_id": {
+                "type": "integer",
+                "description": "ID of the currency"
+              },
+              "amount": {
+                "type": "number",
+                "description": "Amount in the specified currency"
+              }
+            },
+            "required": [
+              "currency_id",
+              "amount"
+            ]
+          },
+          "description": "List of amounts in different currencies"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "entity_type": "Event",
+    "name": "create_or_update_event",
+    "description": "Creates or updates an event. An integer ID is required for updating existing events.",
+    "parameters": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the event; required for updates but not for creation"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the event"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the event"
+        },
+        "budget_id": {
+          "type": "integer",
+          "description": "ID of the associated budget"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "entity_type": "Category",
+    "name": "create_or_update_category",
+    "description": "Creates or updates a category. An integer ID is required for updating existing categories.",
+    "parameters": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the category; required for updates but not for creation"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the category"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the category"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "entity_type": "WalletCheck",
+    "name": "create_or_update_wallet_check",
+    "description": "Creates or updates a wallet check. An integer ID is required for updating existing wallet checks.",
+    "parameters": {
+      "type": "object",
+      "required": [
+        "id",
+        "wallet_id",
+        "check_timestamp",
+        "amounts"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the wallet check; required for updates but not for creation"
+        },
+        "wallet_id": {
+          "type": "integer",
+          "description": "ID of the wallet"
+        },
+        "check_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the wallet check"
+        },
+        "amounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "currency_id": {
+                "type": "integer",
+                "description": "ID of the currency"
+              },
+              "amount": {
+                "type": "number",
+                "description": "Amount in the specified currency"
+              }
+            },
+            "required": [
+              "currency_id",
+              "amount"
+            ]
+          },
+          "description": "List of amounts in different currencies"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+]

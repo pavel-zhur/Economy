@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Economy.Temp": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_Environment": "Development"
+      }
+    }
+  }
+}
