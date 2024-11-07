@@ -22,6 +22,8 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
 
     public void Add(T entity)
     {
+        entity.Validate();
+
         var nextNormalId = GetNextNormalId();
         if (!entity.Id.StartsWith($"{idPrefix}"))
         {
@@ -52,6 +54,8 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
 
     public void Update(T entity)
     {
+        entity.Validate();
+
         if (!_entities.TryGetValue(entity.Id, out var oldEntity))
         {
             throw new InvalidOperationException($"Entity with id {entity.Id} does not exist.");
