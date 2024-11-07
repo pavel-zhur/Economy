@@ -10,7 +10,6 @@ namespace Economy.Temp;
 
 class Program3
 {
-    private static IRepositories _repositories = new InMemoryRepositories();
     public static string ApiKey;
 
     public static async Task Main2()

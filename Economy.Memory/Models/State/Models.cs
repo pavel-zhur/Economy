@@ -1,6 +1,6 @@
 ﻿namespace Economy.Memory.Models.State;
 
-public record EntityBase(string Id);
+public abstract record EntityBase(string Id);
 
 // Root entities
 
