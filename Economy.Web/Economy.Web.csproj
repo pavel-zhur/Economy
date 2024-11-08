@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Economy.AiInterface\Economy.AiInterface.csproj" />
     <ProjectReference Include="..\Economy.Memory\Economy.Memory.csproj" />
   </ItemGroup>
 

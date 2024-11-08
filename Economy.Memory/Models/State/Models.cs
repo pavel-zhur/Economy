@@ -417,4 +417,10 @@ public record struct Date(int Year, int Month, int Day)
 
     public override string ToString()
         => $"{Year}-{Month:D2}-{Day:D2}";
+
+    public Date AddDays(int i)
+    {
+        var dateTime = new DateTime(Year, Month, Day).AddDays(i);
+        return new Date(dateTime.Year, dateTime.Month, dateTime.Day);
+    }
 }

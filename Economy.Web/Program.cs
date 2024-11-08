@@ -1,3 +1,4 @@
+using Economy.AiInterface;
 using Economy.Memory.Containers.State;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,9 @@ builder.Services
 
 builder.Services
     .AddMemory();
+
+builder.Services.AddAudioTranscriptionService(builder.Configuration);
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -27,5 +31,6 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapControllers();
 
 app.Run();

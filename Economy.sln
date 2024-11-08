@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Economy.Memory", "Economy.M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Economy.Temp", "Economy.Temp\Economy.Temp.csproj", "{17B2F29C-89E4-4202-A189-B402D133D647}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy.Web", "Economy.Web\Economy.Web.csproj", "{542A2B7E-3E85-4E8E-9F7F-ECB08ACC6958}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Economy.Web", "Economy.Web\Economy.Web.csproj", "{542A2B7E-3E85-4E8E-9F7F-ECB08ACC6958}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy.AiInterface", "Economy.AiInterface\Economy.AiInterface.csproj", "{DFCB3320-CC8B-43C4-9382-5FB207C11472}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{542A2B7E-3E85-4E8E-9F7F-ECB08ACC6958}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{542A2B7E-3E85-4E8E-9F7F-ECB08ACC6958}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{542A2B7E-3E85-4E8E-9F7F-ECB08ACC6958}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFCB3320-CC8B-43C4-9382-5FB207C11472}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFCB3320-CC8B-43C4-9382-5FB207C11472}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFCB3320-CC8B-43C4-9382-5FB207C11472}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFCB3320-CC8B-43C4-9382-5FB207C11472}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
