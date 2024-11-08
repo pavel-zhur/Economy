@@ -12,7 +12,7 @@
 @foreach (var entity in State.Repositories.Wallets.GetAll())
 {
     <p>
-        @(entity.ToLongString(State.Repositories))
+        @(entity.ToDetails(State.Repositories))
     </p>
 }
 
@@ -20,7 +20,7 @@
 @foreach (var entity in State.Repositories.Currencies.GetAll())
 {
     <p>
-        @(entity.ToLongString(State.Repositories))
+        @(entity.ToDetails(State.Repositories))
     </p>
 }
 
@@ -28,7 +28,7 @@
 @foreach (var entity in State.Repositories.Events.GetAll())
 {
     <p>
-        @(entity.ToLongString(State.Repositories))
+        @(entity.ToDetails(State.Repositories))
     </p>
 }
 
@@ -36,7 +36,7 @@
 @foreach (var entity in State.Repositories.Categories.GetAll())
 {
     <p>
-        @(entity.ToLongString(State.Repositories))
+        @(entity.ToDetails(State.Repositories))
     </p>
 }
 
@@ -44,7 +44,7 @@
 @foreach (var entity in State.Repositories.WalletAudits.GetAll())
 {
     <p>
-        @(entity.ToLongString(State.Repositories))
+        @(entity.ToDetails(State.Repositories))
     </p>
 }
 
@@ -52,7 +52,7 @@
 @foreach (var entity in State.Repositories.Budgets.GetAll())
 {
     <p>
-        @(entity.ToLongString(State.Repositories))
+        @(entity.ToDetails(State.Repositories))
     </p>
 }
 
@@ -60,7 +60,7 @@
 @foreach (var entity in State.Repositories.Transactions.GetAll())
 {
     <p>
-        @(entity.ToLongString(State.Repositories))
+        @(entity.ToDetails(State.Repositories))
     </p>
 }
 
@@ -68,7 +68,7 @@
 @foreach (var entity in State.Repositories.Conversions.GetAll())
 {
     <p>
-        @(entity.ToLongString(State.Repositories))
+        @(entity.ToDetails(State.Repositories))
     </p>
 }
 
@@ -76,6 +76,6 @@
 @foreach (var entity in State.Repositories.Transfers.GetAll())
 {
     <p>
-        @(entity.ToLongString(State.Repositories))
+        @(entity.ToDetails(State.Repositories))
     </p>
 }

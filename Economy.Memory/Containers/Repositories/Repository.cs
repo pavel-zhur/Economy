@@ -7,6 +7,8 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
     private readonly Dictionary<string, T> _entities = new();
     private int _deletedCount;
 
+    public Type GetEntityType() => typeof(T);
+
     public string GetNextNormalId() => $"{idPrefix}{_entities.Count + _deletedCount + 1}";
 
     public string IdPrefix => idPrefix;

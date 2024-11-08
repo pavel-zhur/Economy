@@ -12,4 +12,5 @@ public interface IRepository
     void Add(EntityBase entity);
     void Update(EntityBase entity);
     void Delete(string id);
+    Type GetEntityType();
 }

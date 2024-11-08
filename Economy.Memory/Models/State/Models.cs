@@ -9,9 +9,9 @@ public abstract record EntityBase(string Id)
 
     public abstract void Validate();
 
-    public abstract string ToLongString(Repositories repositories);
-    
-    public abstract string ToShortString(Repositories repositories);
+    public abstract string ToReferenceTitle(Repositories repositories);
+
+    public abstract string ToDetails(Repositories repositories);
 }
 
 // Root entities
@@ -36,11 +36,11 @@ public record Currency(string Id, string LongName, string Abbreviation, char Cur
         }
     }
 
-    public override string ToShortString(Repositories repositories) 
-        => $"{Id}. {Abbreviation}";
+    public override string ToReferenceTitle(Repositories repositories)
+        => $"[{Id} {Abbreviation}]";
 
-    public override string ToLongString(Repositories repositories)
-        => $"{Id}. {LongName} ({Abbreviation}, {CurrencySymbol})";
+    public override string ToDetails(Repositories repositories)
+        => $"{Id} {LongName} ({Abbreviation}, {CurrencySymbol})";
 }
 
 public record Wallet(string Id, string Name) : EntityBase(Id)
@@ -53,11 +53,11 @@ public record Wallet(string Id, string Name) : EntityBase(Id)
         }
     }
 
-    public override string ToShortString(Repositories repositories)
-        => $"{Id}. {Name}";
+    public override string ToReferenceTitle(Repositories repositories)
+        => $"[{Id} {Name}]";
 
-    public override string ToLongString(Repositories repositories)
-        => $"{Id}. {Name}";
+    public override string ToDetails(Repositories repositories)
+        => $"{Id} {Name}";
 }
 
 public record Event(string Id, string Name, string? Description, string? BudgetId, Date Date) : EntityBase(Id)
@@ -79,11 +79,11 @@ public record Event(string Id, string Name, string? Description, string? BudgetI
         Date.Validate();
     }
 
-    public override string ToShortString(Repositories repositories)
-        => $"{Id}. {Name} @{BudgetId} @{Date}";
+    public override string ToReferenceTitle(Repositories repositories)
+        => $"[{Id} {Name}]";
 
-    public override string ToLongString(Repositories repositories)
-        => $"{Id}. {Name} @{repositories.GetEntity(BudgetId)?.ToShortString(repositories)} @{Date} {Description}";
+    public override string ToDetails(Repositories repositories)
+        => $"{Id} {Name} {repositories.GetReferenceTitle(BudgetId)} {Date} d:({Description})";
 }
 
 public record Category(string Id, string Name, string? Description) : EntityBase(Id)
@@ -101,11 +101,11 @@ public record Category(string Id, string Name, string? Description) : EntityBase
         }
     }
 
-    public override string ToShortString(Repositories repositories)
-        => $"{Id}. {Name}";
+    public override string ToReferenceTitle(Repositories repositories)
+        => $"[{Id} {Name}]";
 
-    public override string ToLongString(Repositories repositories)
-        => $"{Id}. {Name} {Description}";
+    public override string ToDetails(Repositories repositories)
+        => $"{Id} {Name} d:({Description})";
 }
 
 public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, Amounts Amounts) : EntityBase(Id)
@@ -123,11 +123,11 @@ public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, A
         }
     }
 
-    public override string ToShortString(Repositories repositories)
-        => $"{Id}. {WalletId} @{CheckTimestamp} {Amounts.ToShortString(repositories)}";
+    public override string ToReferenceTitle(Repositories repositories)
+        => $"[{Id}]";
 
-    public override string ToLongString(Repositories repositories)
-        => $"{Id}. {repositories.GetEntity(WalletId).ToShortString(repositories)} @{CheckTimestamp} {Amounts.ToLongString(repositories)}";
+    public override string ToDetails(Repositories repositories)
+        => $"{Id} {repositories.GetReferenceTitle(WalletId)} {CheckTimestamp} [{Amounts.ToDetails(repositories)}]";
 }
 
 public record Budget(
@@ -156,6 +156,11 @@ public record Budget(
             throw new ArgumentException("Budget must have either name or planned amounts.");
         }
 
+        if (PlannedAmounts != null && ParentBudgetId == null)
+        {
+            throw new ArgumentException("Budget planned amounts must have a parent budget.");
+        }
+
         if (Description != null && string.IsNullOrWhiteSpace(Description))
         {
             throw new ArgumentException("Budget description must be null or not empty.");
@@ -172,11 +177,11 @@ public record Budget(
         PlannedAmounts?.Validate();
     }
 
-    public override string ToShortString(Repositories repositories)
-        => $"{Id}. {Name} @{Description} p={ParentBudgetId} [{StartDate}-{FinishDate}] @{PlannedAmounts?.ToShortString(repositories)}";
+    public override string ToReferenceTitle(Repositories repositories)
+        => $"[{Id} {Name}]";
 
-    public override string ToLongString(Repositories repositories)
-        => $"{Id}. {Name} @{Description} p={(ParentBudgetId == null ? null : repositories.Budgets[ParentBudgetId].Name)} [{StartDate}-{FinishDate}] @{PlannedAmounts?.ToLongString(repositories)}";
+    public override string ToDetails(Repositories repositories)
+        => $"{Id} {Name} d:({Description}) {(ParentBudgetId == null ? null : "p:" + repositories.Budgets[ParentBudgetId].Name)} [{StartDate} - {FinishDate}] {PlannedAmounts?.ToDetails(repositories).SelectSingle(x => $"pl:[{x}]")}";
 }
 
 public record Transaction(
@@ -224,11 +229,11 @@ public record Transaction(
         }
     }
 
-    public override string ToShortString(Repositories repositories)
-        => $"{Id}. {Name} @{Description} @{Timestamp} {Type} [{string.Join(", ", Entries.Select(e => e.ToShortString(repositories)))}]";
+    public override string ToReferenceTitle(Repositories repositories)
+        => $"[{Id} {Name}]";
 
-    public override string ToLongString(Repositories repositories)
-        => $"{Id}. {Name} @{Description} @{Timestamp} {Type} [{string.Join(", ", Entries.Select(e => e.ToLongString(repositories)))}]";
+    public override string ToDetails(Repositories repositories)
+        => $"{Id} {Name} d:({Description}) {Timestamp} {Type} [{string.Join(", ", Entries.Select(e => e.ToDetails(repositories)))}]";
 }
 
 public record Conversion(
@@ -258,11 +263,11 @@ public record Conversion(
         }
     }
 
-    public override string ToShortString(Repositories repositories)
-        => $"{Id}. {FromWalletId} {FromAmount.ToShortString(repositories)} -> {ToWalletId} {ToAmount.ToShortString(repositories)}";
+    public override string ToReferenceTitle(Repositories repositories)
+        => $"[{Id}]";
 
-    public override string ToLongString(Repositories repositories)
-        => $"{Id}. {repositories.GetEntity(FromWalletId).ToShortString(repositories)} {FromAmount.ToLongString(repositories)} -> {repositories.GetEntity(ToWalletId).ToShortString(repositories)} {ToAmount.ToLongString(repositories)}";
+    public override string ToDetails(Repositories repositories)
+        => $"{Id} {repositories.GetReferenceTitle(FromWalletId)} {FromAmount.ToDetails(repositories)} -> {repositories.GetReferenceTitle(ToWalletId)} {ToAmount.ToDetails(repositories)}";
 }
 
 public record Transfer(
@@ -305,11 +310,11 @@ public record Transfer(
         }
     }
 
-    public override string ToShortString(Repositories repositories)
-        => $"{Id}. {FromBudgetId} -> {ToBudgetId} {TransferredAmount.ToShortString(repositories)} {Date} {TransferType} {ConvertedAmount?.ToShortString(repositories)}";
+    public override string ToReferenceTitle(Repositories repositories)
+        => $"[{Id}]";
 
-    public override string ToLongString(Repositories repositories)
-        => $"{Id}. {repositories.GetEntity(FromBudgetId).ToShortString(repositories)} -> {repositories.GetEntity(ToBudgetId).ToShortString(repositories)} {TransferredAmount.ToLongString(repositories)} {Date} {TransferType} {ConvertedAmount?.ToLongString(repositories)}";
+    public override string ToDetails(Repositories repositories)
+        => $"{Id} {repositories.GetReferenceTitle(FromBudgetId)} -> {repositories.GetReferenceTitle(ToBudgetId)} {TransferredAmount.ToDetails(repositories)} {Date} {TransferType} c=({ConvertedAmount?.ToDetails(repositories)})";
 }
 
 // Sub-entities
@@ -332,11 +337,8 @@ public record TransactionEntry(
         SpentAmounts.ValidatePositive();
     }
 
-    public string ToShortString(Repositories repositories)
-        => $"{(BudgetId == null ? null : repositories.Budgets[BudgetId].Name)} {(WalletId == null ? null : repositories.Wallets[WalletId].Name)} {(CategoryId == null ? null : repositories.Categories[CategoryId].Name)} {SpentAmounts.ToShortString(repositories)}";
-
-    public string ToLongString(Repositories repositories)
-        => $"{repositories.GetEntity(BudgetId)?.ToShortString(repositories)} {repositories.GetEntity(WalletId)?.ToShortString(repositories)} {repositories.GetEntity(CategoryId)?.ToShortString(repositories)} {SpentAmounts.ToLongString(repositories)}";
+    public string ToDetails(Repositories repositories)
+        => $"{repositories.GetReferenceTitle(BudgetId)} {repositories.GetReferenceTitle(WalletId)} {repositories.GetReferenceTitle(CategoryId)} {SpentAmounts.ToDetails(repositories)}";
 }
 
 public record BudgetPlannedAmounts(
@@ -350,11 +352,8 @@ public record BudgetPlannedAmounts(
         Amounts.ValidatePositive();
     }
 
-    public string ToShortString(Repositories repositories)
-        => $"{Amounts.ToShortString(repositories)} {Type} {(IsCompleted ? "c+" : "nc-")}";
-
-    public string ToLongString(Repositories repositories)
-        => $"{Amounts.ToLongString(repositories)} {Type} {(IsCompleted ? "completed" : "not completed")}";
+    public string ToDetails(Repositories repositories)
+        => $"{Amounts.ToDetails(repositories)} {Type} {(IsCompleted ? "100%" : "0%")}";
 }
 
 // Value objects
@@ -389,11 +388,8 @@ public class Amounts : List<Amount>
         }
     }
 
-    public string ToShortString(Repositories repositories) 
-        => string.Join(", ", this.Select(a => a.ToShortString(repositories)));
-
-    public string ToLongString(Repositories repositories) 
-        => string.Join(", ", this.Select(a => a.ToLongString(repositories)));
+    public string ToDetails(Repositories repositories)
+        => string.Join(", ", this.Select(a => a.ToDetails(repositories)));
 }
 
 public record struct Amount(string CurrencyId, decimal Value)
@@ -406,10 +402,7 @@ public record struct Amount(string CurrencyId, decimal Value)
         }
     }
 
-    public string ToShortString(Repositories repositories)
-        => $"{repositories.Currencies[CurrencyId].CurrencySymbol}{Value}";
-
-    public string ToLongString(Repositories repositories) => $"{Value} {repositories.Currencies[CurrencyId].Abbreviation}";
+    public string ToDetails(Repositories repositories) => $"{Value} {repositories.Currencies[CurrencyId].Abbreviation}";
 }
 
 public record struct Date(int Year, int Month, int Day)

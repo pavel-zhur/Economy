@@ -11,6 +11,6 @@
 @foreach (var @event in State.Events)
 {
     <p>
-        @(@event.ToShortString(State.Repositories))
+        @(@event.ToDetails(State.Repositories))
     </p>
 }
