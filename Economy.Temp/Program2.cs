@@ -95,7 +95,7 @@ class Program2
 
     private static List<SerializedFunctionDefinition> GetSchema()
     {
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Economy.Tests.tools.json");
+        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Economy.Temp.tools.json");
         using var reader = new StreamReader(stream);
         var schema = reader.ReadToEnd();
         return JsonSerializer.Deserialize<List<SerializedFunctionDefinition>>(schema, new JsonSerializerOptions

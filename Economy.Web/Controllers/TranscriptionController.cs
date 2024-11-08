@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Economy.AiInterface;
+using Economy.AiInterface.StateManagement;
 
 namespace Economy.Web.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TranscriptionController(TranscriptionService transcriptionService) : ControllerBase
+    public class TranscriptionController(TranscriptionService transcriptionService, Chat chat) : ControllerBase
     {
         [HttpPost]
         [Route("transcribe")]
@@ -23,8 +24,8 @@ namespace Economy.Web.Controllers
             memoryStream.Position = 0;
 
             var transcription = await transcriptionService.Transcribe(memoryStream);
-
-            return Ok(new { transcription });
+            var response = await chat.Go(transcription);
+            return Ok(new { transcription = $"{transcription}{Environment.NewLine}{response}" });
         }
     }
 }

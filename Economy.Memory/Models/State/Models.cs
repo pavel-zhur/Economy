@@ -16,7 +16,7 @@ public abstract record EntityBase(string Id)
 
 // Root entities
 
-public record Currency(string Id, string LongName, string Abbreviation, char CurrencySymbol) : EntityBase(Id)
+public record Currency(string Id, string LongName, string Abbreviation, string CurrencySymbol) : EntityBase(Id)
 {
     public override void Validate()
     {

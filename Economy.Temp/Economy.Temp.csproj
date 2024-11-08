@@ -9,12 +9,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
-    <NoWarn>1701;1702;SKEXP0001</NoWarn>
+    <NoWarn>1701;1702;SKEXP0001;SKEXP0120</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
-    <NoWarn>1701;1702;SKEXP0001</NoWarn>
+    <NoWarn>1701;1702;SKEXP0001;SKEXP0120</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,13 +28,14 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
-		<PackageReference Include="Microsoft.SemanticKernel" Version="1.26.0" />
+		<PackageReference Include="Microsoft.SemanticKernel" Version="1.28.0" />
 		<PackageReference Include="OneShelf.Common" Version="1.1.23-prerelease" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\Economy.AiInterface\Economy.AiInterface.csproj" />
 	  <ProjectReference Include="..\Economy.Memory\Economy.Memory.csproj" />
 	</ItemGroup>
 

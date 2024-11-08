@@ -18,7 +18,7 @@ class Program3
 
         // Create a kernel with Azure OpenAI chat completion
         var builder = Kernel.CreateBuilder().AddOpenAIChatCompletion("gpt-4o-mini", ApiKey);
-
+        
         // Add enterprise components
         builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
@@ -27,7 +27,7 @@ class Program3
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Add a plugin
-        kernel.Plugins.AddFromType<FinancialPlugin>("Financial");
+        kernel.Plugins.AddFromType<LampsPlugin>("Lamps");
 
         // Enable planning
         OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
@@ -64,7 +64,7 @@ class Program3
     }
 }
 
-internal class FinancialPlugin
+internal class LampsPlugin
 {
     // Mock data for the lights
     private readonly List<LightModel> lights = new()

@@ -7,7 +7,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMemory(this IServiceCollection services)
     {
         services.AddSingleton<StateFactory>();
-        services.AddSingleton(s => s.GetRequiredService<StateFactory>().CreateState());
+        services.AddSingleton(s => s.GetRequiredService<StateFactory>().CreateEmpty());
 
         return services;
     }

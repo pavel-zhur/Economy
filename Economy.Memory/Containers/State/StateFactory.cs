@@ -49,11 +49,11 @@ public class StateFactory
         state.Apply(new Creation(wallet3));
 
         // add currencies
-        var currency1 = new Currency(state.Repositories.Currencies.GetNextNormalId(), "US Dollar", "USD", '$');
+        var currency1 = new Currency(state.Repositories.Currencies.GetNextNormalId(), "US Dollar", "USD", '$'.ToString());
         state.Apply(new Creation(currency1));
-        var currency2 = new Currency(state.Repositories.Currencies.GetNextNormalId(), "Euro", "EUR", '€');
+        var currency2 = new Currency(state.Repositories.Currencies.GetNextNormalId(), "Euro", "EUR", '€'.ToString());
         state.Apply(new Creation(currency2));
-        var currency3 = new Currency(state.Repositories.Currencies.GetNextNormalId(), "British Pound", "GBP", '£');
+        var currency3 = new Currency(state.Repositories.Currencies.GetNextNormalId(), "British Pound", "GBP", '£'.ToString());
         state.Apply(new Creation(currency3));
 
         // add budgets
@@ -115,4 +115,6 @@ public class StateFactory
 
         return state;
     }
+
+    public State CreateEmpty() => new();
 }

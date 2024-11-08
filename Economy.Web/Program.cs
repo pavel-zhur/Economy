@@ -10,7 +10,10 @@ builder.Services
 builder.Services
     .AddMemory();
 
-builder.Services.AddAudioTranscriptionService(builder.Configuration);
+builder.Services
+    .AddAudioTranscriptionService(builder.Configuration)
+    .AddFinancialKernel(builder.Configuration);
+
 builder.Services.AddControllers();
 
 var app = builder.Build();

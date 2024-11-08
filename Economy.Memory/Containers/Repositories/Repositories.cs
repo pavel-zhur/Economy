@@ -33,8 +33,21 @@ public class Repositories
             { Conversions.IdPrefix, Conversions },
             { Transfers.IdPrefix, Transfers }
         };
-    }
 
+        AllByType = new Dictionary<Type, IRepository>
+        {
+            { typeof(Currency), Currencies },
+            { typeof(Wallet), Wallets },
+            { typeof(WalletAudit), WalletAudits },
+            { typeof(Budget), Budgets },
+            { typeof(Transaction), Transactions },
+            { typeof(Event), Events },
+            { typeof(Category), Categories },
+            { typeof(Conversion), Conversions },
+            { typeof(Transfer), Transfers }
+        };
+    }
+    
     public Repository<Currency> Currencies { get; }
     public Repository<Wallet> Wallets { get; }
     public Repository<WalletAudit> WalletAudits { get; }
@@ -46,6 +59,7 @@ public class Repositories
     public Repository<Transfer> Transfers { get; }
 
     public IReadOnlyDictionary<string, IRepository> AllByPrefix { get; }
+    public IReadOnlyDictionary<Type, IRepository> AllByType { get; }
 
     public IReadOnlySet<(string from, string to)> ForeignKeys => _foreignKeys;
     public IEnumerable<string> GetIncomingForeignKeysTo(string to) => _incomingForeignKeysTo.GetValueOrDefault(to) ?? Enumerable.Empty<string>();
@@ -54,6 +68,9 @@ public class Repositories
     public string GetPrefix(string entityId) => entityId[..(entityId.IndexOf("-", StringComparison.Ordinal) + 1)];
 
     public IRepository GetRepository(string entityId) => AllByPrefix[GetPrefix(entityId)];
+    public IRepository GetRepository<T>()
+        where T : EntityBase
+        => AllByType[typeof(T)];
 
     [return: NotNullIfNotNull(nameof(entityId))]
     public EntityBase? GetEntity(string? entityId) => entityId == null ? null : GetRepository(entityId).GetById(entityId);
