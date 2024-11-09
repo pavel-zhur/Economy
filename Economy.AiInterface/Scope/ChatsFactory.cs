@@ -7,7 +7,7 @@ public class ChatsFactory(FactoriesMemory factoriesMemory, IStateUserGetter stat
 {
     public async Task<Chat> Get()
     {
-        var (_, chat) = await factoriesMemory.GetOrCreate(stateUserGetter.GetStateUserKey(), kernel, chatCompletionService);
-        return chat;
+        var (_, chatHistory) = await factoriesMemory.GetOrCreate(stateUserGetter.GetStateUserKey());
+        return new(chatHistory, kernel, chatCompletionService);
     }
 }

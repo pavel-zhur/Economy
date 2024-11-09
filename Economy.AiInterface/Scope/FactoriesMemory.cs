@@ -23,9 +23,9 @@ public class FactoriesMemory
         WriteIndented = true
     };
 
-    private readonly ConcurrentDictionary<string, (State state, Chat chat, AsyncLock loading)> _memory = new();
+    private readonly ConcurrentDictionary<string, (State state, ChatHistory chatHistory, AsyncLock loading)> _memory = new();
 
-    public async Task<(State state, Chat chat)> GetOrCreate(string userKey, Kernel scopeKernel, IChatCompletionService scopeChatCompletionService)
+    public async Task<(State state, ChatHistory chatHistory)> GetOrCreate(string userKey)
     {
         var justCreated = false;
         var result = _memory.GetOrAdd(
@@ -33,7 +33,7 @@ public class FactoriesMemory
             _ =>
             {
                 justCreated = true;
-                return (new(), new(scopeKernel, scopeChatCompletionService), new());
+                return (new(), new(), new());
             });
 
         if (justCreated)
@@ -42,7 +42,7 @@ public class FactoriesMemory
             await LoadFromFile(result.state, userKey);
         }
 
-        return (result.state, result.chat);
+        return (result.state, result.chatHistory);
     }
 
     public async Task Save(string userKey)
