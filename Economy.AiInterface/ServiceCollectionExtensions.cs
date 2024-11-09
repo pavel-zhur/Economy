@@ -12,7 +12,7 @@ namespace Economy.AiInterface;
 
 public static class ServiceCollectionExtensions
 {
-    internal static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+    internal static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         Converters =
         {

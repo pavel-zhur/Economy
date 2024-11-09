@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Economy.Web.Pages
+namespace Economy.Web.Pages;
+
+public class OverviewModel : PageModel
 {
-    public class OverviewModel : PageModel
+    public void OnGet()
     {
-        public void OnGet()
-        {
         }
-    }
 }
