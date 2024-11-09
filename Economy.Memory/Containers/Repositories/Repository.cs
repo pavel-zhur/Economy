@@ -51,7 +51,7 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
             throw new InvalidOperationException($"Entity with id {entity.Id} already exists.");
         }
 
-        foreach (var foreignKey in entity.GetForeignKeys().Distinct())
+        foreach (var foreignKey in entity.GetForeignKeys())
         {
             repositories.AddForeignKey(entity.Id, foreignKey);
         }
@@ -76,12 +76,12 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
 
         _entities[entity.Id] = entity;
 
-        foreach (var removeTo in oldEntity.GetForeignKeys().Except(entity.GetForeignKeys()).Distinct())
+        foreach (var removeTo in oldEntity.GetForeignKeys().Except(entity.GetForeignKeys()))
         {
             repositories.RemoveForeignKey(entity.Id, removeTo);
         }
 
-        foreach (var addTo in entity.GetForeignKeys().Except(oldEntity.GetForeignKeys()).Distinct())
+        foreach (var addTo in entity.GetForeignKeys().Except(oldEntity.GetForeignKeys()))
         {
             repositories.AddForeignKey(entity.Id, addTo);
         }

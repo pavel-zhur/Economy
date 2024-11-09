@@ -5,7 +5,9 @@ namespace Economy.Memory.Models.State;
 
 public abstract record EntityBase(string Id)
 {
-    public virtual IEnumerable<string> GetForeignKeys() => Enumerable.Empty<string>();
+    public IEnumerable<string> GetForeignKeys() => GetForeignKeysDirty().Where(x => x != null).Distinct()!;
+
+    protected virtual IEnumerable<string?> GetForeignKeysDirty() => Enumerable.Empty<string>();
 
     public abstract void Validate();
 
@@ -62,7 +64,7 @@ public record Wallet(string Id, string Name) : EntityBase(Id)
 
 public record Event(string Id, string Name, string? Description, string? BudgetId, Date Date) : EntityBase(Id)
 {
-    public override IEnumerable<string> GetForeignKeys() => BudgetId.Once().Where(x => x != null)!;
+    protected override IEnumerable<string?> GetForeignKeysDirty() => BudgetId.Once();
 
     public override void Validate()
     {
@@ -110,7 +112,7 @@ public record Category(string Id, string Name, string? Description) : EntityBase
 
 public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, Amounts Amounts) : EntityBase(Id)
 {
-    public override IEnumerable<string> GetForeignKeys() => Amounts.Select(a => a.CurrencyId).Append(WalletId);
+    protected override IEnumerable<string?> GetForeignKeysDirty() => Amounts.Select(a => a.CurrencyId).Append(WalletId);
 
     public override void Validate()
     {
@@ -140,9 +142,7 @@ public record Budget(
     BudgetPlannedAmounts? PlannedAmounts)
     : EntityBase(Id)
 {
-    public override IEnumerable<string> GetForeignKeys() =>
-        (PlannedAmounts?.Amounts.Select(a => a.CurrencyId) ?? base.GetForeignKeys())
-        .SelectSingle(x => ParentBudgetId != null ? x.Append(ParentBudgetId) : x);
+    protected override IEnumerable<string?> GetForeignKeysDirty() => ParentBudgetId.Once();
 
     public override void Validate()
     {
@@ -193,13 +193,13 @@ public record Transaction(
     IReadOnlyList<TransactionEntry> Entries)
     : EntityBase(Id)
 {
-    public override IEnumerable<string> GetForeignKeys() =>
+    protected override IEnumerable<string?> GetForeignKeysDirty() =>
         Entries.SelectMany(e => new[]
         {
             e.WalletId,
             e.BudgetId,
             e.CategoryId,
-        }.Where(x => x != null).Concat(e.SpentAmounts.Select(a => a.CurrencyId)))!;
+        }.Concat(e.SpentAmounts.Select(a => a.CurrencyId)))!;
 
     public override void Validate()
     {
@@ -244,7 +244,7 @@ public record Conversion(
     Amount ToAmount)
     : EntityBase(Id)
 {
-    public override IEnumerable<string> GetForeignKeys() =>
+    protected override IEnumerable<string?> GetForeignKeysDirty() =>
     [
         FromWalletId,
         ToWalletId,
@@ -280,14 +280,14 @@ public record Transfer(
     Amount? ConvertedAmount)
     : EntityBase(Id)
 {
-    public override IEnumerable<string> GetForeignKeys() =>
+    protected override IEnumerable<string?> GetForeignKeysDirty() =>
         new List<string?>
         {
             TransferredAmount.CurrencyId,
             ConvertedAmount?.CurrencyId,
             FromBudgetId,
             ToBudgetId,
-        }.Where(x => x != null)!;
+        };
 
     public override void Validate()
     {
