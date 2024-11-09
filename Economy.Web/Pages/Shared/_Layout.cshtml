@@ -35,6 +35,29 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/TranscriptionTest">Transcription Test</a>
                         </li>
                     </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <form method="get" asp-page="Profile">
+                                    <button class="nav-link btn btn-link">Hello, @User.Identity.Name!</button>
+                                </form>
+                            </li>
+                            <li class="nav-item">
+                                <form method="post" asp-page="Profile" asp-page-handler="Logout">
+                                    <button type="submit" class="btn btn-link nav-link">Logout</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <form method="post" asp-page="Profile" asp-page-handler="Login">
+                                    <button type="submit" class="btn btn-link nav-link">Login with Google</button>
+                                </form>
+                            </li>
+                        }
+                    </ul>
                 </div>
             </div>
         </nav>
