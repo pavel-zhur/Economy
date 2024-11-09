@@ -191,6 +191,7 @@ public record PlannedTransaction(
     string BudgetId,
     Amounts Amounts,
     TransactionType Type,
+    PlannedTransactionSchedule? Schedule,
     Date? Date,
     bool IsCompleted)
     : EntityBase(Id)
@@ -210,7 +211,7 @@ public record PlannedTransaction(
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {repositories.GetReferenceTitle(BudgetId)} {Date} {Amounts.ToDetails(repositories)} {Type} {(IsCompleted ? "100%" : "0%")} d:({Description})";
+        => $"{Id} {repositories.GetReferenceTitle(BudgetId)} {Date} {Amounts.ToDetails(repositories)} {Type} {(IsCompleted ? "100%" : "0%")} d:({Description}) {Schedule}";
 
     protected override IEnumerable<string?> GetForeignKeysDirty()
         => Amounts.Select(a => a.CurrencyId).Append(BudgetId);
@@ -398,6 +399,13 @@ public enum TransferType
 {
     Reallocation,
     Usage,
+}
+
+public enum PlannedTransactionSchedule
+{
+    Daily,
+    Weekly,
+    Monthly,
 }
 
 public enum TransactionType
