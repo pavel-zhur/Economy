@@ -212,7 +212,7 @@ public record ActualTransaction(
             e.WalletId,
             e.BudgetId,
             e.CategoryId,
-        }.Concat(e.SpentAmounts.Select(a => a.CurrencyId)))!;
+        }.Concat(e.Amounts.Select(a => a.CurrencyId)))!;
 
     public override void Validate()
     {
@@ -333,21 +333,27 @@ public record Transfer(
 // Sub-entities
 
 public record ActualTransactionEntry(
-    string? BudgetId,
+    string? Name,
+    string? Description,
     string? PlannedTransactionId,
     string? CategoryId,
     string? WalletId,
-    string? Description,
-    Amounts SpentAmounts)
+    string? BudgetId,
+    Amounts Amounts)
 {
     public void Validate()
     {
+        if (Name != null && string.IsNullOrWhiteSpace(Name))
+        {
+            throw new ArgumentException("ActualTransaction entry name must be null or not empty.");
+        }
+
         if (Description != null && string.IsNullOrWhiteSpace(Description))
         {
             throw new ArgumentException("ActualTransaction entry description must be null or not empty.");
         }
 
-        SpentAmounts.Validate(false, false, true);
+        Amounts.Validate(false, false, true);
 
         if (BudgetId != null && PlannedTransactionId != null)
         {
@@ -356,7 +362,7 @@ public record ActualTransactionEntry(
     }
 
     public string ToDetails(Repositories repositories)
-        => $"{repositories.GetReferenceTitle(BudgetId)} {repositories.GetReferenceTitle(WalletId)} {repositories.GetReferenceTitle(CategoryId)} {SpentAmounts.ToDetails(repositories)}";
+        => $"{repositories.GetReferenceTitle(BudgetId)} {repositories.GetReferenceTitle(PlannedTransactionId)} {repositories.GetReferenceTitle(WalletId)} {repositories.GetReferenceTitle(CategoryId)} {Amounts.ToDetails(repositories)}";
 }
 
 // Value objects

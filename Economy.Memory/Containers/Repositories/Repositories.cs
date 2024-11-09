@@ -77,9 +77,6 @@ public class Repositories
         => AllByType[typeof(T)];
 
     [return: NotNullIfNotNull(nameof(entityId))]
-    public EntityBase? GetEntity(string? entityId) => entityId == null ? null : GetRepository(entityId).GetById(entityId);
-
-    [return: NotNullIfNotNull(nameof(entityId))]
     public string? GetReferenceTitle(string? entityId) => entityId == null ? null : GetRepository(entityId).GetById(entityId).ToReferenceTitle(this);
 
     public EntityBase? TryGetEntity(string? entityId) => entityId == null ? null : GetRepository(entityId).TryGetById(entityId);
