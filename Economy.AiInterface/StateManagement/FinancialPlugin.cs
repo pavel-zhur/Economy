@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Economy.AiInterface.Scope;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.EventSourcing;
 using Economy.Memory.Models.State;
@@ -7,14 +8,15 @@ using Microsoft.SemanticKernel;
 
 namespace Economy.AiInterface.StateManagement;
 
-internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
+internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory stateFactory)
 {
     [KernelFunction("create_or_update_currency")]
     [Description("Creates a new currency (empty id expected) or updates an existing one")]
     [return: Description("The created or updated currency")]
     public async Task<Currency> UpsertCurrency(Currency currency)
     {
-        state.Apply(PrepareForUpsert(ref currency, out var verb));
+        var state = await stateFactory.Get();
+        state.Apply(PrepareForUpsert(state, ref currency, out var verb));
         logger.LogInformation("{verb} currency {Currency}", verb, currency.ToDetails(state.Repositories));
         return currency;
     }
@@ -24,7 +26,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
     [return: Description("The created or updated wallet")]
     public async Task<Wallet> UpsertWallet(Wallet wallet)
     {
-        state.Apply(PrepareForUpsert(ref wallet, out var verb));
+        var state = await stateFactory.Get();
+        state.Apply(PrepareForUpsert(state, ref wallet, out var verb));
         logger.LogInformation("{verb} wallet {Wallet}", verb, wallet.ToDetails(state.Repositories));
         return wallet;
     }
@@ -34,7 +37,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
     [return: Description("The created or updated event")]
     public async Task<Event> UpsertEvent(Event @event)
     {
-        state.Apply(PrepareForUpsert(ref @event, out var verb));
+        var state = await stateFactory.Get();
+        state.Apply(PrepareForUpsert(state, ref @event, out var verb));
         logger.LogInformation("{verb} event {Event}", verb, @event.ToDetails(state.Repositories));
         return @event;
     }
@@ -44,7 +48,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
     [return: Description("The created or updated category")]
     public async Task<Category> UpsertCategory(Category category)
     {
-        state.Apply(PrepareForUpsert(ref category, out var verb));
+        var state = await stateFactory.Get();
+        state.Apply(PrepareForUpsert(state, ref category, out var verb));
         logger.LogInformation("{verb} category {Category}", verb, category.ToDetails(state.Repositories));
         return category;
     }
@@ -54,7 +59,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
     [return: Description("The created or updated wallet audit")]
     public async Task<WalletAudit> UpsertWalletAudit(WalletAudit walletAudit)
     {
-        state.Apply(PrepareForUpsert(ref walletAudit, out var verb));
+        var state = await stateFactory.Get();
+        state.Apply(PrepareForUpsert(state, ref walletAudit, out var verb));
         logger.LogInformation("{verb} wallet audit {WalletAudit}", verb, walletAudit.ToDetails(state.Repositories));
         return walletAudit;
     }
@@ -64,7 +70,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
     [return: Description("The created or updated budget")]
     public async Task<Budget> UpsertBudget(Budget budget)
     {
-        state.Apply(PrepareForUpsert(ref budget, out var verb));
+        var state = await stateFactory.Get();
+        state.Apply(PrepareForUpsert(state, ref budget, out var verb));
         logger.LogInformation("{verb} budget {Budget}", verb, budget.ToDetails(state.Repositories));
         return budget;
     }
@@ -74,7 +81,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
     [return: Description("The created or updated actual_transaction")]
     public async Task<ActualTransaction> UpsertActualTransaction(ActualTransaction actualTransaction)
     {
-        state.Apply(PrepareForUpsert(ref actualTransaction, out var verb));
+        var state = await stateFactory.Get();
+        state.Apply(PrepareForUpsert(state, ref actualTransaction, out var verb));
         logger.LogInformation("{verb} actual_transaction {ActualTransaction}", verb, actualTransaction.ToDetails(state.Repositories));
         return actualTransaction;
     }
@@ -84,7 +92,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
     [return: Description("The created or updated planned_transaction")]
     public async Task<PlannedTransaction> UpsertPlannedTransaction(PlannedTransaction plannedTransaction)
     {
-        state.Apply(PrepareForUpsert(ref plannedTransaction, out var verb));
+        var state = await stateFactory.Get();
+        state.Apply(PrepareForUpsert(state, ref plannedTransaction, out var verb));
         logger.LogInformation("{verb} planned_transaction {PlannedTransaction}", verb, plannedTransaction.ToDetails(state.Repositories));
         return plannedTransaction;
     }
@@ -94,7 +103,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
     [return: Description("The created or updated conversion")]
     public async Task<Conversion> UpsertConversion(Conversion conversion)
     {
-        state.Apply(PrepareForUpsert(ref conversion, out var verb));
+        var state = await stateFactory.Get();
+        state.Apply(PrepareForUpsert(state, ref conversion, out var verb));
         logger.LogInformation("{verb} conversion {Conversion}", verb, conversion.ToDetails(state.Repositories));
         return conversion;
     }
@@ -104,7 +114,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
     [return: Description("The created or updated transfer")]
     public async Task<Transfer> UpsertTransfer(Transfer transfer)
     {
-        state.Apply(PrepareForUpsert(ref transfer, out var verb));
+        var state = await stateFactory.Get();
+        state.Apply(PrepareForUpsert(state, ref transfer, out var verb));
         logger.LogInformation("{verb} transfer {Transfer}", verb, transfer.ToDetails(state.Repositories));
         return transfer;
     }
@@ -113,6 +124,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
     [Description("Deletes entities by their ids")]
     public async Task DeleteEntities(IReadOnlyList<string> ids)
     {
+        var state = await stateFactory.Get();
         var notFound = ids.Where(x => state.Repositories.TryGetEntity(x) == null).ToList();
         if (notFound.Any())
         {
@@ -125,7 +137,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
         }
     }
 
-    private EventBase PrepareForUpsert<T>(ref T entity, out string verb)
+    private EventBase PrepareForUpsert<T>(State state, ref T entity, out string verb)
         where T : EntityBase
     {
         if (entity.Id == string.Empty)
@@ -137,10 +149,4 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
         verb = "Updating";
         return new Update(entity);
     }
-}
-
-public enum UpsertType
-{
-    Create,
-    Update,
 }

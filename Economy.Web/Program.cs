@@ -1,5 +1,6 @@
 using Economy.AiInterface;
 using Economy.Memory.Containers.State;
+using Economy.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 
@@ -10,11 +11,9 @@ builder.Services
     .AddRazorPages();
 
 builder.Services
-    .AddMemory();
-
-builder.Services
     .AddAudioTranscriptionService(builder.Configuration)
-    .AddFinancialKernel(builder.Configuration);
+    .AddFinancialKernel<StateUserGetter>(builder.Configuration)
+    .AddHttpContextAccessor();
 
 builder.Services.AddControllers();
 

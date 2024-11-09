@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using Economy.Memory.Models.EventSourcing;
 
-namespace Economy.Memory.Containers.State;
+namespace Economy.AiInterface.Scope;
 
 public class EventBaseConverter : JsonConverter<EventBase>
 {

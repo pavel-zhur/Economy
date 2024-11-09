@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using OpenAI.Audio;
 
-namespace Economy.AiInterface;
+namespace Economy.AiInterface.Transcription;
 
 public class TranscriptionService(IOptions<AiInterfaceOptions> aiInterfaceOptions)
 {

@@ -1,10 +1,11 @@
-﻿using Economy.Memory.Containers.State;
+﻿using Economy.AiInterface.Scope;
+using Economy.Memory.Containers.State;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class PrivacyModel(ILogger<PrivacyModel> logger, State state) : PageModel
+public class PrivacyModel(ILogger<PrivacyModel> logger, StateFactory stateFactory) : PageModel
 {
     public void OnGet()
     {
@@ -12,7 +13,7 @@ public class PrivacyModel(ILogger<PrivacyModel> logger, State state) : PageModel
 
     public async Task<RedirectResult> OnPostSave()
     {
-        await state.SaveToFile();
+        await stateFactory.Save();
         return Redirect("/Privacy");
     }
 }

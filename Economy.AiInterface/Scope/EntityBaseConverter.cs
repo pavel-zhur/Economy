@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using Economy.Memory.Models.State;
 
-namespace Economy.Memory.Containers.State;
+namespace Economy.AiInterface.Scope;
 
 public class EntityBaseConverter : JsonConverter<EntityBase>
 {

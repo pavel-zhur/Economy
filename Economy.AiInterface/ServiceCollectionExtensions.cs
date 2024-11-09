@@ -7,9 +7,9 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using OpenAI;
 using Economy.AiInterface.StateManagement;
-using Economy.Memory.Containers.State;
+using Economy.AiInterface.Scope;
+using Economy.AiInterface.Transcription;
 
 namespace Economy.AiInterface;
 
@@ -22,14 +22,15 @@ public static class ServiceCollectionExtensions
             .AddScoped<TranscriptionService>();
     }
 
-    public static IServiceCollection AddFinancialKernel(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddFinancialKernel<TStateUserGetter>(this IServiceCollection services, IConfiguration configuration)
+        where TStateUserGetter : class, IStateUserGetter
     {
         var tempOptions = configuration.GetSection(nameof(AiInterfaceOptions)).Get<AiInterfaceOptions>()!;
 
         services.AddOpenAIChatCompletion("gpt-4o-mini", tempOptions.ApiKey);
-        services.AddSingleton<FinancialPlugin>();
+        services.AddScoped<FinancialPlugin>();
         services.Configure<AiInterfaceOptions>(o => configuration.GetSection(nameof(AiInterfaceOptions)).Bind(o));
-        services.AddSingleton<KernelPluginCollection>(serviceProvider =>
+        services.AddScoped<KernelPluginCollection>(serviceProvider =>
             [
                 KernelPluginFactory.CreateFromObject(serviceProvider.GetRequiredService<FinancialPlugin>(), new JsonSerializerOptions
                 {
@@ -42,15 +43,18 @@ public static class ServiceCollectionExtensions
             ]
         );
 
-        services.AddMemory();
-        services.AddTransient(serviceProvider =>
+        services.AddSingleton<FactoriesMemory>();
+        services.AddScoped<StateFactory>();
+        services.AddScoped<IStateUserGetter, TStateUserGetter>();
+
+        services.AddScoped(serviceProvider =>
         {
             var kernel = new Kernel(serviceProvider, serviceProvider.GetRequiredService<KernelPluginCollection>());
             kernel.AutoFunctionInvocationFilters.Add(new ChatDebuggingFilter());
             return kernel;
         });
 
-        services.AddSingleton<Chat>();
+        services.AddScoped<ChatsFactory>();
 
         return services;
     }

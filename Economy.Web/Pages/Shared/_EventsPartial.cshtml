@@ -1,11 +1,15 @@
 ﻿@page
 @model Economy.Web.Pages.EventsModel
-@using Economy.Memory.Containers.State
-@inject State State
+@using Economy.AiInterface.Scope
+@inject StateFactory StateFactory
 
-@foreach (var @event in State.Events)
+@{
+    var state = await StateFactory.Get();
+}
+
+@foreach (var @event in state.Events)
 {
     <p>
-        @(@event.ToDetails(State.Repositories))
+        @(@event.ToDetails(state.Repositories))
     </p>
 }

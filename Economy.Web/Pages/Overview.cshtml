@@ -1,89 +1,90 @@
 ﻿@page
-@using Economy.Memory.Containers.State
+@using Economy.AiInterface.Scope
 @model Economy.Web.Pages.OverviewModel
-@inject State State
+@inject StateFactory StateFactory
 
 @{
     ViewData["Title"] = "Overview";
+    var state = await StateFactory.Get();
 }
 <h1>@ViewData["Title"]</h1>
 
 <h2>Wallets</h2>
-@foreach (var entity in State.Repositories.Wallets.GetAll())
+@foreach (var entity in state.Repositories.Wallets.GetAll())
 {
     <p>
-        @(entity.ToDetails(State.Repositories))
+        @(entity.ToDetails(state.Repositories))
     </p>
 }
 
 <h2>Currencies</h2>
-@foreach (var entity in State.Repositories.Currencies.GetAll())
+@foreach (var entity in state.Repositories.Currencies.GetAll())
 {
     <p>
-        @(entity.ToDetails(State.Repositories))
+        @(entity.ToDetails(state.Repositories))
     </p>
 }
 
 <h2>Events</h2>
-@foreach (var entity in State.Repositories.Events.GetAll())
+@foreach (var entity in state.Repositories.Events.GetAll())
 {
     <p>
-        @(entity.ToDetails(State.Repositories))
+        @(entity.ToDetails(state.Repositories))
     </p>
 }
 
 <h2>Categories</h2>
-@foreach (var entity in State.Repositories.Categories.GetAll())
+@foreach (var entity in state.Repositories.Categories.GetAll())
 {
     <p>
-        @(entity.ToDetails(State.Repositories))
+        @(entity.ToDetails(state.Repositories))
     </p>
 }
 
 <h2>Wallet Audits</h2>
-@foreach (var entity in State.Repositories.WalletAudits.GetAll())
+@foreach (var entity in state.Repositories.WalletAudits.GetAll())
 {
     <p>
-        @(entity.ToDetails(State.Repositories))
+        @(entity.ToDetails(state.Repositories))
     </p>
 }
 
 <h2>Budgets</h2>
-@foreach (var entity in State.Repositories.Budgets.GetAll())
+@foreach (var entity in state.Repositories.Budgets.GetAll())
 {
     <p>
-        @(entity.ToDetails(State.Repositories))
+        @(entity.ToDetails(state.Repositories))
     </p>
 }
 
 <h2>Actual Transactions</h2>
-@foreach (var entity in State.Repositories.ActualTransactions.GetAll())
+@foreach (var entity in state.Repositories.ActualTransactions.GetAll())
 {
     <p>
-        @(entity.ToDetails(State.Repositories))
+        @(entity.ToDetails(state.Repositories))
     </p>
 }
 
 <h2>Planned Transactions</h2>
-@foreach (var entity in State.Repositories.PlannedTransactions.GetAll())
+@foreach (var entity in state.Repositories.PlannedTransactions.GetAll())
 {
     <p>
-        @(entity.ToDetails(State.Repositories))
+        @(entity.ToDetails(state.Repositories))
     </p>
 }
 
 <h2>Conversions</h2>
-@foreach (var entity in State.Repositories.Conversions.GetAll())
+@foreach (var entity in state.Repositories.Conversions.GetAll())
 {
     <p>
-        @(entity.ToDetails(State.Repositories))
+        @(entity.ToDetails(state.Repositories))
     </p>
 }
 
 <h2>Transfers</h2>
-@foreach (var entity in State.Repositories.Transfers.GetAll())
+@foreach (var entity in state.Repositories.Transfers.GetAll())
 {
     <p>
-        @(entity.ToDetails(State.Repositories))
+        @(entity.ToDetails(state.Repositories))
     </p>
 }

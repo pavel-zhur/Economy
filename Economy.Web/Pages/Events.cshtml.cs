@@ -1,4 +1,3 @@
-using Economy.Memory.Containers.State;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -6,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace Economy.Web.Pages
 {
     [Authorize]
-    public class EventsModel(State state) : PageModel
+    public class EventsModel : PageModel
     {
         public void OnGet()
         {
