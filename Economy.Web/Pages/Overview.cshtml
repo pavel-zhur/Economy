@@ -56,8 +56,16 @@
     </p>
 }
 
-<h2>Transactions</h2>
-@foreach (var entity in State.Repositories.Transactions.GetAll())
+<h2>Actual Transactions</h2>
+@foreach (var entity in State.Repositories.ActualTransactions.GetAll())
+{
+    <p>
+        @(entity.ToDetails(State.Repositories))
+    </p>
+}
+
+<h2>Planned Transactions</h2>
+@foreach (var entity in State.Repositories.PlannedTransactions.GetAll())
 {
     <p>
         @(entity.ToDetails(State.Repositories))

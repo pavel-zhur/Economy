@@ -69,14 +69,24 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, State state)
         return budget;
     }
 
-    [KernelFunction("create_or_update_transaction")]
-    [Description("Creates a new transaction (empty id expected) or updates an existing one")]
-    [return: Description("The created or updated transaction")]
-    public async Task<Transaction> UpsertTransaction(Transaction transaction)
+    [KernelFunction("create_or_update_actual_transaction")]
+    [Description("Creates a new actual_transaction (empty id expected) or updates an existing one")]
+    [return: Description("The created or updated actual_transaction")]
+    public async Task<ActualTransaction> UpsertActualTransaction(ActualTransaction actualTransaction)
     {
-        state.Apply(PrepareForUpsert(ref transaction));
-        logger.LogInformation("Creating or updating transaction {Transaction}", transaction.ToDetails(state.Repositories));
-        return transaction;
+        state.Apply(PrepareForUpsert(ref actualTransaction));
+        logger.LogInformation("Creating or updating actual_transaction {ActualTransaction}", actualTransaction.ToDetails(state.Repositories));
+        return actualTransaction;
+    }
+
+    [KernelFunction("create_or_update_planned_transaction")]
+    [Description("Creates a new planned_transaction (empty id expected) or updates an existing one")]
+    [return: Description("The created or updated planned_transaction")]
+    public async Task<PlannedTransaction> UpsertPlannedTransaction(PlannedTransaction plannedTransaction)
+    {
+        state.Apply(PrepareForUpsert(ref plannedTransaction));
+        logger.LogInformation("Creating or updating planned_transaction {PlannedTransaction}", plannedTransaction.ToDetails(state.Repositories));
+        return plannedTransaction;
     }
 
     [KernelFunction("create_or_update_conversion")]

@@ -116,8 +116,7 @@ public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, A
 
     public override void Validate()
     {
-        Amounts.Validate();
-        Amounts.ValidatePositive();
+        Amounts.Validate(false, true, true);
 
         if (CheckTimestamp.Year < 2020 || CheckTimestamp.Year > 2040)
         {
@@ -134,31 +133,20 @@ public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, A
 
 public record Budget(
     string Id,
-    string? Name,
+    string Name,
     string? Description,
     string? ParentBudgetId,
     Date? StartDate,
-    Date? FinishDate,
-    BudgetPlannedAmounts? PlannedAmounts)
+    Date? FinishDate)
     : EntityBase(Id)
 {
     protected override IEnumerable<string?> GetForeignKeysDirty() => ParentBudgetId.Once();
 
     public override void Validate()
     {
-        if (Name != null && string.IsNullOrWhiteSpace(Name))
+        if (string.IsNullOrWhiteSpace(Name))
         {
-            throw new ArgumentException("Budget name must be null or not empty.");
-        }
-
-        if (Name == null && PlannedAmounts == null)
-        {
-            throw new ArgumentException("Budget must have either name or planned amounts.");
-        }
-
-        if (PlannedAmounts != null && ParentBudgetId == null)
-        {
-            throw new ArgumentException("Budget planned amounts must have a parent budget.");
+            throw new ArgumentException("Budget name must be not empty.");
         }
 
         if (Description != null && string.IsNullOrWhiteSpace(Description))
@@ -173,24 +161,49 @@ public record Budget(
         {
             throw new ArgumentException("Budget start date must be before finish date.");
         }
-
-        PlannedAmounts?.Validate();
     }
 
     public override string ToReferenceTitle(Repositories repositories)
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} d:({Description}) {(ParentBudgetId == null ? null : "p:" + repositories.Budgets[ParentBudgetId].Name)} [{StartDate} - {FinishDate}] {PlannedAmounts?.ToDetails(repositories).SelectSingle(x => $"pl:[{x}]")}";
+        => $"{Id} {Name} d:({Description}) {(ParentBudgetId == null ? null : "p:" + repositories.Budgets[ParentBudgetId].Name)} [{StartDate} - {FinishDate}]";
 }
 
-public record Transaction(
+public record PlannedTransaction(
+    string Id,
+    string? Description,
+    Amounts Amounts,
+    TransactionType Type,
+    Date? Date,
+    bool IsCompleted)
+    : EntityBase(Id)
+{
+    public override void Validate()
+    {
+        if (Description != null && string.IsNullOrWhiteSpace(Description))
+        {
+            throw new ArgumentException("Planned transaction description must be null or not empty.");
+        }
+
+        Amounts.Validate(false, false, true);
+        Date?.Validate();
+    }
+
+    public override string ToReferenceTitle(Repositories repositories)
+        => $"[{Id}]";
+
+    public override string ToDetails(Repositories repositories)
+        => $"{Amounts.ToDetails(repositories)} {Type} {(IsCompleted ? "100%" : "0%")} d:({Description})";
+}
+
+public record ActualTransaction(
     string Id,
     string Name,
     string? Description,
     DateTime Timestamp,
     TransactionType Type,
-    IReadOnlyList<TransactionEntry> Entries)
+    IReadOnlyList<ActualTransactionEntry> Entries)
     : EntityBase(Id)
 {
     protected override IEnumerable<string?> GetForeignKeysDirty() =>
@@ -205,22 +218,22 @@ public record Transaction(
     {
         if (string.IsNullOrWhiteSpace(Name))
         {
-            throw new ArgumentException("Transaction name must be not empty.");
+            throw new ArgumentException("Actual transaction name must be not empty.");
         }
 
         if (Description != null && string.IsNullOrWhiteSpace(Description))
         {
-            throw new ArgumentException("Transaction description must be null or not empty.");
+            throw new ArgumentException("Actual transaction description must be null or not empty.");
         }
 
         if (Timestamp.Year < 2020 || Timestamp.Year > 2040)
         {
-            throw new ArgumentException("Transaction timestamp must be between 2020 and 2040.");
+            throw new ArgumentException("Actual transaction timestamp must be between 2020 and 2040.");
         }
 
         if (Entries.AnyDuplicates(e => (e.WalletId, e.CategoryId), out _))
         {
-            throw new ArgumentException("Transaction entries must have unique wallet IDs.");
+            throw new ArgumentException("Actual transaction entries must have unique wallet IDs.");
         }
 
         foreach (var entry in Entries)
@@ -254,8 +267,8 @@ public record Conversion(
 
     public override void Validate()
     {
-        FromAmount.ValidatePositive();
-        ToAmount.ValidatePositive();
+        FromAmount.Validate(false, false, true);
+        ToAmount.Validate(false, false, true);
 
         if (FromAmount.CurrencyId == ToAmount.CurrencyId)
         {
@@ -291,8 +304,8 @@ public record Transfer(
 
     public override void Validate()
     {
-        TransferredAmount.ValidatePositive();
-        ConvertedAmount?.ValidatePositive();
+        TransferredAmount.Validate(false, false, true);
+        ConvertedAmount?.Validate(false, false, true);
 
         if (TransferredAmount.CurrencyId == ConvertedAmount?.CurrencyId)
         {
@@ -319,8 +332,9 @@ public record Transfer(
 
 // Sub-entities
 
-public record TransactionEntry(
+public record ActualTransactionEntry(
     string? BudgetId,
+    string? PlannedTransactionId,
     string? CategoryId,
     string? WalletId,
     string? Description,
@@ -330,30 +344,19 @@ public record TransactionEntry(
     {
         if (Description != null && string.IsNullOrWhiteSpace(Description))
         {
-            throw new ArgumentException("Transaction entry description must be null or not empty.");
+            throw new ArgumentException("ActualTransaction entry description must be null or not empty.");
         }
 
-        SpentAmounts.Validate();
-        SpentAmounts.ValidatePositive();
+        SpentAmounts.Validate(false, false, true);
+
+        if (BudgetId != null && PlannedTransactionId != null)
+        {
+            throw new ArgumentException("ActualTransaction entry must have either budget or planned transaction ID, not both.");
+        }
     }
 
     public string ToDetails(Repositories repositories)
         => $"{repositories.GetReferenceTitle(BudgetId)} {repositories.GetReferenceTitle(WalletId)} {repositories.GetReferenceTitle(CategoryId)} {SpentAmounts.ToDetails(repositories)}";
-}
-
-public record BudgetPlannedAmounts(
-    Amounts Amounts,
-    TransactionType Type,
-    bool IsCompleted)
-{
-    public void Validate()
-    {
-        Amounts.Validate();
-        Amounts.ValidatePositive();
-    }
-
-    public string ToDetails(Repositories repositories)
-        => $"{Amounts.ToDetails(repositories)} {Type} {(IsCompleted ? "100%" : "0%")}";
 }
 
 // Value objects
@@ -372,19 +375,16 @@ public enum TransactionType
 
 public class Amounts : List<Amount>
 {
-    public void Validate()
+    public void Validate(bool allowNegative, bool allowZero, bool allowPositive)
     {
         if (this.AnyDuplicates(a => a.CurrencyId, out _))
         {
             throw new ArgumentException("Amounts must have unique currency IDs.");
         }
-    }
 
-    public void ValidatePositive()
-    {
         foreach (var amount in this)
         {
-            amount.ValidatePositive();
+            amount.Validate(allowNegative, allowZero, allowPositive);
         }
     }
 
@@ -394,11 +394,21 @@ public class Amounts : List<Amount>
 
 public record struct Amount(string CurrencyId, decimal Value)
 {
-    public void ValidatePositive()
+    public void Validate(bool allowNegative, bool allowZero, bool allowPositive)
     {
-        if (Value <= 0)
+        if (Value < 0 && !allowNegative)
         {
-            throw new ArgumentException("Amount value must be positive.");
+            throw new ArgumentException("Amount value must be non-negative.");
+        }
+
+        if (Value == 0 && !allowZero)
+        {
+            throw new ArgumentException("Amount value must be non-zero.");
+        }
+
+        if (Value > 0 && !allowPositive)
+        {
+            throw new ArgumentException("Amount value must be non-positive.");
         }
     }
 

@@ -13,13 +13,14 @@ public class Repositories
     {
         Currencies = new Repository<Currency>(this, "C-");
         Wallets = new Repository<Wallet>(this, "W-");
-        WalletAudits = new Repository<WalletAudit>(this, "A-");
+        WalletAudits = new Repository<WalletAudit>(this, "WA-");
         Budgets = new BudgetsRepository(this, "B-");
-        Transactions = new Repository<Transaction>(this, "Tn-");
+        ActualTransactions = new Repository<ActualTransaction>(this, "AT-");
+        PlannedTransactions = new Repository<PlannedTransaction>(this, "PT-");
         Events = new Repository<Event>(this, "E-");
         Categories = new Repository<Category>(this, "Ca-");
         Conversions = new Repository<Conversion>(this, "Cv-");
-        Transfers = new Repository<Transfer>(this, "Tf-");
+        Transfers = new Repository<Transfer>(this, "T-");
 
         AllByPrefix = new Dictionary<string, IRepository>
         {
@@ -27,7 +28,8 @@ public class Repositories
             { Wallets.IdPrefix, Wallets },
             { WalletAudits.IdPrefix, WalletAudits },
             { Budgets.IdPrefix, Budgets },
-            { Transactions.IdPrefix, Transactions },
+            { ActualTransactions.IdPrefix, ActualTransactions },
+            { PlannedTransactions.IdPrefix, PlannedTransactions },
             { Events.IdPrefix, Events },
             { Categories.IdPrefix, Categories },
             { Conversions.IdPrefix, Conversions },
@@ -40,7 +42,8 @@ public class Repositories
             { typeof(Wallet), Wallets },
             { typeof(WalletAudit), WalletAudits },
             { typeof(Budget), Budgets },
-            { typeof(Transaction), Transactions },
+            { typeof(ActualTransaction), ActualTransactions },
+            { typeof(PlannedTransaction), PlannedTransactions },
             { typeof(Event), Events },
             { typeof(Category), Categories },
             { typeof(Conversion), Conversions },
@@ -52,7 +55,8 @@ public class Repositories
     public Repository<Wallet> Wallets { get; }
     public Repository<WalletAudit> WalletAudits { get; }
     public Repository<Budget> Budgets { get; }
-    public Repository<Transaction> Transactions { get; }
+    public Repository<ActualTransaction> ActualTransactions { get; }
+    public Repository<PlannedTransaction> PlannedTransactions { get; }
     public Repository<Event> Events { get; }
     public Repository<Category> Categories { get; }
     public Repository<Conversion> Conversions { get; }
