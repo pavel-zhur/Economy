@@ -8,9 +8,20 @@
 }
 <h1>@ViewData["Title"]</h1>
 
-@foreach (var @event in State.Events)
-{
-    <p>
-        @(@event.ToDetails(State.Repositories))
-    </p>
+<div id="events-container">
+    <partial name="_EventsPartial" />
+</div>
+
+<button id="reload-button">Reload Events</button>
+
+@section Scripts {
+    <script>
+        document.getElementById('reload-button').addEventListener('click', function() {
+            fetch('/Events?handler=Reload')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('events-container').innerHTML = html;
+                });
+        });
+    </script>
 }

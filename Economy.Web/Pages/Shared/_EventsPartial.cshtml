@@ -1,0 +1,11 @@
+﻿@page
+@model Economy.Web.Pages.EventsModel
+@using Economy.Memory.Containers.State
+@inject State State
+
+@foreach (var @event in State.Events)
+{
+    <p>
+        @(@event.ToDetails(State.Repositories))
+    </p>
+}
