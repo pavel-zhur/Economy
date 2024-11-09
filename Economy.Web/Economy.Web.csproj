@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="GoogleAuthenticator" Version="3.3.0-beta1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Economy.AiInterface\Economy.AiInterface.csproj" />
     <ProjectReference Include="..\Economy.Memory\Economy.Memory.csproj" />
   </ItemGroup>

@@ -1,0 +1,31 @@
+﻿@page
+@using Google.Authenticator
+@model Economy.Web.Pages.GoogleAuthenticatorTestModel
+@{
+    int i = 0;
+
+    var tfa = new TwoFactorAuthenticator();
+    var setupInfo = tfa.GenerateSetupCode("Test Two Factor", "completely.real@gmail.com", Model.Key, false, 3);
+
+    string qrCodeImageUrl = setupInfo.QrCodeSetupImageUrl;
+    string manualEntrySetupCode = setupInfo.ManualEntryKey;
+}
+
+<h1>Google Authenticator Test</h1>
+
+<div>
+    QR Code: <img src="@qrCodeImageUrl" />
+    Manual Entry: <p>@manualEntrySetupCode</p>
+</div>
+
+<form method="get">
+    <input type="text" asp-for="Code" />
+    <button type="submit">Verify</button>
+</form>
+
+@if (Model.IsValid.HasValue)
+{
+    <p>Validation Result: @(Model.IsValid.Value ? "Valid" : "Invalid")</p>
+}
+
+<p>Current key: @tfa.GetCurrentPIN(Model.Key, false)</p>
