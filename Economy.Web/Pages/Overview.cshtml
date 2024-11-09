@@ -9,23 +9,7 @@
 }
 <h1>@ViewData["Title"]</h1>
 
-<h2>Wallets</h2>
-@foreach (var entity in state.Repositories.Wallets.GetAll())
-{
-    <p>
-        @(entity.ToDetails(state.Repositories))
-    </p>
-}
-
-<h2>Currencies</h2>
-@foreach (var entity in state.Repositories.Currencies.GetAll())
-{
-    <p>
-        @(entity.ToDetails(state.Repositories))
-    </p>
-}
-
-<h2>Events</h2>
+<h3>Events</h3>
 @foreach (var entity in state.Repositories.Events.GetAll())
 {
     <p>
@@ -33,15 +17,7 @@
     </p>
 }
 
-<h2>Categories</h2>
-@foreach (var entity in state.Repositories.Categories.GetAll())
-{
-    <p>
-        @(entity.ToDetails(state.Repositories))
-    </p>
-}
-
-<h2>Wallet Audits</h2>
+<h3>Wallet Audits</h3>
 @foreach (var entity in state.Repositories.WalletAudits.GetAll())
 {
     <p>
@@ -49,7 +25,7 @@
     </p>
 }
 
-<h2>Budgets</h2>
+<h3>Budgets</h3>
 @foreach (var entity in state.Repositories.Budgets.GetAll())
 {
     <p>
@@ -57,7 +33,7 @@
     </p>
 }
 
-<h2>Actual Transactions</h2>
+<h3>Actual Transactions</h3>
 @foreach (var entity in state.Repositories.ActualTransactions.GetAll())
 {
     <p>
@@ -65,7 +41,7 @@
     </p>
 }
 
-<h2>Planned Transactions</h2>
+<h3>Planned Transactions</h3>
 @foreach (var entity in state.Repositories.PlannedTransactions.GetAll())
 {
     <p>
@@ -73,7 +49,7 @@
     </p>
 }
 
-<h2>Conversions</h2>
+<h3>Conversions</h3>
 @foreach (var entity in state.Repositories.Conversions.GetAll())
 {
     <p>
@@ -81,7 +57,7 @@
     </p>
 }
 
-<h2>Transfers</h2>
+<h3>Transfers</h3>
 @foreach (var entity in state.Repositories.Transfers.GetAll())
 {
     <p>

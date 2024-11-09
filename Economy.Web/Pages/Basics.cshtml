@@ -1,0 +1,38 @@
+﻿@page
+@inject StateFactory StateFactory
+@using Economy.AiInterface.Scope
+@model Economy.Web.Pages.BasicsModel
+@{
+    ViewData["Title"] = "Basics";
+    var state = await StateFactory.Get();
+}
+
+<h3>Wallets</h3>
+<ul>
+    @foreach (var entity in state.Repositories.Wallets.GetAll())
+    {
+        <li>
+            @(entity.ToDetails(state.Repositories))
+        </li>
+    }
+</ul>
+
+<h3>Currencies</h3>
+<ul>
+    @foreach (var entity in state.Repositories.Currencies.GetAll())
+    {
+        <li>
+            @(entity.ToDetails(state.Repositories))
+        </li>
+    }
+</ul>
+
+<h3>Categories</h3>
+<ul>
+    @foreach (var entity in state.Repositories.Categories.GetAll())
+    {
+        <li>
+            @(entity.ToDetails(state.Repositories))
+        </li>
+    }
+</ul>

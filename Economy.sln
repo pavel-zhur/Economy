@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Economy.Temp", "Economy.Tem
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Economy.Web", "Economy.Web\Economy.Web.csproj", "{542A2B7E-3E85-4E8E-9F7F-ECB08ACC6958}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy.AiInterface", "Economy.AiInterface\Economy.AiInterface.csproj", "{DFCB3320-CC8B-43C4-9382-5FB207C11472}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Economy.AiInterface", "Economy.AiInterface\Economy.AiInterface.csproj", "{DFCB3320-CC8B-43C4-9382-5FB207C11472}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
