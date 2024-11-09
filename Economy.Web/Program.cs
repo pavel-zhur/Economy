@@ -1,5 +1,7 @@
 using Economy.AiInterface;
 using Economy.Memory.Containers.State;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,20 @@ builder.Services
 
 builder.Services.AddControllers();
 
+// Add authentication services
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -31,6 +47,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// Add authentication and authorization middleware
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
