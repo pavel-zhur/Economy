@@ -10,7 +10,7 @@ public class ProfileModel : PageModel
 {
     public void OnGet()
     {
-        }
+    }
 
     public IActionResult OnPostLogin()
     {

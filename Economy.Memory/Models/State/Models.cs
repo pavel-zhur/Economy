@@ -454,7 +454,7 @@ public record struct Amount(string CurrencyId, decimal Value)
         }
     }
 
-    public string ToDetails(Repositories repositories) => $"{Value:###,###,###,###.##} {repositories.Currencies[CurrencyId].Abbreviation}";
+    public string ToDetails(Repositories repositories) => $"{Value:###,###,###,##0.##} {repositories.Currencies[CurrencyId].Abbreviation}";
 }
 
 [method: JsonConstructor]
