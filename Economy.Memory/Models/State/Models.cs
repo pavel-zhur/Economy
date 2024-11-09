@@ -180,7 +180,7 @@ public record Budget(
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} d:({Description}) {(ParentBudgetId == null ? null : "p:" + repositories.Budgets[ParentBudgetId].Name)} [{StartDate} - {FinishDate}]";
+        => $"{Id} {Name} d:({Description}) p:{repositories.GetReferenceTitle(ParentBudgetId)} [{StartDate} - {FinishDate}]";
 }
 
 [EntityType(EntityType.PlannedTransaction)]
@@ -188,6 +188,7 @@ public record Budget(
 public record PlannedTransaction(
     string Id,
     string? Description,
+    string BudgetId,
     Amounts Amounts,
     TransactionType Type,
     Date? Date,
@@ -209,10 +210,10 @@ public record PlannedTransaction(
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Amounts.ToDetails(repositories)} {Type} {(IsCompleted ? "100%" : "0%")} d:({Description})";
+        => $"{Id} {repositories.GetReferenceTitle(BudgetId)} {Date} {Amounts.ToDetails(repositories)} {Type} {(IsCompleted ? "100%" : "0%")} d:({Description})";
 
     protected override IEnumerable<string?> GetForeignKeysDirty()
-        => Amounts.Select(a => a.CurrencyId);
+        => Amounts.Select(a => a.CurrencyId).Append(BudgetId);
 }
 
 [EntityType(EntityType.ActualTransaction)]
