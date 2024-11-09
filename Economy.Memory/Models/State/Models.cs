@@ -19,6 +19,7 @@ public abstract record EntityBase(string Id)
 
 // Root entities
 
+[EntityType(EntityType.Currency)]
 [method: JsonConstructor]
 public record Currency(string Id, string LongName, string Abbreviation, string CurrencySymbol) : EntityBase(Id)
 {
@@ -47,6 +48,7 @@ public record Currency(string Id, string LongName, string Abbreviation, string C
         => $"{Id} {LongName} ({Abbreviation}, {CurrencySymbol})";
 }
 
+[EntityType(EntityType.Wallet)]
 [method: JsonConstructor]
 public record Wallet(string Id, string Name) : EntityBase(Id)
 {
@@ -65,6 +67,7 @@ public record Wallet(string Id, string Name) : EntityBase(Id)
         => $"{Id} {Name}";
 }
 
+[EntityType(EntityType.Event)]
 [method: JsonConstructor]
 public record Event(string Id, string Name, string? Description, string? BudgetId, Date Date) : EntityBase(Id)
 {
@@ -92,6 +95,7 @@ public record Event(string Id, string Name, string? Description, string? BudgetI
         => $"{Id} {Name} {repositories.GetReferenceTitle(BudgetId)} {Date} d:({Description})";
 }
 
+[EntityType(EntityType.Category)]
 [method: JsonConstructor]
 public record Category(string Id, string Name, string? Description) : EntityBase(Id)
 {
@@ -115,6 +119,7 @@ public record Category(string Id, string Name, string? Description) : EntityBase
         => $"{Id} {Name} d:({Description})";
 }
 
+[EntityType(EntityType.WalletAudit)]
 [method: JsonConstructor]
 public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, Amounts Amounts) : EntityBase(Id)
 {
@@ -137,6 +142,7 @@ public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, A
         => $"{Id} {repositories.GetReferenceTitle(WalletId)} {CheckTimestamp} [{Amounts.ToDetails(repositories)}]";
 }
 
+[EntityType(EntityType.Budget)]
 [method: JsonConstructor]
 public record Budget(
     string Id,
@@ -177,6 +183,7 @@ public record Budget(
         => $"{Id} {Name} d:({Description}) {(ParentBudgetId == null ? null : "p:" + repositories.Budgets[ParentBudgetId].Name)} [{StartDate} - {FinishDate}]";
 }
 
+[EntityType(EntityType.PlannedTransaction)]
 [method: JsonConstructor]
 public record PlannedTransaction(
     string Id,
@@ -208,6 +215,7 @@ public record PlannedTransaction(
         => Amounts.Select(a => a.CurrencyId);
 }
 
+[EntityType(EntityType.ActualTransaction)]
 [method: JsonConstructor]
 public record ActualTransaction(
     string Id,
@@ -262,6 +270,7 @@ public record ActualTransaction(
         => $"{Id} {Name} d:({Description}) {Timestamp} {Type} [{string.Join(", ", Entries.Select(e => e.ToDetails(repositories)))}]";
 }
 
+[EntityType(EntityType.Conversion)]
 [method: JsonConstructor]
 public record Conversion(
     string Id,
@@ -297,6 +306,7 @@ public record Conversion(
         => $"{Id} {repositories.GetReferenceTitle(FromWalletId)} {FromAmount.ToDetails(repositories)} -> {repositories.GetReferenceTitle(ToWalletId)} {ToAmount.ToDetails(repositories)}";
 }
 
+[EntityType(EntityType.Transfer)]
 [method: JsonConstructor]
 public record Transfer(
     string Id,
@@ -457,4 +467,18 @@ public record struct Date(int Year, int Month, int Day)
         var dateTime = new DateTime(Year, Month, Day).AddDays(i);
         return new Date(dateTime.Year, dateTime.Month, dateTime.Day);
     }
+}
+
+public enum EntityType
+{
+    Currency,
+    Wallet,
+    WalletAudit,
+    Budget,
+    PlannedTransaction,
+    ActualTransaction,
+    Event,
+    Category,
+    Conversion,
+    Transfer,
 }

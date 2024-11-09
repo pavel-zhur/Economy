@@ -1,11 +1,15 @@
-using Economy.AiInterface.Scope;
+using System.ComponentModel;
+using System.Text.Json;
+using Economy.Memory.Containers.State;
+using Economy.Memory.Models.State;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Chat;
 
 namespace Economy.AiInterface.StateManagement;
 
-public class Chat(ChatHistory chatHistory, Kernel kernel, IChatCompletionService chatCompletionService)
+public class Chat(ChatHistory chatHistory, Kernel kernel, IChatCompletionService chatCompletionService, State state)
 {
     private readonly OpenAIPromptExecutionSettings _openAiPromptExecutionSettings = new()
     {
@@ -14,6 +18,20 @@ public class Chat(ChatHistory chatHistory, Kernel kernel, IChatCompletionService
 
     public async Task<string> Go(string userInput)
     {
+        if (!chatHistory.Any())
+        {
+            var now = DateTime.UtcNow;
+            chatHistory.AddSystemMessage(JsonSerializer.Serialize(new
+            {
+                CurrentDate = new Date(now.Year, now.Month, now.Day),
+                CurrentDateTime = now,
+                Currencies = state.Repositories.Currencies.GetAll(),
+                Wallets = state.Repositories.Wallets.GetAll(),
+                ActiveBudgets = state.Repositories.Budgets.GetAll(),
+                Categories = state.Repositories.Categories.GetAll(),
+            }, ServiceCollectionExtensions.JsonSerializerOptions));
+        }
+
         // Add user input
         chatHistory.AddUserMessage(userInput);
 

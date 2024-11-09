@@ -137,6 +137,23 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
         }
     }
 
+    [KernelFunction("get_entities")]
+    [Description("Gets all entities of the specified type")]
+    public async Task<List<EntityBase>> GetEntities(EntityType entityType)
+    {
+        var state = await stateFactory.Get();
+        // todo: may return too many entries
+        return state.Repositories.GetRepository(entityType).GetAll().ToList();
+    }
+
+    [KernelFunction("get_entity_by_id")]
+    [Description("Gets an entity by its id")]
+    public async Task<EntityBase> GetEntityById(string id)
+    {
+        var state = await stateFactory.Get();
+        return state.Repositories.TryGetEntity(id) ?? throw new InvalidOperationException($"Entity not found: {id}.");
+    }
+
     private EventBase PrepareForUpsert<T>(State state, ref T entity, out string verb)
         where T : EntityBase
     {

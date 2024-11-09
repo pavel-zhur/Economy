@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Economy.Memory.Models;
 using Economy.Memory.Models.State;
 
 namespace Economy.Memory.Containers.Repositories;
@@ -36,19 +38,8 @@ public class Repositories
             { Transfers.IdPrefix, Transfers }
         };
 
-        AllByType = new Dictionary<Type, IRepository>
-        {
-            { typeof(Currency), Currencies },
-            { typeof(Wallet), Wallets },
-            { typeof(WalletAudit), WalletAudits },
-            { typeof(Budget), Budgets },
-            { typeof(ActualTransaction), ActualTransactions },
-            { typeof(PlannedTransaction), PlannedTransactions },
-            { typeof(Event), Events },
-            { typeof(Category), Categories },
-            { typeof(Conversion), Conversions },
-            { typeof(Transfer), Transfers }
-        };
+        AllByType = AllByPrefix.Values.ToDictionary(r => r.GetEntityType());
+        AllByEntityType = AllByType.ToDictionary(x => x.Key.GetCustomAttribute<EntityTypeAttribute>()!.EntityType, x => x.Value);
     }
     
     public Repository<Currency> Currencies { get; }
@@ -64,6 +55,7 @@ public class Repositories
 
     public IReadOnlyDictionary<string, IRepository> AllByPrefix { get; }
     public IReadOnlyDictionary<Type, IRepository> AllByType { get; }
+    public IReadOnlyDictionary<EntityType, IRepository> AllByEntityType { get; }
 
     public IReadOnlySet<(string from, string to)> ForeignKeys => _foreignKeys;
     public IEnumerable<string> GetIncomingForeignKeysTo(string to) => _incomingForeignKeysTo.GetValueOrDefault(to) ?? Enumerable.Empty<string>();
@@ -73,6 +65,7 @@ public class Repositories
 
     public IRepository? TryGetRepository(string entityId) => AllByPrefix.GetValueOrDefault(GetPrefix(entityId));
 
+    public IRepository GetRepository(EntityType entityType) => AllByEntityType[entityType];
     public IRepository GetRepository(string entityId) => AllByPrefix[GetPrefix(entityId)];
     public IRepository GetRepository<T>()
         where T : EntityBase

@@ -12,6 +12,15 @@ namespace Economy.AiInterface;
 
 public static class ServiceCollectionExtensions
 {
+    internal static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+    {
+        Converters =
+        {
+            new JsonStringEnumConverter(),
+        },
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+    };
+
     public static IServiceCollection AddAudioTranscriptionService(this IServiceCollection services, IConfiguration configuration)
     {
         return services
@@ -29,14 +38,7 @@ public static class ServiceCollectionExtensions
         services.Configure<AiInterfaceOptions>(o => configuration.GetSection(nameof(AiInterfaceOptions)).Bind(o));
         services.AddScoped<KernelPluginCollection>(serviceProvider =>
             [
-                KernelPluginFactory.CreateFromObject(serviceProvider.GetRequiredService<FinancialPlugin>(), new JsonSerializerOptions
-                {
-                    Converters =
-                    {
-                        new JsonStringEnumConverter(),
-                    },
-                    TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-                })
+                KernelPluginFactory.CreateFromObject(serviceProvider.GetRequiredService<FinancialPlugin>(), JsonSerializerOptions)
             ]
         );
 
