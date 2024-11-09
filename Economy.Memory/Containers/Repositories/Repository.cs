@@ -40,7 +40,7 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
             throw new InvalidOperationException($"Entity id {entity.Id} is not the next normal id, {nextNormalId} expected.");
         }
 
-        var unresolvedForeignKeys = entity.GetForeignKeys().Where(x => repositories.GetRepository(x).TryGetById(x) == null || x == entity.Id).ToList();
+        var unresolvedForeignKeys = entity.GetForeignKeys().Where(x => repositories.TryGetRepository(x)?.TryGetById(x) == null || x == entity.Id).ToList();
         if (unresolvedForeignKeys.Any())
         {
             throw new InvalidOperationException($"Entity has unresolved foreign keys: {string.Join(", ", unresolvedForeignKeys)}.");

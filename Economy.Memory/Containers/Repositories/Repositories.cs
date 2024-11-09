@@ -71,6 +71,8 @@ public class Repositories
 
     public string GetPrefix(string entityId) => entityId[..(entityId.IndexOf("-", StringComparison.Ordinal) + 1)];
 
+    public IRepository? TryGetRepository(string entityId) => AllByPrefix.GetValueOrDefault(GetPrefix(entityId));
+
     public IRepository GetRepository(string entityId) => AllByPrefix[GetPrefix(entityId)];
     public IRepository GetRepository<T>()
         where T : EntityBase

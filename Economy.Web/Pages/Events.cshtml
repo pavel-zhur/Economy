@@ -17,11 +17,64 @@
 @section Scripts {
     <script>
         document.getElementById('reload-button').addEventListener('click', function() {
+            const reloadButton = document.getElementById('reload-button');
+            const eventsContainer = document.getElementById('events-container');
+
+            // Change button text and disable it
+            reloadButton.textContent = 'Reloading...';
+            reloadButton.disabled = true;
+
+            // Add reloading class to the container
+            eventsContainer.classList.add('reloading');
+
             fetch('/Events?handler=Reload')
                 .then(response => response.text())
                 .then(html => {
-                    document.getElementById('events-container').innerHTML = html;
+                    // Update the container with new content
+                    eventsContainer.innerHTML = html;
+
+                    // Reset button text and enable it
+                    reloadButton.textContent = 'Reload Events';
+                    reloadButton.disabled = false;
+
+                    // Remove reloading class
+                    eventsContainer.classList.remove('reloading');
+                })
+                .catch(error => {
+                    // Handle error: clear container and set button text to "Error"
+                    eventsContainer.innerHTML = '';
+                    reloadButton.textContent = 'Error';
+                    reloadButton.disabled = false;
+
+                    // Remove reloading class
+                    eventsContainer.classList.remove('reloading');
                 });
         });
     </script>
 }
+
+<style>
+    .reloading {
+        background-color: lightgray;
+        position: relative;
+    }
+
+    .reloading::after {
+        content: ' ';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 30px;
+        height: 30px;
+        border: 4px solid #fff;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        transform: translate(-50%, -50%);
+    }
+
+    @@keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+</style>

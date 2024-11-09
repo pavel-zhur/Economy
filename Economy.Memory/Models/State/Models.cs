@@ -1,5 +1,6 @@
 ﻿using Economy.Memory.Containers.Repositories;
 using OneShelf.Common;
+using System.Text.Json.Serialization;
 
 namespace Economy.Memory.Models.State;
 
@@ -18,6 +19,7 @@ public abstract record EntityBase(string Id)
 
 // Root entities
 
+[method: JsonConstructor]
 public record Currency(string Id, string LongName, string Abbreviation, string CurrencySymbol) : EntityBase(Id)
 {
     public override void Validate()
@@ -45,6 +47,7 @@ public record Currency(string Id, string LongName, string Abbreviation, string C
         => $"{Id} {LongName} ({Abbreviation}, {CurrencySymbol})";
 }
 
+[method: JsonConstructor]
 public record Wallet(string Id, string Name) : EntityBase(Id)
 {
     public override void Validate()
@@ -62,6 +65,7 @@ public record Wallet(string Id, string Name) : EntityBase(Id)
         => $"{Id} {Name}";
 }
 
+[method: JsonConstructor]
 public record Event(string Id, string Name, string? Description, string? BudgetId, Date Date) : EntityBase(Id)
 {
     protected override IEnumerable<string?> GetForeignKeysDirty() => BudgetId.Once();
@@ -88,6 +92,7 @@ public record Event(string Id, string Name, string? Description, string? BudgetI
         => $"{Id} {Name} {repositories.GetReferenceTitle(BudgetId)} {Date} d:({Description})";
 }
 
+[method: JsonConstructor]
 public record Category(string Id, string Name, string? Description) : EntityBase(Id)
 {
     public override void Validate()
@@ -110,6 +115,7 @@ public record Category(string Id, string Name, string? Description) : EntityBase
         => $"{Id} {Name} d:({Description})";
 }
 
+[method: JsonConstructor]
 public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, Amounts Amounts) : EntityBase(Id)
 {
     protected override IEnumerable<string?> GetForeignKeysDirty() => Amounts.Select(a => a.CurrencyId).Append(WalletId);
@@ -131,6 +137,7 @@ public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, A
         => $"{Id} {repositories.GetReferenceTitle(WalletId)} {CheckTimestamp} [{Amounts.ToDetails(repositories)}]";
 }
 
+[method: JsonConstructor]
 public record Budget(
     string Id,
     string Name,
@@ -170,6 +177,7 @@ public record Budget(
         => $"{Id} {Name} d:({Description}) {(ParentBudgetId == null ? null : "p:" + repositories.Budgets[ParentBudgetId].Name)} [{StartDate} - {FinishDate}]";
 }
 
+[method: JsonConstructor]
 public record PlannedTransaction(
     string Id,
     string? Description,
@@ -195,8 +203,12 @@ public record PlannedTransaction(
 
     public override string ToDetails(Repositories repositories)
         => $"{Amounts.ToDetails(repositories)} {Type} {(IsCompleted ? "100%" : "0%")} d:({Description})";
+
+    protected override IEnumerable<string?> GetForeignKeysDirty()
+        => Amounts.Select(a => a.CurrencyId);
 }
 
+[method: JsonConstructor]
 public record ActualTransaction(
     string Id,
     string Name,
@@ -212,6 +224,7 @@ public record ActualTransaction(
             e.WalletId,
             e.BudgetId,
             e.CategoryId,
+            e.PlannedTransactionId,
         }.Concat(e.Amounts.Select(a => a.CurrencyId)))!;
 
     public override void Validate()
@@ -249,6 +262,7 @@ public record ActualTransaction(
         => $"{Id} {Name} d:({Description}) {Timestamp} {Type} [{string.Join(", ", Entries.Select(e => e.ToDetails(repositories)))}]";
 }
 
+[method: JsonConstructor]
 public record Conversion(
     string Id,
     string FromWalletId,
@@ -283,6 +297,7 @@ public record Conversion(
         => $"{Id} {repositories.GetReferenceTitle(FromWalletId)} {FromAmount.ToDetails(repositories)} -> {repositories.GetReferenceTitle(ToWalletId)} {ToAmount.ToDetails(repositories)}";
 }
 
+[method: JsonConstructor]
 public record Transfer(
     string Id,
     string FromBudgetId,
@@ -332,6 +347,7 @@ public record Transfer(
 
 // Sub-entities
 
+[method: JsonConstructor]
 public record ActualTransactionEntry(
     string? Name,
     string? Description,
@@ -398,6 +414,7 @@ public class Amounts : List<Amount>
         => string.Join(", ", this.Select(a => a.ToDetails(repositories)));
 }
 
+[method: JsonConstructor]
 public record struct Amount(string CurrencyId, decimal Value)
 {
     public void Validate(bool allowNegative, bool allowZero, bool allowPositive)
@@ -421,6 +438,7 @@ public record struct Amount(string CurrencyId, decimal Value)
     public string ToDetails(Repositories repositories) => $"{Value} {repositories.Currencies[CurrencyId].Abbreviation}";
 }
 
+[method: JsonConstructor]
 public record struct Date(int Year, int Month, int Day)
 {
     public void Validate()

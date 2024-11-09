@@ -2,5 +2,11 @@
 
 public class StateFactory
 {
-    public State CreateEmpty() => new();
+    public State CreateEmpty()
+    {
+        var empty = new State();
+        // todo: async
+        empty.LoadFromFile().Wait();
+        return empty;
+    }
 }

@@ -1,19 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Economy.Memory.Containers.State;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class PrivacyModel : PageModel
+public class PrivacyModel(ILogger<PrivacyModel> logger, State state) : PageModel
 {
-    private readonly ILogger<PrivacyModel> _logger;
-
-    public PrivacyModel(ILogger<PrivacyModel> logger)
-    {
-        _logger = logger;
-    }
-
     public void OnGet()
     {
+    }
+
+    public async Task<RedirectResult> OnPostSave()
+    {
+        await state.SaveToFile();
+        return Redirect("/Privacy");
     }
 }
 
