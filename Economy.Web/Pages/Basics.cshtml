@@ -8,14 +8,25 @@
 }
 
 <h3>Wallets</h3>
-<ul>
-    @foreach (var entity in state.Repositories.Wallets.GetAll())
-    {
-        <li>
-            @(entity.ToDetails(state.Repositories))
-        </li>
-    }
-</ul>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Wallet</th>
+                <th>Latest Inventory</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entity in state.Repositories.Wallets.GetAll())
+            {
+                <tr>
+                    <td>@(entity.ToDetails(state.Repositories))</td>
+                    <td>@state.Repositories.WalletAudits.GetAll().Where(x => x.WalletId == entity.Id).MaxBy(x => x.CheckTimestamp)?.Amounts.ToDetails(state.Repositories)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
 <h3>Currencies</h3>
 <ul>
