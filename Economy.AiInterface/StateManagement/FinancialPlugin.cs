@@ -122,7 +122,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
 
         foreach (var id in ids)
         {
-            state.Apply(new Deletion(id));
+            state.Apply(new Deletion(id, DateTime.UtcNow));
         }
     }
 
@@ -149,10 +149,10 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
         if (entity.Id == string.Empty)
         {
             verb = "Creating";
-            return new Creation(entity = entity with { Id = state.Repositories.GetRepository<T>().GetNextNormalId() });
+            return new Creation(entity = entity with { Id = state.Repositories.GetRepository<T>().GetNextNormalId() }, DateTime.UtcNow);
         }
 
         verb = "Updating";
-        return new Update(entity);
+        return new Update(entity, DateTime.UtcNow);
     }
 }
