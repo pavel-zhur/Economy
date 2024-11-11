@@ -2,6 +2,8 @@ using Economy.AiInterface;
 using Economy.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +33,22 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
+
+// Configure the default culture
+var customCulture = new CultureInfo("en-US")
+{
+    DateTimeFormat = { ShortDatePattern = "dd.MM.yyyy", LongTimePattern = "HH:mm" },
+    NumberFormat = { NumberDecimalSeparator = ".", NumberGroupSeparator = "," }
+};
+
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(customCulture),
+    SupportedCultures = new List<CultureInfo> { customCulture },
+    SupportedUICultures = new List<CultureInfo> { customCulture }
+};
+
+app.UseRequestLocalization(localizationOptions);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

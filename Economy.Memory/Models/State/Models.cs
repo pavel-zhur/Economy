@@ -21,7 +21,7 @@ public abstract record EntityBase(string Id)
 
 [EntityType(EntityType.Currency)]
 [method: JsonConstructor]
-public record Currency(string Id, string LongName, string Abbreviation, string CurrencySymbol) : EntityBase(Id)
+public record Currency(string Id, string LongName, string Abbreviation, string CurrencySymbol, CurrencyCustomDisplayUnit? CustomDisplayUnit) : EntityBase(Id)
 {
     public override void Validate()
     {
@@ -45,7 +45,7 @@ public record Currency(string Id, string LongName, string Abbreviation, string C
         => $"[{Id} {Abbreviation}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {LongName} ({Abbreviation}, {CurrencySymbol})";
+        => $"{Id} {LongName} ({Abbreviation}, {CurrencySymbol}) {CustomDisplayUnit}";
 }
 
 [EntityType(EntityType.Wallet)]
@@ -455,7 +455,25 @@ public record struct Amount(string CurrencyId, decimal Value)
         }
     }
 
-    public string ToDetails(Repositories repositories) => $"{Value:###,###,###,##0.##} {repositories.Currencies[CurrencyId].Abbreviation}";
+    public string ToDetails(Repositories repositories)
+    {
+        var currency = repositories.Currencies[CurrencyId];
+        var value = Value;
+        string? prefix = null;
+        switch (currency.CustomDisplayUnit)
+        {
+            case CurrencyCustomDisplayUnit.Thousands:
+                value /= 1000;
+                prefix = "k";
+                break;
+            case CurrencyCustomDisplayUnit.Millions:
+                value /= 1_000_000;
+                prefix = "m";
+                break;
+        }
+
+        return $"{value.ToString("###,###,###,##0.##")} {prefix}{currency.Abbreviation}";
+    }
 }
 
 [method: JsonConstructor]
@@ -502,4 +520,10 @@ public enum EntityType
     Category,
     Conversion,
     Transfer,
+}
+
+public enum CurrencyCustomDisplayUnit
+{
+    Thousands,
+    Millions,
 }
