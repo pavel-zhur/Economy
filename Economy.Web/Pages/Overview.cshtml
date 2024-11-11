@@ -10,7 +10,7 @@
 <h1>@ViewData["Title"]</h1>
 
 <h3>Events</h3>
-@foreach (var entity in state.Repositories.Events.GetAll())
+@foreach (var entity in state.Repositories.Events.GetAll().OrderBy(x => x.Id))
 {
     <p>
         @(entity.ToDetails(state.Repositories))
@@ -18,7 +18,7 @@
 }
 
 <h3>Wallet Audits</h3>
-@foreach (var entity in state.Repositories.WalletAudits.GetAll())
+@foreach (var entity in state.Repositories.WalletAudits.GetAll().OrderBy(x => x.Id))
 {
     <p>
         @(entity.ToDetails(state.Repositories))
@@ -26,7 +26,7 @@
 }
 
 <h3>Plans</h3>
-@foreach (var entity in state.Repositories.Plans.GetAll())
+@foreach (var entity in state.Repositories.Plans.GetAll().OrderBy(x => x.Id))
 {
     <p>
         @(entity.ToDetails(state.Repositories))
@@ -34,7 +34,7 @@
 }
 
 <h3>Transactions</h3>
-@foreach (var entity in state.Repositories.Transactions.GetAll())
+@foreach (var entity in state.Repositories.Transactions.GetAll().OrderBy(x => x.Id))
 {
     <p>
         @(entity.ToDetails(state.Repositories))
@@ -42,7 +42,7 @@
 }
 
 <h3>Conversions</h3>
-@foreach (var entity in state.Repositories.Conversions.GetAll())
+@foreach (var entity in state.Repositories.Conversions.GetAll().OrderBy(x => x.Id))
 {
     <p>
         @(entity.ToDetails(state.Repositories))
@@ -50,7 +50,7 @@
 }
 
 <h3>Transfers</h3>
-@foreach (var entity in state.Repositories.Transfers.GetAll())
+@foreach (var entity in state.Repositories.Transfers.GetAll().OrderBy(x => x.Id))
 {
     <p>
         @(entity.ToDetails(state.Repositories))

@@ -98,7 +98,7 @@ public record Event(int Id, string Name, string? SpecialNotes, int? PlanId, Date
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId, GetEntityType())} {Date} n:({SpecialNotes})";
+        => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Date} n:({SpecialNotes})";
 }
 
 [EntityType(EntityType.Category)]
@@ -158,11 +158,10 @@ public record Plan(
     Date? StartDate,
     Date? FinishDate,
     Schedule? Schedule,
-    Amounts Amounts,
-    TransactionType Type)
+    PlanVolume? Volume)
     : EntityBase(Id)
 {
-    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => Amounts.GetForeignKeysDirty().Append(ParentPlanId.ToEntityFullId(EntityType.Plan));
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => (Volume?.Amounts.GetForeignKeysDirty() ?? Enumerable.Empty<EntityFullId?>()).Append(ParentPlanId.ToEntityFullId(EntityType.Plan));
 
     public override void Validate(Repositories repositories)
     {
@@ -190,14 +189,14 @@ public record Plan(
             throw new ArgumentException("A plan with a schedule may not have parents with schedules.");
         }
 
-        Amounts.Validate(false, false, true);
+        Volume?.Amounts.Validate(false, false, true);
     }
 
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} n:({SpecialNotes}) p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} [{StartDate} - {FinishDate}] {Amounts.ToDetails(repositories)} {Type} {Schedule}";
+        => $"{Id} {Name} n:({SpecialNotes}) p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} [{StartDate} - {FinishDate}] {Volume?.Amounts.ToDetails(repositories)} {Volume?.Type} {Schedule}";
 }
 
 [EntityType(EntityType.Transaction)]
@@ -261,7 +260,8 @@ public record Conversion(
     int FromWalletId,
     Amount FromAmount,
     int ToWalletId,
-    Amount ToAmount)
+    Amount ToAmount,
+    DateTime DateAndTime)
     : EntityBase(Id)
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
@@ -382,6 +382,8 @@ public enum TransactionType
     Income,
     Expense,
 }
+
+public record PlanVolume(TransactionType Type, Amounts Amounts);
 
 [Obsolete("Refactor")]
 public class Amounts : List<Amount>

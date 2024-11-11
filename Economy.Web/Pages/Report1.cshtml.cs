@@ -52,11 +52,10 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             {
                 TransactionType transactionType;
                 ActualMatch match;
-                if (actualTransactionEntry.PlanId != null)
+                if (actualTransactionEntry.PlanId != null && State.Repositories.Plans[actualTransactionEntry.PlanId.Value] is { Volume: not null } plannedTransaction)
                 {
                     var planId = actualTransactionEntry.PlanId.Value;
-                    var plannedTransaction = State.Repositories.Plans[planId];
-                    transactionType = plannedTransaction.Type;
+                    transactionType = plannedTransaction.Volume!.Type;
                     match = new PlannedAndActualMatch
                     {
                         Planned = plannedTransaction,
@@ -89,7 +88,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             }
         }
 
-        foreach (var plannedTransaction in State.Repositories.Plans.GetAll())
+        foreach (var plannedTransaction in State.Repositories.Plans.GetAll().Where(x => x.Volume != null))
         {
             var matches = plannedTransactionMatches.GetValueOrDefault(plannedTransaction.Id);
             MatchBase match;
@@ -97,12 +96,12 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             {
                 var remainder = new Amounts
                 {
-                    plannedTransaction.Amounts,
+                    plannedTransaction.Volume!.Amounts,
                 };
 
                 foreach (var actualMatch in matches)
                 {
-                    remainder.Add(actualMatch.Entry.Amounts, actualMatch.Actual.Type == plannedTransaction.Type);
+                    remainder.Add(actualMatch.Entry.Amounts, actualMatch.Actual.Type == plannedTransaction.Volume.Type);
                 }
 
                 remainder.RemoveAll(x => x.Value < 0);
@@ -128,7 +127,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
             var row = FindRow(FindNearestParentPlan(State, plannedTransaction.Id, x => x.StartDate.HasValue)?.StartDate ?? new Date());
 
-            (plannedTransaction.Type switch
+            (plannedTransaction.Volume.Type switch
             {
                 TransactionType.Expense => row.Expenses,
                 TransactionType.Income => row.Incomes,

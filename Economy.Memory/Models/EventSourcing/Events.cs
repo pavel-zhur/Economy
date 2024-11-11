@@ -21,12 +21,12 @@ public record Creation(EntityBase Entity, DateTime CreatedOn) : EventBase(Create
 public record Update(EntityBase Entity, DateTime CreatedOn) : EventBase(CreatedOn)
 {
     public override string ToDetails(Repositories repositories) =>
-        $"Updated {Entity.GetEntityType()} {Entity.ToDetails(repositories)} @{{base.ToDetails(repositories)}}";
+        $"Updated {Entity.GetEntityType()} {Entity.ToDetails(repositories)} @{base.ToDetails(repositories)}";
 }
 
 [method: JsonConstructor]
 public record Deletion(EntityFullId EntityFullId, DateTime CreatedOn) : EventBase(CreatedOn)
 {
     public override string ToDetails(Repositories repositories) =>
-        $"Deleted {EntityFullId} @{{base.ToDetails(repositories)}}";
+        $"Deleted {EntityFullId} @{base.ToDetails(repositories)}";
 }

@@ -34,7 +34,7 @@ public class PlansRepository(Repositories repositories)
 
     public IEnumerable<(Plan plan, int depth)> GetPlanTree(int? parentId = null, int depth = 0)
     {
-        foreach (var childPlan in GetAll().Where(b => b.ParentPlanId == parentId).ToList())
+        foreach (var childPlan in GetAll().Where(b => b.ParentPlanId == parentId).OrderBy(x => x.Id).ToList())
         {
             yield return (childPlan, depth);
             foreach (var grandChildPlan in GetPlanTree(childPlan.Id, depth + 1))

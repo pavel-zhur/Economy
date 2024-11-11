@@ -17,11 +17,11 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var entity in state.Repositories.Wallets.GetAll())
+            @foreach (var entity in state.Repositories.Wallets.GetAll().OrderBy(x => x.Id))
             {
                 <tr>
                     <td>@(entity.ToDetails(state.Repositories))</td>
-                    <td>@state.Repositories.WalletAudits.GetAll().Where(x => x.WalletId == entity.Id).MaxBy(x => x.CheckDateAndTime)?.Amounts.ToDetails(state.Repositories)</td>
+                    <td>@state.Repositories.WalletAudits.GetAll().Where(x => x.WalletId == entity.Id).OrderByDescending(x => x.CheckDateAndTime).ThenByDescending(x => x.Id).FirstOrDefault()?.Amounts.ToDetails(state.Repositories)</td>
                 </tr>
             }
         </tbody>
@@ -30,7 +30,7 @@
 
 <h3>Currencies</h3>
 <ul>
-    @foreach (var entity in state.Repositories.Currencies.GetAll())
+    @foreach (var entity in state.Repositories.Currencies.GetAll().OrderBy(x => x.Id))
     {
         <li>
             @(entity.ToDetails(state.Repositories))
@@ -40,7 +40,7 @@
 
 <h3>Categories</h3>
 <ul>
-    @foreach (var entity in state.Repositories.Categories.GetAll())
+    @foreach (var entity in state.Repositories.Categories.GetAll().OrderBy(x => x.Id))
     {
         <li>
             @(entity.ToDetails(state.Repositories))
