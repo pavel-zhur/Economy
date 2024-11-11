@@ -52,7 +52,7 @@ public class FactoriesMemory
 
     private static async Task SaveToFile(State state, string userKey)
     {
-        await File.WriteAllTextAsync(GetFileName(userKey), JsonSerializer.Serialize(state.Events, JsonSerializerOptions));
+        await File.WriteAllTextAsync(GetFileName(userKey), JsonSerializer.Serialize(new SerializedEvents(2, state.Events), JsonSerializerOptions));
     }
 
     private static string GetFileName(string userKey)
@@ -70,10 +70,12 @@ public class FactoriesMemory
             return;
         }
 
-        var events = JsonSerializer.Deserialize<List<EventBase>>(await File.ReadAllTextAsync(fileName), JsonSerializerOptions);
-        foreach (var @event in events!)
+        var events = JsonSerializer.Deserialize<SerializedEvents>(await File.ReadAllTextAsync(fileName), JsonSerializerOptions);
+        foreach (var @event in events!.Events)
         {
             state.Apply(@event);
         }
     }
+
+    private record SerializedEvents(int Version, List<EventBase> Events);
 }
