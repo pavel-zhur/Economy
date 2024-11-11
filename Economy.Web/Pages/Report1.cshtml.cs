@@ -52,9 +52,9 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             {
                 TransactionType transactionType;
                 ActualMatch match;
-                if (actualTransactionEntry.PlannedTransactionId != null)
+                if (actualTransactionEntry.PlanId != null)
                 {
-                    var plannedTransaction = State.Repositories.Budgets[actualTransactionEntry.PlannedTransactionId];
+                    var plannedTransaction = State.Repositories.Plans[actualTransactionEntry.PlanId];
                     transactionType = plannedTransaction.Type;
                     match = new PlannedAndActualMatch
                     {
@@ -64,9 +64,9 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                         Negative = actualTransaction.Type != transactionType,
                     };
 
-                    (plannedTransactionMatches.TryGetValue(actualTransactionEntry.PlannedTransactionId, out var list) 
+                    (plannedTransactionMatches.TryGetValue(actualTransactionEntry.PlanId, out var list) 
                             ? list
-                            : plannedTransactionMatches[actualTransactionEntry.PlannedTransactionId] = new())
+                            : plannedTransactionMatches[actualTransactionEntry.PlanId] = new())
                             .Add(match);
                 }
                 else
@@ -88,7 +88,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             }
         }
 
-        foreach (var plannedTransaction in State.Repositories.Budgets.GetAll())
+        foreach (var plannedTransaction in State.Repositories.Plans.GetAll())
         {
             var matches = plannedTransactionMatches.GetValueOrDefault(plannedTransaction.Id);
             MatchBase match;
@@ -125,7 +125,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                 };
             }
 
-            var row = FindRow(FindNearestParentBudget(State, plannedTransaction.Id, x => x.StartDate.HasValue).StartDate!.Value);
+            var row = FindRow(FindNearestParentPlan(State, plannedTransaction.Id, x => x.StartDate.HasValue).StartDate!.Value);
 
             (plannedTransaction.Type switch
             {
@@ -138,15 +138,15 @@ public class Report1Model(StateFactory stateFactory) : PageModel
         Rows.AddRange(rows.Values.Append(before).Append(after).OrderBy(x => x.Date));
     }
 
-    private Budget FindNearestParentBudget(State state, string budgetId, Func<Budget, bool> budgetSelector)
+    private Plan FindNearestParentPlan(State state, string planId, Func<Plan, bool> planSelector)
     {
-        var budget = state.Repositories.Budgets[budgetId];
-        while (!budgetSelector(budget))
+        var plan = state.Repositories.Plans[planId];
+        while (!planSelector(plan))
         {
-            budget = state.Repositories.Budgets[budget.ParentBudgetId!];
+            plan = state.Repositories.Plans[plan.ParentPlanId!];
         }
 
-        return budget;
+        return plan;
     }
 
     public class Row
@@ -161,7 +161,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
     public class PlannedAndActualMatch : ActualMatch
     {
         public required bool Negative { get; init; }
-        public required Budget Planned { get; init; }
+        public required Plan Planned { get; init; }
     }
 
     public class ActualMatch : MatchBase
@@ -172,12 +172,12 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
     public class PlannedRemainderMatch : MatchBase
     {
-        public required Budget Planned { get; init; }
+        public required Plan Planned { get; init; }
         public required Amounts Remainder { get; init; }
     }
 
     public class PlannedMatch : MatchBase
     {
-        public required Budget Planned { get; init; }
+        public required Plan Planned { get; init; }
     }
 }

@@ -25,8 +25,8 @@
     </p>
 }
 
-<h3>Budgets</h3>
-@foreach (var entity in state.Repositories.Budgets.GetAll())
+<h3>Plans</h3>
+@foreach (var entity in state.Repositories.Plans.GetAll())
 {
     <p>
         @(entity.ToDetails(state.Repositories))

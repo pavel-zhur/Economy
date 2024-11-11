@@ -10,10 +10,10 @@
 @switch (Model)
 {
     case Report1Model.PlannedAndActualMatch match:
-        <span>@Constants.Transaction @(match.Negative ? Constants.Minus : null)@match.Entry.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.Entry.BudgetId) @match.Entry.Name @match.Entry.SpecialNotes @match.Actual.Name @match.Actual.SpecialNotes / @Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
+        <span>@Constants.Transaction @(match.Negative ? Constants.Minus : null)@match.Entry.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.Entry.PlanId) @match.Entry.Name @match.Entry.SpecialNotes @match.Actual.Name @match.Actual.SpecialNotes / @Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
         break;
     case Report1Model.ActualMatch match:
-        <span>@Constants.Transaction @match.Entry.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.Entry.BudgetId) @match.Entry.Name @match.Entry.SpecialNotes @match.Actual.Name @match.Actual.SpecialNotes</span>
+        <span>@Constants.Transaction @match.Entry.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.Entry.PlanId) @match.Entry.Name @match.Entry.SpecialNotes @match.Actual.Name @match.Actual.SpecialNotes</span>
         break;
     case Report1Model.PlannedMatch match:
         <span>@Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>

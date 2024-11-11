@@ -65,15 +65,15 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
         return walletAudit;
     }
 
-    [KernelFunction("create_or_update_budget")]
-    [Description("Creates a new budget (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
-    [return: Description("The created (with id assigned) or updated budget")]
-    public async Task<Budget> UpsertBudget(Budget budget)
+    [KernelFunction("create_or_update_plan")]
+    [Description("Creates a new plan (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated plan")]
+    public async Task<Plan> UpsertPlan(Plan plan)
     {
         var state = await stateFactory.Get();
-        state.Apply(PrepareForUpsert(state, ref budget, out var verb));
-        logger.LogInformation("{verb} budget {Budget}", verb, budget.ToDetails(state.Repositories));
-        return budget;
+        state.Apply(PrepareForUpsert(state, ref plan, out var verb));
+        logger.LogInformation("{verb} plan {Plan}", verb, plan.ToDetails(state.Repositories));
+        return plan;
     }
 
     [KernelFunction("create_or_update_transaction")]

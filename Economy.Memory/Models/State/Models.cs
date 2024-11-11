@@ -69,9 +69,9 @@ public record Wallet(string Id, string Name) : EntityBase(Id)
 
 [EntityType(EntityType.Event)]
 [method: JsonConstructor]
-public record Event(string Id, string Name, string? SpecialNotes, string? BudgetId, Date Date) : EntityBase(Id)
+public record Event(string Id, string Name, string? SpecialNotes, string? PlanId, Date Date) : EntityBase(Id)
 {
-    protected override IEnumerable<string?> GetForeignKeysDirty() => BudgetId.Once();
+    protected override IEnumerable<string?> GetForeignKeysDirty() => PlanId.Once();
 
     public override void Validate(Repositories repositories)
     {
@@ -92,7 +92,7 @@ public record Event(string Id, string Name, string? SpecialNotes, string? Budget
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} {repositories.GetReferenceTitle(BudgetId)} {Date} n:({SpecialNotes})";
+        => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId)} {Date} n:({SpecialNotes})";
 }
 
 [EntityType(EntityType.Category)]
@@ -142,13 +142,13 @@ public record WalletAudit(string Id, string WalletId, DateTime CheckDateAndTime,
         => $"{Id} {repositories.GetReferenceTitle(WalletId)} {CheckDateAndTime} [{Amounts.ToDetails(repositories)}]";
 }
 
-[EntityType(EntityType.Budget)]
+[EntityType(EntityType.Plan)]
 [method: JsonConstructor]
-public record Budget(
+public record Plan(
     string Id,
     string Name,
     string? SpecialNotes,
-    string? ParentBudgetId,
+    string? ParentPlanId,
     Date? StartDate,
     Date? FinishDate,
     Schedule? Schedule,
@@ -156,18 +156,18 @@ public record Budget(
     TransactionType Type)
     : EntityBase(Id)
 {
-    protected override IEnumerable<string?> GetForeignKeysDirty() => Amounts.Select(a => a.CurrencyId).Append(ParentBudgetId);
+    protected override IEnumerable<string?> GetForeignKeysDirty() => Amounts.Select(a => a.CurrencyId).Append(ParentPlanId);
 
     public override void Validate(Repositories repositories)
     {
         if (string.IsNullOrWhiteSpace(Name))
         {
-            throw new ArgumentException("Budget name must be not empty.");
+            throw new ArgumentException("Plan name must be not empty.");
         }
 
         if (SpecialNotes != null && string.IsNullOrWhiteSpace(SpecialNotes))
         {
-            throw new ArgumentException("Budget special notes must be null or not empty.");
+            throw new ArgumentException("Plan special notes must be null or not empty.");
         }
 
         StartDate?.Validate();
@@ -175,13 +175,13 @@ public record Budget(
 
         if (StartDate > FinishDate)
         {
-            throw new ArgumentException("Budget start date must be before finish date.");
+            throw new ArgumentException("Plan start date must be before finish date.");
         }
 
-        if (Schedule.HasValue && ParentBudgetId != null &&
-            repositories.Budgets.GetParents(this).Any(x => x.Schedule.HasValue))
+        if (Schedule.HasValue && ParentPlanId != null &&
+            repositories.Plans.GetParents(this).Any(x => x.Schedule.HasValue))
         {
-            throw new ArgumentException("A budget with a schedule may not have parents with schedules.");
+            throw new ArgumentException("A plan with a schedule may not have parents with schedules.");
         }
 
         Amounts.Validate(false, false, true);
@@ -191,7 +191,7 @@ public record Budget(
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} n:({SpecialNotes}) p:{repositories.GetReferenceTitle(ParentBudgetId)} [{StartDate} - {FinishDate}] {Amounts.ToDetails(repositories)} {Type} {Schedule}";
+        => $"{Id} {Name} n:({SpecialNotes}) p:{repositories.GetReferenceTitle(ParentPlanId)} [{StartDate} - {FinishDate}] {Amounts.ToDetails(repositories)} {Type} {Schedule}";
 }
 
 [EntityType(EntityType.Transaction)]
@@ -209,7 +209,7 @@ public record Transaction(
         Entries.SelectMany(e => new[]
         {
             e.WalletId,
-            e.BudgetId,
+            e.PlanId,
             e.CategoryId,
         }.Concat(e.Amounts.Select(a => a.CurrencyId)))!;
 
@@ -288,8 +288,8 @@ public record Conversion(
 [method: JsonConstructor]
 public record Transfer(
     string Id,
-    string FromBudgetId,
-    string ToBudgetId,
+    string FromPlanId,
+    string ToPlanId,
     Amount TransferredAmount,
     Date Date,
     TransferType TransferType)
@@ -299,8 +299,8 @@ public record Transfer(
         new List<string?>
         {
             TransferredAmount.CurrencyId,
-            FromBudgetId,
-            ToBudgetId,
+            FromPlanId,
+            ToPlanId,
         };
 
     public override void Validate(Repositories repositories)
@@ -313,9 +313,9 @@ public record Transfer(
             throw new ArgumentException("Transfer date must be between 2020 and 2040.");
         }
 
-        if (FromBudgetId == ToBudgetId)
+        if (FromPlanId == ToPlanId)
         {
-            throw new ArgumentException("Transfer budgets must be different.");
+            throw new ArgumentException("Transfer plans must be different.");
         }
     }
 
@@ -323,7 +323,7 @@ public record Transfer(
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {repositories.GetReferenceTitle(FromBudgetId)} -> {repositories.GetReferenceTitle(ToBudgetId)} {TransferredAmount.ToDetails(repositories)} {Date} {TransferType}";
+        => $"{Id} {repositories.GetReferenceTitle(FromPlanId)} -> {repositories.GetReferenceTitle(ToPlanId)} {TransferredAmount.ToDetails(repositories)} {Date} {TransferType}";
 }
 
 // Sub-entities
@@ -334,7 +334,7 @@ public record TransactionEntry(
     string? SpecialNotes,
     string? CategoryId,
     string? WalletId,
-    string? BudgetId,
+    string? PlanId,
     Amounts Amounts)
 {
     public void Validate()
@@ -353,7 +353,7 @@ public record TransactionEntry(
     }
 
     public string ToDetails(Repositories repositories)
-        => $"{repositories.GetReferenceTitle(BudgetId)} {repositories.GetReferenceTitle(WalletId)} {repositories.GetReferenceTitle(CategoryId)} {Amounts.ToDetails(repositories)}";
+        => $"{repositories.GetReferenceTitle(PlanId)} {repositories.GetReferenceTitle(WalletId)} {repositories.GetReferenceTitle(CategoryId)} {Amounts.ToDetails(repositories)}";
 }
 
 // Value objects
@@ -495,7 +495,7 @@ public enum EntityType
     Currency,
     Wallet,
     WalletAudit,
-    Budget,
+    Plan,
     Transaction,
     Event,
     Category,

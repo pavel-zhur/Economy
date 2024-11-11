@@ -1,0 +1,30 @@
+﻿@page
+@model Economy.Web.Pages.PlansModel
+@using Economy.AiInterface.Scope
+@using Economy.Memory.Models.State
+@inject StateFactory StateFactory
+
+@{
+    var state = await StateFactory.Get();
+    var planTree = state.Repositories.Plans.GetPlanTree();
+}
+
+<div class="table-responsive table-fixed-header overflow-visible">
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th style="width: 20%;">Plan ID</th>
+                <th style="width: 40%;">Date Range</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var (plan, depth) in planTree)
+            {
+                <tr>
+                    <td style="padding-left:@(depth * 20)px;">@plan.Id. @plan.Name</td>
+                    <td><code><span class="@(plan.StartDate.HasValue ? "" : "text-muted")">@(plan.StartDate?.ToString() ?? "-- -- ----")</span> - <span class="@(plan.FinishDate.HasValue ? "" : "text-muted")">@(plan.FinishDate?.ToString() ?? "-- -- ----")</span></code></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

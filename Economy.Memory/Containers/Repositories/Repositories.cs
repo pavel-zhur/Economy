@@ -16,7 +16,7 @@ public class Repositories
         Currencies = new Repository<Currency>(this, "C-");
         Wallets = new Repository<Wallet>(this, "W-");
         WalletAudits = new Repository<WalletAudit>(this, "WA-");
-        Budgets = new BudgetsRepository(this, "B-");
+        Plans = new PlansRepository(this, "B-");
         Transactions = new Repository<Transaction>(this, "Tn-");
         Events = new Repository<Event>(this, "E-");
         Categories = new Repository<Category>(this, "Ca-");
@@ -28,7 +28,7 @@ public class Repositories
             { Currencies.IdPrefix, Currencies },
             { Wallets.IdPrefix, Wallets },
             { WalletAudits.IdPrefix, WalletAudits },
-            { Budgets.IdPrefix, Budgets },
+            { Plans.IdPrefix, Plans },
             { Transactions.IdPrefix, Transactions },
             { Events.IdPrefix, Events },
             { Categories.IdPrefix, Categories },
@@ -43,7 +43,7 @@ public class Repositories
     public Repository<Currency> Currencies { get; }
     public Repository<Wallet> Wallets { get; }
     public Repository<WalletAudit> WalletAudits { get; }
-    public BudgetsRepository Budgets { get; }
+    public PlansRepository Plans { get; }
     public Repository<Transaction> Transactions { get; }
     public Repository<Event> Events { get; }
     public Repository<Category> Categories { get; }

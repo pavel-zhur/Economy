@@ -1,51 +1,51 @@
 ﻿@page
-@model Economy.Web.Pages.BudgetsModel
+@model Economy.Web.Pages.PlansModel
 @{
-    ViewData["Title"] = "Budgets";
+    ViewData["Title"] = "Plans";
 }
 
 <div>
-    <button id="reload-button" class="btn btn-primary">Reload Budgets</button>
+    <button id="reload-button" class="btn btn-primary">Reload Plans</button>
 </div>
 
-<div id="budgets-container" class="mt-4">
-    <partial name="DynamicBudgets" />
+<div id="plans-container" class="mt-4">
+    <partial name="DynamicPlans" />
 </div>
 
 @section Scripts {
     <script>
         document.getElementById('reload-button').addEventListener('click', function() {
             const reloadButton = document.getElementById('reload-button');
-            const budgetsContainer = document.getElementById('budgets-container');
+            const plansContainer = document.getElementById('plans-container');
 
             // Change button text and disable it
             reloadButton.textContent = 'Reloading...';
             reloadButton.disabled = true;
 
             // Add reloading class to the container
-            budgetsContainer.classList.add('reloading');
+            plansContainer.classList.add('reloading');
 
-            fetch('/Budgets?handler=Reload')
+            fetch('/Plans?handler=Reload')
                 .then(response => response.text())
                 .then(html => {
                     // Update the container with new content
-                    budgetsContainer.innerHTML = html;
+                    plansContainer.innerHTML = html;
 
                     // Reset button text and enable it
-                    reloadButton.textContent = 'Reload Budgets';
+                    reloadButton.textContent = 'Reload Plans';
                     reloadButton.disabled = false;
 
                     // Remove reloading class
-                    budgetsContainer.classList.remove('reloading');
+                    plansContainer.classList.remove('reloading');
                 })
                 .catch(error => {
                     // Handle error: clear container and set button text to "Error"
-                    budgetsContainer.innerHTML = '';
+                    plansContainer.innerHTML = '';
                     reloadButton.textContent = 'Error';
                     reloadButton.disabled = false;
 
                     // Remove reloading class
-                    budgetsContainer.classList.remove('reloading');
+                    plansContainer.classList.remove('reloading');
                 });
         });
     </script>

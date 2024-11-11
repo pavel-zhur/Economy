@@ -34,7 +34,7 @@ public class Chat(ChatHistory chatHistory, Kernel kernel, IChatCompletionService
                 CurrentDateAndTime = now,
                 Currencies = state.Repositories.Currencies.GetAll(),
                 Wallets = state.Repositories.Wallets.GetAll(),
-                ActiveBudgets = state.Repositories.Budgets.GetAll(),
+                ActivePlans = state.Repositories.Plans.GetAll(),
                 Categories = state.Repositories.Categories.GetAll(),
             }, ServiceCollectionExtensions.JsonSerializerOptions));
         }
