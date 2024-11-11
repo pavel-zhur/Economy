@@ -59,17 +59,29 @@
     <table class="table table-sm">
         <thead>
             <tr>
-                <th style="width: 15%;">Date</th>
-                <th style="width: 15%;">Planned</th>
-                <th style="width: 15%;">Actual</th>
-                <th style="width: 25%;">Details</th>
+                <th>Date</th>
+                <th>Planned</th>
+                <th>Actual</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var (row, isFirst, isLast) in Model.Rows.WithIsFirstLast())
             {
                 <tr class="@(row.Date.ToDateTime().DayOfWeek == Model.WeekStart ? "top-border" : null)">
-                    <td>@row.Date.SelectSingle(x => isFirst ? $"<= {x}" : isLast ? $">= {x}" : $"{x}, {x.ToDateTime().DayOfWeek.ToString()[..3]}")</td>
+                    <td>
+                        @if (isFirst)
+                        {
+                            <span class="data-record">before</span>
+                        }
+                        else if (isLast)
+                        {
+                            <span class="data-record">after</span>
+                        }
+                        else
+                        {
+                            <span class="data-info">@row.Date.ToDateTime().DayOfWeek.ToString()[..3] @row.Date</span>
+                        }
+                    </td>
                     <td>
                         @foreach (var (transaction, amount) in row.PlannedIncomes)
                         {

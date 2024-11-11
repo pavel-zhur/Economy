@@ -61,3 +61,16 @@ body {
         transform: translate(-50%, -50%) rotate(360deg);
     }
 }
+
+.data-record {
+    color: #d63384;
+    font-family: var(--bs-font-monospace);
+    font-size: .875em;
+}
+
+.data-info {
+    color: #98aa0e;
+    font-family: var(--bs-font-monospace);
+    font-size: .875em;
+}
+

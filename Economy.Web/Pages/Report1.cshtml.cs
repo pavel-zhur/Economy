@@ -24,7 +24,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
     public async Task OnGet()
     {
-        WeekStart ??= DayOfWeek.Monday;
+        WeekStart ??= DayOfWeek.Saturday;
         State = await stateFactory.Get();
 
         From ??= new(2024, 10, 31);
