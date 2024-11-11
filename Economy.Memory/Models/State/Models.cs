@@ -1,27 +1,33 @@
 ﻿using Economy.Memory.Containers.Repositories;
 using OneShelf.Common;
 using System.Text.Json.Serialization;
+using Economy.Memory.Tools;
+using System.Reflection;
 
 namespace Economy.Memory.Models.State;
 
-public abstract record EntityBase(string Id)
+public abstract record EntityBase(int Id)
 {
-    public IEnumerable<string> GetForeignKeys() => GetForeignKeysDirty().Where(x => x != null).Distinct()!;
+    public IEnumerable<EntityFullId> GetForeignKeys() => GetForeignKeysDirty().Where(x => x.HasValue).Select(x => x!.Value).Distinct();
 
-    protected virtual IEnumerable<string?> GetForeignKeysDirty() => Enumerable.Empty<string>();
+    protected virtual IEnumerable<EntityFullId?> GetForeignKeysDirty() => Enumerable.Empty<EntityFullId?>();
 
     public abstract void Validate(Repositories repositories);
 
     public abstract string ToReferenceTitle();
 
     public abstract string ToDetails(Repositories repositories);
+
+    public EntityType GetEntityType() => GetType().GetCustomAttribute<EntityTypeAttribute>()!.EntityType;
+
+    public EntityFullId GetFullId() => new(GetEntityType(), Id);
 }
 
 // Root entities
 
 [EntityType(EntityType.Currency)]
 [method: JsonConstructor]
-public record Currency(string Id, string LongName, string Abbreviation, string CurrencySymbol, CurrencyCustomDisplayUnit? CustomDisplayUnit) : EntityBase(Id)
+public record Currency(int Id, string LongName, string Abbreviation, string CurrencySymbol, CurrencyCustomDisplayUnit? CustomDisplayUnit) : EntityBase(Id)
 {
     public override void Validate(Repositories repositories)
     {
@@ -50,7 +56,7 @@ public record Currency(string Id, string LongName, string Abbreviation, string C
 
 [EntityType(EntityType.Wallet)]
 [method: JsonConstructor]
-public record Wallet(string Id, string Name) : EntityBase(Id)
+public record Wallet(int Id, string Name) : EntityBase(Id)
 {
     public override void Validate(Repositories repositories)
     {
@@ -69,9 +75,9 @@ public record Wallet(string Id, string Name) : EntityBase(Id)
 
 [EntityType(EntityType.Event)]
 [method: JsonConstructor]
-public record Event(string Id, string Name, string? SpecialNotes, string? PlanId, Date Date) : EntityBase(Id)
+public record Event(int Id, string Name, string? SpecialNotes, int? PlanId, Date Date) : EntityBase(Id)
 {
-    protected override IEnumerable<string?> GetForeignKeysDirty() => PlanId.Once();
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => PlanId.ToEntityFullId(EntityType.Plan).Once();
 
     public override void Validate(Repositories repositories)
     {
@@ -92,12 +98,12 @@ public record Event(string Id, string Name, string? SpecialNotes, string? PlanId
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId)} {Date} n:({SpecialNotes})";
+        => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId, GetEntityType())} {Date} n:({SpecialNotes})";
 }
 
 [EntityType(EntityType.Category)]
 [method: JsonConstructor]
-public record Category(string Id, string Name, string? SpecialNotes) : EntityBase(Id)
+public record Category(int Id, string Name, string? SpecialNotes) : EntityBase(Id)
 {
     public override void Validate(Repositories repositories)
     {
@@ -121,9 +127,9 @@ public record Category(string Id, string Name, string? SpecialNotes) : EntityBas
 
 [EntityType(EntityType.WalletAudit)]
 [method: JsonConstructor]
-public record WalletAudit(string Id, string WalletId, DateTime CheckDateAndTime, Amounts Amounts) : EntityBase(Id)
+public record WalletAudit(int Id, int WalletId, DateTime CheckDateAndTime, Amounts Amounts) : EntityBase(Id)
 {
-    protected override IEnumerable<string?> GetForeignKeysDirty() => Amounts.Select(a => a.CurrencyId).Append(WalletId);
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => Amounts.GetForeignKeysDirty().Append(WalletId.ToEntityFullId(EntityType.Wallet));
 
     public override void Validate(Repositories repositories)
     {
@@ -139,16 +145,16 @@ public record WalletAudit(string Id, string WalletId, DateTime CheckDateAndTime,
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {repositories.GetReferenceTitle(WalletId)} {CheckDateAndTime} [{Amounts.ToDetails(repositories)}]";
+        => $"{Id} {repositories.GetReferenceTitle(WalletId, EntityType.Wallet)} {CheckDateAndTime} [{Amounts.ToDetails(repositories)}]";
 }
 
 [EntityType(EntityType.Plan)]
 [method: JsonConstructor]
 public record Plan(
-    string Id,
+    int Id,
     string Name,
     string? SpecialNotes,
-    string? ParentPlanId,
+    int? ParentPlanId,
     Date? StartDate,
     Date? FinishDate,
     Schedule? Schedule,
@@ -156,7 +162,7 @@ public record Plan(
     TransactionType Type)
     : EntityBase(Id)
 {
-    protected override IEnumerable<string?> GetForeignKeysDirty() => Amounts.Select(a => a.CurrencyId).Append(ParentPlanId);
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => Amounts.GetForeignKeysDirty().Append(ParentPlanId.ToEntityFullId(EntityType.Plan));
 
     public override void Validate(Repositories repositories)
     {
@@ -191,13 +197,13 @@ public record Plan(
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} n:({SpecialNotes}) p:{repositories.GetReferenceTitle(ParentPlanId)} [{StartDate} - {FinishDate}] {Amounts.ToDetails(repositories)} {Type} {Schedule}";
+        => $"{Id} {Name} n:({SpecialNotes}) p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} [{StartDate} - {FinishDate}] {Amounts.ToDetails(repositories)} {Type} {Schedule}";
 }
 
 [EntityType(EntityType.Transaction)]
 [method: JsonConstructor]
 public record Transaction(
-    string Id,
+    int Id,
     string Name,
     string? SpecialNotes,
     DateTime DateAndTime,
@@ -205,13 +211,13 @@ public record Transaction(
     IReadOnlyList<TransactionEntry> Entries)
     : EntityBase(Id)
 {
-    protected override IEnumerable<string?> GetForeignKeysDirty() =>
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
         Entries.SelectMany(e => new[]
         {
-            e.WalletId,
-            e.PlanId,
-            e.CategoryId,
-        }.Concat(e.Amounts.Select(a => a.CurrencyId)))!;
+            e.WalletId.ToEntityFullId(EntityType.Wallet),
+            e.PlanId.ToEntityFullId(EntityType.Plan),
+            e.CategoryId.ToEntityFullId(EntityType.Category),
+        }.Concat(e.Amounts.GetForeignKeysDirty()));
 
     public override void Validate(Repositories repositories)
     {
@@ -251,19 +257,19 @@ public record Transaction(
 [EntityType(EntityType.Conversion)]
 [method: JsonConstructor]
 public record Conversion(
-    string Id,
-    string FromWalletId,
+    int Id,
+    int FromWalletId,
     Amount FromAmount,
-    string ToWalletId,
+    int ToWalletId,
     Amount ToAmount)
     : EntityBase(Id)
 {
-    protected override IEnumerable<string?> GetForeignKeysDirty() =>
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
     [
-        FromWalletId,
-        ToWalletId,
-        FromAmount.CurrencyId,
-        ToAmount.CurrencyId,
+        FromWalletId.ToEntityFullId(EntityType.Wallet),
+        ToWalletId.ToEntityFullId(EntityType.Wallet),
+        FromAmount.CurrencyId.ToEntityFullId(EntityType.Currency),
+        ToAmount.CurrencyId.ToEntityFullId(EntityType.Currency), 
     ];
 
     public override void Validate(Repositories repositories)
@@ -281,26 +287,26 @@ public record Conversion(
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {repositories.GetReferenceTitle(FromWalletId)} {FromAmount.ToDetails(repositories)} -> {repositories.GetReferenceTitle(ToWalletId)} {ToAmount.ToDetails(repositories)}";
+        => $"{Id} {repositories.GetReferenceTitle(FromWalletId, EntityType.Wallet)} {FromAmount.ToDetails(repositories)} -> {repositories.GetReferenceTitle(ToWalletId, EntityType.Wallet)} {ToAmount.ToDetails(repositories)}";
 }
 
 [EntityType(EntityType.Transfer)]
 [method: JsonConstructor]
 public record Transfer(
-    string Id,
-    string FromPlanId,
-    string ToPlanId,
+    int Id,
+    int FromPlanId,
+    int ToPlanId,
     Amount TransferredAmount,
     Date Date,
     TransferType TransferType)
     : EntityBase(Id)
 {
-    protected override IEnumerable<string?> GetForeignKeysDirty() =>
-        new List<string?>
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
+        new List<EntityFullId?>
         {
-            TransferredAmount.CurrencyId,
-            FromPlanId,
-            ToPlanId,
+            TransferredAmount.CurrencyId.ToEntityFullId(EntityType.Currency),
+            FromPlanId.ToEntityFullId(EntityType.Plan),
+            ToPlanId.ToEntityFullId(EntityType.Plan),
         };
 
     public override void Validate(Repositories repositories)
@@ -323,7 +329,7 @@ public record Transfer(
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {repositories.GetReferenceTitle(FromPlanId)} -> {repositories.GetReferenceTitle(ToPlanId)} {TransferredAmount.ToDetails(repositories)} {Date} {TransferType}";
+        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {TransferredAmount.ToDetails(repositories)} {Date} {TransferType}";
 }
 
 // Sub-entities
@@ -332,9 +338,9 @@ public record Transfer(
 public record TransactionEntry(
     string? Name,
     string? SpecialNotes,
-    string? CategoryId,
-    string? WalletId,
-    string? PlanId,
+    int? CategoryId,
+    int? WalletId,
+    int? PlanId,
     Amounts Amounts)
 {
     public void Validate()
@@ -353,7 +359,7 @@ public record TransactionEntry(
     }
 
     public string ToDetails(Repositories repositories)
-        => $"{repositories.GetReferenceTitle(PlanId)} {repositories.GetReferenceTitle(WalletId)} {repositories.GetReferenceTitle(CategoryId)} {Amounts.ToDetails(repositories)}";
+        => $"{repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {repositories.GetReferenceTitle(WalletId, EntityType.Wallet)} {repositories.GetReferenceTitle(CategoryId, EntityType.Category)} {Amounts.ToDetails(repositories)}";
 }
 
 // Value objects
@@ -414,10 +420,12 @@ public class Amounts : List<Amount>
         Clear();
         AddRange(result);
     }
+
+    internal IEnumerable<EntityFullId?> GetForeignKeysDirty() => this.Select(x => new EntityFullId(EntityType.Currency, x.CurrencyId).OnceAsNullable());
 }
 
 [method: JsonConstructor]
-public record struct Amount(string CurrencyId, decimal Value)
+public record struct Amount(int CurrencyId, decimal Value)
 {
     public void Validate(bool allowNegative, bool allowZero, bool allowPositive)
     {
@@ -508,3 +516,5 @@ public enum CurrencyCustomDisplayUnit
     Thousands,
     Millions,
 }
+
+public record struct EntityFullId(EntityType Type, int Id);

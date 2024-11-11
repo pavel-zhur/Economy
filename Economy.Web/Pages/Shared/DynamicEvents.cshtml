@@ -11,6 +11,6 @@
 @foreach (var (@event, i) in state.Events.WithIndices().Reverse())
 {
     <p>
-        @i. @(@event.ToDetails(state.Repositories))
+        @(i+1). @(@event.ToDetails(state.Repositories))
     </p>
 }

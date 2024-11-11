@@ -11,7 +11,7 @@ namespace Economy.AiInterface.StateManagement;
 internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory stateFactory)
 {
     [KernelFunction("create_or_update_currency")]
-    [Description("Creates a new currency (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new currency (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated currency.")]
     public async Task<Currency> UpsertCurrency(Currency currency)
     {
@@ -22,7 +22,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_wallet")]
-    [Description("Creates a new wallet (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new wallet (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated wallet")]
     public async Task<Wallet> UpsertWallet(Wallet wallet)
     {
@@ -33,7 +33,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_event")]
-    [Description("Creates a new event (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new event (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated event")]
     public async Task<Event> UpsertEvent(Event @event)
     {
@@ -44,7 +44,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_category")]
-    [Description("Creates a new category (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new category (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated category")]
     public async Task<Category> UpsertCategory(Category category)
     {
@@ -55,7 +55,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_wallet_audit")]
-    [Description("Creates a new wallet audit (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new wallet audit (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated wallet audit")]
     public async Task<WalletAudit> UpsertWalletAudit(WalletAudit walletAudit)
     {
@@ -66,7 +66,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_plan")]
-    [Description("Creates a new plan (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new plan (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated plan")]
     public async Task<Plan> UpsertPlan(Plan plan)
     {
@@ -77,7 +77,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_transaction")]
-    [Description("Creates a new transaction (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new transaction (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated transaction")]
     public async Task<Transaction> UpsertTransaction(Transaction transaction)
     {
@@ -88,7 +88,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_conversion")]
-    [Description("Creates a new conversion (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new conversion (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated conversion")]
     public async Task<Conversion> UpsertConversion(Conversion conversion)
     {
@@ -99,7 +99,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_transfer")]
-    [Description("Creates a new transfer (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new transfer (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated transfer")]
     public async Task<Transfer> UpsertTransfer(Transfer transfer)
     {
@@ -110,11 +110,11 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("delete_entities")]
-    [Description("Deletes entities by their ids")]
-    public async Task DeleteEntities(IReadOnlyList<string> ids)
+    [Description("Deletes entities of a given type by their ids")]
+    public async Task DeleteEntities(EntityType entityType, IReadOnlyList<int> ids)
     {
         var state = await stateFactory.Get();
-        var notFound = ids.Where(x => state.Repositories.TryGetEntity(x) == null).ToList();
+        var notFound = ids.Where(x => state.Repositories.GetRepository(entityType).TryGetById(x) == null).ToList();
         if (notFound.Any())
         {
             throw new InvalidOperationException($"Entities not found: {string.Join(", ", notFound)}.");
@@ -122,7 +122,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
 
         foreach (var id in ids)
         {
-            state.Apply(new Deletion(id, DateTime.UtcNow));
+            state.Apply(new Deletion(new EntityFullId(entityType, id), DateTime.UtcNow));
         }
     }
 
@@ -137,22 +137,25 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
 
     [KernelFunction("get_entity_by_id")]
     [Description("Gets an entity by its id")]
-    public async Task<EntityBase> GetEntityById(string id)
+    public async Task<EntityBase> GetEntityById(EntityType entityType, int id)
     {
         var state = await stateFactory.Get();
-        return state.Repositories.TryGetEntity(id) ?? throw new InvalidOperationException($"Entity not found: {id}.");
+        return state.Repositories.GetRepository(entityType).TryGetById(id) ?? throw new InvalidOperationException($"Entity not found: {id}.");
     }
 
     private EventBase PrepareForUpsert<T>(State state, ref T entity, out string verb)
         where T : EntityBase
     {
-        if (entity.Id == string.Empty)
+        switch (entity.Id)
         {
-            verb = "Creating";
-            return new Creation(entity = entity with { Id = state.Repositories.GetRepository<T>().GetNextNormalId() }, DateTime.UtcNow);
+            case -1:
+                verb = "Creating";
+                return new Creation(entity = entity with { Id = state.Repositories.GetRepository<T>().GetNextNormalId() }, DateTime.UtcNow);
+            case 0 or < -1:
+                throw new("To update an entity, pass specify its id. To create an entity, pass id -1.");
+            default:
+                verb = "Updating";
+                return new Update(entity, DateTime.UtcNow);
         }
-
-        verb = "Updating";
-        return new Update(entity, DateTime.UtcNow);
     }
 }

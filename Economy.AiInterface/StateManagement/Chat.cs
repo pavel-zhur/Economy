@@ -20,7 +20,7 @@ public class Chat(ChatHistory chatHistory, Kernel kernel, IChatCompletionService
         {
             chatHistory.AddSystemMessage(@"
 
-- When you call create_or_update_*, pass an empty id if you intend to create a new entity.
+- When you call create_or_update_*, pass -1 id value if you intend to create a new entity.
 - When you call create_or_update_*, pass all fields in case of update as well. The update will be a full replacement.
 - When create_or_update_* is executed successfully, the user sees the new or updated entity right away. Do not repeat the entity in the response.
 - For date_and_time fields, try to specify realistic the time as well, try to avoid 00:00:00.

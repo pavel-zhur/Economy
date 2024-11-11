@@ -16,17 +16,17 @@ public class State
         {
             case Creation creation:
                 Repositories
-                    .GetRepository(creation.Entity.Id)
+                    .GetRepository(creation.Entity.GetEntityType())
                     .Add(creation.Entity);
                 break;
             case Deletion deletion:
                 Repositories
-                    .GetRepository(deletion.EntityId)
-                    .Delete(deletion.EntityId);
+                    .GetRepository(deletion.EntityFullId.Type)
+                    .Delete(deletion.EntityFullId.Id);
                 break;
             case Update update:
                 Repositories
-                    .GetRepository(update.Entity.Id)
+                    .GetRepository(update.Entity.GetEntityType())
                     .Update(update.Entity);
                 break;
             default:

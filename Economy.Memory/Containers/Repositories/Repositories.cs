@@ -7,36 +7,34 @@ namespace Economy.Memory.Containers.Repositories;
 
 public class Repositories
 {
-    private readonly HashSet<(string from, string to)> _foreignKeys = new();
-    private readonly Dictionary<string, HashSet<string>> _incomingForeignKeysTo = new();
-    private readonly Dictionary<string, HashSet<string>> _outgoingForeignKeysFrom = new();
+    private readonly HashSet<(EntityFullId from, EntityFullId to)> _foreignKeys = new();
+    private readonly Dictionary<EntityFullId, HashSet<EntityFullId>> _incomingForeignKeysTo = new();
+    private readonly Dictionary<EntityFullId, HashSet<EntityFullId>> _outgoingForeignKeysFrom = new();
 
     public Repositories()
     {
-        Currencies = new Repository<Currency>(this, "C-");
-        Wallets = new Repository<Wallet>(this, "W-");
-        WalletAudits = new Repository<WalletAudit>(this, "WA-");
-        Plans = new PlansRepository(this, "B-");
-        Transactions = new Repository<Transaction>(this, "Tn-");
-        Events = new Repository<Event>(this, "E-");
-        Categories = new Repository<Category>(this, "Ca-");
-        Conversions = new Repository<Conversion>(this, "Cv-");
-        Transfers = new Repository<Transfer>(this, "Tf-");
+        Currencies = new Repository<Currency>(this);
+        Wallets = new Repository<Wallet>(this);
+        WalletAudits = new Repository<WalletAudit>(this);
+        Plans = new PlansRepository(this);
+        Transactions = new Repository<Transaction>(this);
+        Events = new Repository<Event>(this);
+        Categories = new Repository<Category>(this);
+        Conversions = new Repository<Conversion>(this);
+        Transfers = new Repository<Transfer>(this);
 
-        AllByPrefix = new Dictionary<string, IRepository>
+        AllByType = new IRepository[]
         {
-            { Currencies.IdPrefix, Currencies },
-            { Wallets.IdPrefix, Wallets },
-            { WalletAudits.IdPrefix, WalletAudits },
-            { Plans.IdPrefix, Plans },
-            { Transactions.IdPrefix, Transactions },
-            { Events.IdPrefix, Events },
-            { Categories.IdPrefix, Categories },
-            { Conversions.IdPrefix, Conversions },
-            { Transfers.IdPrefix, Transfers }
-        };
-
-        AllByType = AllByPrefix.Values.ToDictionary(r => r.GetEntityType());
+            Currencies,
+            Wallets,
+            WalletAudits,
+            Plans,
+            Transactions,
+            Events,
+            Categories,
+            Conversions,
+            Transfers
+        }.ToDictionary(r => r.GetEntityClrType());
         AllByEntityType = AllByType.ToDictionary(x => x.Key.GetCustomAttribute<EntityTypeAttribute>()!.EntityType, x => x.Value);
     }
     
@@ -50,30 +48,27 @@ public class Repositories
     public Repository<Conversion> Conversions { get; }
     public Repository<Transfer> Transfers { get; }
 
-    public IReadOnlyDictionary<string, IRepository> AllByPrefix { get; }
     public IReadOnlyDictionary<Type, IRepository> AllByType { get; }
     public IReadOnlyDictionary<EntityType, IRepository> AllByEntityType { get; }
 
-    public IReadOnlySet<(string from, string to)> ForeignKeys => _foreignKeys;
-    public IEnumerable<string> GetIncomingForeignKeysTo(string to) => _incomingForeignKeysTo.GetValueOrDefault(to) ?? Enumerable.Empty<string>();
-    public IEnumerable<string> GetOutgoingForeignKeysFrom(string from) => _outgoingForeignKeysFrom.GetValueOrDefault(from) ?? Enumerable.Empty<string>();
-
-    public string GetPrefix(string entityId) => entityId[..(entityId.IndexOf("-", StringComparison.Ordinal) + 1)];
-
-    public IRepository? TryGetRepository(string entityId) => AllByPrefix.GetValueOrDefault(GetPrefix(entityId));
+    public IReadOnlySet<(EntityFullId from, EntityFullId to)> ForeignKeys => _foreignKeys;
+    public IEnumerable<EntityFullId> GetIncomingForeignKeysTo(EntityFullId to) => _incomingForeignKeysTo.GetValueOrDefault(to) ?? Enumerable.Empty<EntityFullId>();
+    public IEnumerable<EntityFullId> GetOutgoingForeignKeysFrom(EntityFullId from) => _outgoingForeignKeysFrom.GetValueOrDefault(from) ?? Enumerable.Empty<EntityFullId>();
 
     public IRepository GetRepository(EntityType entityType) => AllByEntityType[entityType];
-    public IRepository GetRepository(string entityId) => AllByPrefix[GetPrefix(entityId)];
     public IRepository GetRepository<T>()
         where T : EntityBase
         => AllByType[typeof(T)];
 
-    [return: NotNullIfNotNull(nameof(entityId))]
-    public string? GetReferenceTitle(string? entityId) => entityId == null ? null : GetRepository(entityId).GetById(entityId).ToReferenceTitle();
+    public EntityBase? TryGetById(EntityFullId entityFullId) => GetRepository(entityFullId.Type).TryGetById(entityFullId.Id);
 
-    public EntityBase? TryGetEntity(string? entityId) => entityId == null ? null : GetRepository(entityId).TryGetById(entityId);
+    [return: NotNullIfNotNull(nameof(entityFullId))]
+    public string? GetReferenceTitle(EntityFullId? entityFullId) => entityFullId == null ? null : GetRepository(entityFullId.Value.Type).GetById(entityFullId.Value.Id).ToReferenceTitle();
 
-    public void AddForeignKey(string from, string to)
+    [return: NotNullIfNotNull(nameof(entityFullId))]
+    public string? GetReferenceTitle(int? entityFullId, EntityType entityType) => entityFullId == null ? null : GetRepository(entityType).GetById(entityFullId.Value).ToReferenceTitle();
+
+    public void AddForeignKey(EntityFullId from, EntityFullId to)
     {
         if (from == to)
         {
@@ -87,7 +82,7 @@ public class Repositories
 
         if (!_incomingForeignKeysTo.TryGetValue(to, out var incomingList))
         {
-            incomingList = new HashSet<string>();
+            incomingList = new HashSet<EntityFullId>();
             _incomingForeignKeysTo[to] = incomingList;
         }
 
@@ -95,14 +90,14 @@ public class Repositories
 
         if (!_outgoingForeignKeysFrom.TryGetValue(from, out var outgoingList))
         {
-            outgoingList = new HashSet<string>();
+            outgoingList = new HashSet<EntityFullId>();
             _outgoingForeignKeysFrom[from] = outgoingList;
         }
 
         outgoingList.Add(to);
     }
 
-    public void RemoveForeignKey(string from, string to)
+    public void RemoveForeignKey(EntityFullId from, EntityFullId to)
     {
         if (!_foreignKeys.Remove((from, to)))
         {

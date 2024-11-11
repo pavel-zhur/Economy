@@ -2,15 +2,15 @@ using Economy.Memory.Models.State;
 
 namespace Economy.Memory.Containers.Repositories;
 
-public class PlansRepository(Repositories repositories, string idPrefix)
-    : Repository<Plan>(repositories, idPrefix)
+public class PlansRepository(Repositories repositories)
+    : Repository<Plan>(repositories)
 {
     protected override void ValidateUpdate(Plan oldEntity, Plan newEntity)
     {
         // newEntity.ParentPlanId may create a loop. Plans are a tree.
         if (newEntity.ParentPlanId != null)
         {
-            var parents = GetParents(this[newEntity.ParentPlanId]).Select(x => x.Id).ToList();
+            var parents = GetParents(this[newEntity.ParentPlanId.Value]).Select(x => x.Id).ToList();
             if (parents.Contains(newEntity.Id))
             {
                 throw new InvalidOperationException("Parent plan id creates a loop.");
@@ -23,7 +23,7 @@ public class PlansRepository(Repositories repositories, string idPrefix)
         if (plan.ParentPlanId == null) 
             yield break;
 
-        var parent = this[plan.ParentPlanId];
+        var parent = this[plan.ParentPlanId.Value];
         yield return parent;
 
         foreach (var other in GetParents(parent))
@@ -32,7 +32,7 @@ public class PlansRepository(Repositories repositories, string idPrefix)
         }
     }
 
-    public IEnumerable<(Plan plan, int depth)> GetPlanTree(string? parentId = null, int depth = 0)
+    public IEnumerable<(Plan plan, int depth)> GetPlanTree(int? parentId = null, int depth = 0)
     {
         foreach (var childPlan in GetAll().Where(b => b.ParentPlanId == parentId).ToList())
         {

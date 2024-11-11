@@ -1,24 +1,27 @@
+using Economy.Memory.Models;
 using Economy.Memory.Models.State;
+using System.Reflection;
+using Economy.Memory.Tools;
 
 namespace Economy.Memory.Containers.Repositories;
 
-public class Repository<T>(Repositories repositories, string idPrefix) : IRepository where T : EntityBase
+public class Repository<T>(Repositories repositories) : IRepository where T : EntityBase
 {
-    private readonly Dictionary<string, T> _entities = new();
+    private readonly Dictionary<int, T> _entities = new();
     private int _deletedCount;
 
-    public Type GetEntityType() => typeof(T);
+    public Type GetEntityClrType() => typeof(T);
 
-    public string GetNextNormalId() => $"{idPrefix}{_entities.Count + _deletedCount + 1}";
+    public EntityType GetEntityType() => GetEntityClrType().GetCustomAttribute<EntityTypeAttribute>()!.EntityType;
 
-    public string IdPrefix => idPrefix;
-
-    public T? TryGetById(string id)
+    public int GetNextNormalId() => _entities.Count + _deletedCount + 1;
+    
+    public T? TryGetById(int id)
     {
         return _entities.GetValueOrDefault(id);
     }
 
-    public T this[string id] => _entities[id];
+    public T this[int id] => _entities[id];
 
     public IEnumerable<T> GetAll()
     {
@@ -30,17 +33,13 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
         entity.Validate(repositories);
 
         var nextNormalId = GetNextNormalId();
-        if (!entity.Id.StartsWith($"{idPrefix}"))
-        {
-            throw new InvalidOperationException($"Entity id {entity.Id} prefix is not {idPrefix}.");
-        }
 
         if (entity.Id != nextNormalId)
         {
             throw new InvalidOperationException($"Entity id {entity.Id} is not the next normal id, {nextNormalId} expected.");
         }
 
-        var unresolvedForeignKeys = entity.GetForeignKeys().Where(x => repositories.TryGetRepository(x)?.TryGetById(x) == null || x == entity.Id).ToList();
+        var unresolvedForeignKeys = entity.GetForeignKeys().Where(x => repositories.GetRepository(x.Type).TryGetById(x.Id) == null || x == new EntityFullId(GetEntityType(), entity.Id)).ToList();
         if (unresolvedForeignKeys.Any())
         {
             throw new InvalidOperationException($"Entity has unresolved foreign keys: {string.Join(", ", unresolvedForeignKeys)}.");
@@ -53,7 +52,7 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
 
         foreach (var foreignKey in entity.GetForeignKeys())
         {
-            repositories.AddForeignKey(entity.Id, foreignKey);
+            repositories.AddForeignKey(entity.GetFullId(), foreignKey);
         }
     }
 
@@ -66,7 +65,7 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
             throw new InvalidOperationException($"Entity with id {entity.Id} does not exist.");
         }
 
-        var unresolvedForeignKeys = entity.GetForeignKeys().Where(x => repositories.GetRepository(x).TryGetById(x) == null || x == entity.Id).ToList();
+        var unresolvedForeignKeys = entity.GetForeignKeys().Where(x => repositories.TryGetById(x) == null || x == entity.GetFullId()).ToList();
         if (unresolvedForeignKeys.Any())
         {
             throw new InvalidOperationException($"Entity has unresolved foreign keys: {string.Join(", ", unresolvedForeignKeys)}.");
@@ -78,18 +77,20 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
 
         foreach (var removeTo in oldEntity.GetForeignKeys().Except(entity.GetForeignKeys()))
         {
-            repositories.RemoveForeignKey(entity.Id, removeTo);
+            repositories.RemoveForeignKey(entity.GetFullId(), removeTo);
         }
 
         foreach (var addTo in entity.GetForeignKeys().Except(oldEntity.GetForeignKeys()))
         {
-            repositories.AddForeignKey(entity.Id, addTo);
+            repositories.AddForeignKey(entity.GetFullId(), addTo);
         }
     }
 
-    public void Delete(string id)
+    public void Delete(int id)
     {
-        if (repositories.GetIncomingForeignKeysTo(id).Any())
+        var entityFullId = id.ToEntityFullId(GetEntityType());
+
+        if (repositories.GetIncomingForeignKeysTo(entityFullId).Any())
         {
             throw new InvalidOperationException($"Entity with id {id} has incoming foreign keys.");
         }
@@ -99,9 +100,9 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
             throw new InvalidOperationException($"Entity with id {id} does not exist.");
         }
 
-        foreach (var to in repositories.GetOutgoingForeignKeysFrom(id).ToList())
+        foreach (var to in repositories.GetOutgoingForeignKeysFrom(entityFullId).ToList())
         {
-            repositories.RemoveForeignKey(id, to);
+            repositories.RemoveForeignKey(entityFullId, to);
         }
 
         _deletedCount++;
@@ -117,7 +118,7 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
 
     void IRepository.Update(EntityBase entity) => Update((T)entity);
 
-    EntityBase? IRepository.TryGetById(string id) => TryGetById(id);
+    EntityBase? IRepository.TryGetById(int id) => TryGetById(id);
 
-    EntityBase IRepository.GetById(string id) => this[id];
+    EntityBase IRepository.GetById(int id) => this[id];
 }

@@ -4,13 +4,15 @@ namespace Economy.Memory.Containers.Repositories;
 
 public interface IRepository
 {
-    string GetNextNormalId();
-    string IdPrefix { get; }
-    EntityBase? TryGetById(string id);
-    EntityBase GetById(string id);
+    int GetNextNormalId();
+
+    // todo: refactor all of that in repositories & entities
+    EntityBase? TryGetById(int id);
+    EntityBase GetById(int id);
     IEnumerable<EntityBase> GetAll();
     void Add(EntityBase entity);
     void Update(EntityBase entity);
-    void Delete(string id);
-    Type GetEntityType();
+    void Delete(int id);
+    Type GetEntityClrType();
+    EntityType GetEntityType();
 }

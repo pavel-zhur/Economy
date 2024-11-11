@@ -43,7 +43,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
         Row FindRow(Date date) =>
             rows.GetValueOrDefault(date) ?? (date < From.Value.ToDate() ? before : after);
 
-        Dictionary<string, List<ActualMatch>> plannedTransactionMatches = new();
+        Dictionary<int, List<ActualMatch>> plannedTransactionMatches = new();
         foreach (var actualTransaction in State.Repositories.Transactions.GetAll())
         {
             var row = FindRow(actualTransaction.DateAndTime.ToDate());
@@ -54,7 +54,8 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                 ActualMatch match;
                 if (actualTransactionEntry.PlanId != null)
                 {
-                    var plannedTransaction = State.Repositories.Plans[actualTransactionEntry.PlanId];
+                    var planId = actualTransactionEntry.PlanId.Value;
+                    var plannedTransaction = State.Repositories.Plans[planId];
                     transactionType = plannedTransaction.Type;
                     match = new PlannedAndActualMatch
                     {
@@ -64,9 +65,9 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                         Negative = actualTransaction.Type != transactionType,
                     };
 
-                    (plannedTransactionMatches.TryGetValue(actualTransactionEntry.PlanId, out var list) 
+                    (plannedTransactionMatches.TryGetValue(planId, out var list) 
                             ? list
-                            : plannedTransactionMatches[actualTransactionEntry.PlanId] = new())
+                            : plannedTransactionMatches[planId] = new())
                             .Add(match);
                 }
                 else
@@ -125,7 +126,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                 };
             }
 
-            var row = FindRow(FindNearestParentPlan(State, plannedTransaction.Id, x => x.StartDate.HasValue).StartDate!.Value);
+            var row = FindRow(FindNearestParentPlan(State, plannedTransaction.Id, x => x.StartDate.HasValue)?.StartDate ?? new Date());
 
             (plannedTransaction.Type switch
             {
@@ -138,12 +139,12 @@ public class Report1Model(StateFactory stateFactory) : PageModel
         Rows.AddRange(rows.Values.Append(before).Append(after).OrderBy(x => x.Date));
     }
 
-    private Plan FindNearestParentPlan(State state, string planId, Func<Plan, bool> planSelector)
+    private Plan? FindNearestParentPlan(State state, int planId, Func<Plan, bool> planSelector)
     {
         var plan = state.Repositories.Plans[planId];
-        while (!planSelector(plan))
+        while (plan != null && !planSelector(plan))
         {
-            plan = state.Repositories.Plans[plan.ParentPlanId!];
+            plan = plan.ParentPlanId.HasValue ? state.Repositories.Plans[plan.ParentPlanId.Value] : null;
         }
 
         return plan;
