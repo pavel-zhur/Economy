@@ -76,26 +76,15 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
         return budget;
     }
 
-    [KernelFunction("create_or_update_actual_transaction")]
-    [Description("Creates a new actual_transaction (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
-    [return: Description("The created (with id assigned) or updated actual_transaction")]
-    public async Task<ActualTransaction> UpsertActualTransaction(ActualTransaction actualTransaction)
+    [KernelFunction("create_or_update_transaction")]
+    [Description("Creates a new transaction (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated transaction")]
+    public async Task<Transaction> UpsertTransaction(Transaction transaction)
     {
         var state = await stateFactory.Get();
-        state.Apply(PrepareForUpsert(state, ref actualTransaction, out var verb));
-        logger.LogInformation("{verb} actual_transaction {ActualTransaction}", verb, actualTransaction.ToDetails(state.Repositories));
-        return actualTransaction;
-    }
-
-    [KernelFunction("create_or_update_planned_transaction")]
-    [Description("Creates a new planned_transaction (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
-    [return: Description("The created (with id assigned) or updated planned_transaction")]
-    public async Task<PlannedTransaction> UpsertPlannedTransaction(PlannedTransaction plannedTransaction)
-    {
-        var state = await stateFactory.Get();
-        state.Apply(PrepareForUpsert(state, ref plannedTransaction, out var verb));
-        logger.LogInformation("{verb} planned_transaction {PlannedTransaction}", verb, plannedTransaction.ToDetails(state.Repositories));
-        return plannedTransaction;
+        state.Apply(PrepareForUpsert(state, ref transaction, out var verb));
+        logger.LogInformation("{verb} transaction {Transaction}", verb, transaction.ToDetails(state.Repositories));
+        return transaction;
     }
 
     [KernelFunction("create_or_update_conversion")]

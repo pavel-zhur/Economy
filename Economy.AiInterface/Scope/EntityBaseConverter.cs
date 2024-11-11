@@ -17,8 +17,7 @@ public class EntityBaseConverter : JsonConverter<EntityBase>
         { nameof(Category), typeof(Category) },
         { nameof(WalletAudit), typeof(WalletAudit) },
         { nameof(Budget), typeof(Budget) },
-        { nameof(PlannedTransaction), typeof(PlannedTransaction) },
-        { nameof(ActualTransaction), typeof(ActualTransaction) },
+        { nameof(Transaction), typeof(Transaction) },
         { nameof(Conversion), typeof(Conversion) },
         { nameof(Transfer), typeof(Transfer) }
         // Add other entity types here

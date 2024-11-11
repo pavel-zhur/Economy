@@ -44,7 +44,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             rows.GetValueOrDefault(date) ?? (date < From.Value.ToDate() ? before : after);
 
         Dictionary<string, List<ActualMatch>> plannedTransactionMatches = new();
-        foreach (var actualTransaction in State.Repositories.ActualTransactions.GetAll())
+        foreach (var actualTransaction in State.Repositories.Transactions.GetAll())
         {
             var row = FindRow(actualTransaction.DateAndTime.ToDate());
 
@@ -54,12 +54,12 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                 ActualMatch match;
                 if (actualTransactionEntry.PlannedTransactionId != null)
                 {
-                    var plannedTransaction = State.Repositories.PlannedTransactions[actualTransactionEntry.PlannedTransactionId];
+                    var plannedTransaction = State.Repositories.Budgets[actualTransactionEntry.PlannedTransactionId];
                     transactionType = plannedTransaction.Type;
                     match = new PlannedAndActualMatch
                     {
                         Planned = plannedTransaction,
-                        ActualEntry = actualTransactionEntry,
+                        Entry = actualTransactionEntry,
                         Actual = actualTransaction,
                         Negative = actualTransaction.Type != transactionType,
                     };
@@ -75,7 +75,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                     match = new ActualMatch
                     {
                         Actual = actualTransaction,
-                        ActualEntry = actualTransactionEntry,
+                        Entry = actualTransactionEntry,
                     };
                 }
 
@@ -88,7 +88,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             }
         }
 
-        foreach (var plannedTransaction in State.Repositories.PlannedTransactions.GetAll())
+        foreach (var plannedTransaction in State.Repositories.Budgets.GetAll())
         {
             var matches = plannedTransactionMatches.GetValueOrDefault(plannedTransaction.Id);
             MatchBase match;
@@ -101,7 +101,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
                 foreach (var actualMatch in matches)
                 {
-                    remainder.Add(actualMatch.ActualEntry.Amounts, actualMatch.Actual.Type == plannedTransaction.Type);
+                    remainder.Add(actualMatch.Entry.Amounts, actualMatch.Actual.Type == plannedTransaction.Type);
                 }
 
                 remainder.RemoveAll(x => x.Value < 0);
@@ -125,8 +125,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                 };
             }
 
-            var row = FindRow(plannedTransaction.Date 
-                              ?? FindNearestParentBudget(State, plannedTransaction.BudgetId, x => x.StartDate.HasValue).StartDate!.Value);
+            var row = FindRow(FindNearestParentBudget(State, plannedTransaction.Id, x => x.StartDate.HasValue).StartDate!.Value);
 
             (plannedTransaction.Type switch
             {
@@ -162,23 +161,23 @@ public class Report1Model(StateFactory stateFactory) : PageModel
     public class PlannedAndActualMatch : ActualMatch
     {
         public required bool Negative { get; init; }
-        public required PlannedTransaction Planned { get; init; }
+        public required Budget Planned { get; init; }
     }
 
     public class ActualMatch : MatchBase
     {
-        public required ActualTransaction Actual { get; init; }
-        public required ActualTransactionEntry ActualEntry { get; init; }
+        public required Transaction Actual { get; init; }
+        public required TransactionEntry Entry { get; init; }
     }
 
     public class PlannedRemainderMatch : MatchBase
     {
-        public required PlannedTransaction Planned { get; init; }
+        public required Budget Planned { get; init; }
         public required Amounts Remainder { get; init; }
     }
 
     public class PlannedMatch : MatchBase
     {
-        public required PlannedTransaction Planned { get; init; }
+        public required Budget Planned { get; init; }
     }
 }

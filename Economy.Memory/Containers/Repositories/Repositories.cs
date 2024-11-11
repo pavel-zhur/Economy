@@ -17,12 +17,11 @@ public class Repositories
         Wallets = new Repository<Wallet>(this, "W-");
         WalletAudits = new Repository<WalletAudit>(this, "WA-");
         Budgets = new BudgetsRepository(this, "B-");
-        ActualTransactions = new Repository<ActualTransaction>(this, "AT-");
-        PlannedTransactions = new Repository<PlannedTransaction>(this, "PT-");
+        Transactions = new Repository<Transaction>(this, "Tn-");
         Events = new Repository<Event>(this, "E-");
         Categories = new Repository<Category>(this, "Ca-");
         Conversions = new Repository<Conversion>(this, "Cv-");
-        Transfers = new Repository<Transfer>(this, "T-");
+        Transfers = new Repository<Transfer>(this, "Tf-");
 
         AllByPrefix = new Dictionary<string, IRepository>
         {
@@ -30,8 +29,7 @@ public class Repositories
             { Wallets.IdPrefix, Wallets },
             { WalletAudits.IdPrefix, WalletAudits },
             { Budgets.IdPrefix, Budgets },
-            { ActualTransactions.IdPrefix, ActualTransactions },
-            { PlannedTransactions.IdPrefix, PlannedTransactions },
+            { Transactions.IdPrefix, Transactions },
             { Events.IdPrefix, Events },
             { Categories.IdPrefix, Categories },
             { Conversions.IdPrefix, Conversions },
@@ -46,8 +44,7 @@ public class Repositories
     public Repository<Wallet> Wallets { get; }
     public Repository<WalletAudit> WalletAudits { get; }
     public BudgetsRepository Budgets { get; }
-    public Repository<ActualTransaction> ActualTransactions { get; }
-    public Repository<PlannedTransaction> PlannedTransactions { get; }
+    public Repository<Transaction> Transactions { get; }
     public Repository<Event> Events { get; }
     public Repository<Category> Categories { get; }
     public Repository<Conversion> Conversions { get; }

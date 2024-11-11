@@ -10,15 +10,15 @@
 @switch (Model)
 {
     case Report1Model.PlannedAndActualMatch match:
-        <span>@Constants.Actual @(match.Negative ? Constants.Minus : null)@match.ActualEntry.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.ActualEntry.BudgetId) @match.ActualEntry.Name @match.ActualEntry.SpecialNotes @match.Actual.Name @match.Actual.SpecialNotes / @Constants.Planned @match.Planned.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.Planned.BudgetId) @match.Planned.SpecialNotes</span>
+        <span>@Constants.Transaction @(match.Negative ? Constants.Minus : null)@match.Entry.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.Entry.BudgetId) @match.Entry.Name @match.Entry.SpecialNotes @match.Actual.Name @match.Actual.SpecialNotes / @Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
         break;
     case Report1Model.ActualMatch match:
-        <span>@Constants.Actual @match.ActualEntry.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.ActualEntry.BudgetId) @match.ActualEntry.Name @match.ActualEntry.SpecialNotes @match.Actual.Name @match.Actual.SpecialNotes</span>
+        <span>@Constants.Transaction @match.Entry.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.Entry.BudgetId) @match.Entry.Name @match.Entry.SpecialNotes @match.Actual.Name @match.Actual.SpecialNotes</span>
         break;
     case Report1Model.PlannedMatch match:
-        <span>@Constants.Planned @match.Planned.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.Planned.BudgetId) @match.Planned.SpecialNotes</span>
+        <span>@Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
         break;
     case Report1Model.PlannedRemainderMatch match:
-        <span>@Constants.Actual @match.Remainder.ToDetails(state.Repositories)  / @Constants.Planned @match.Planned.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.Planned.BudgetId) @match.Planned.SpecialNotes</span>
+        <span>@Constants.Transaction @match.Remainder.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
         break;
 }

@@ -27,7 +27,7 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
 
     public void Add(T entity)
     {
-        entity.Validate();
+        entity.Validate(repositories);
 
         var nextNormalId = GetNextNormalId();
         if (!entity.Id.StartsWith($"{idPrefix}"))
@@ -59,7 +59,7 @@ public class Repository<T>(Repositories repositories, string idPrefix) : IReposi
 
     public void Update(T entity)
     {
-        entity.Validate();
+        entity.Validate(repositories);
 
         if (!_entities.TryGetValue(entity.Id, out var oldEntity))
         {
