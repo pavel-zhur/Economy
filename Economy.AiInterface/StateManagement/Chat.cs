@@ -18,6 +18,14 @@ public class Chat(ChatHistory chatHistory, Kernel kernel, IChatCompletionService
     {
         if (!chatHistory.Any())
         {
+            chatHistory.AddSystemMessage(@"
+
+- When you call create_or_update_*, pass an empty id if you intend to create a new entity.
+- When you call create_or_update_*, pass all fields in case of update as well. The update will be a full replacement.
+- When create_or_update_* is executed successfully, the user sees the new or updated entity right away. Do not repeat the entity in the response.
+
+");
+
             var now = DateTime.UtcNow;
             chatHistory.AddSystemMessage(JsonSerializer.Serialize(new
             {

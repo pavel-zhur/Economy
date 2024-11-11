@@ -11,8 +11,8 @@ namespace Economy.AiInterface.StateManagement;
 internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory stateFactory)
 {
     [KernelFunction("create_or_update_currency")]
-    [Description("Creates a new currency (empty id expected) or updates an existing one")]
-    [return: Description("The created or updated currency")]
+    [Description("Creates a new currency (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated currency.")]
     public async Task<Currency> UpsertCurrency(Currency currency)
     {
         var state = await stateFactory.Get();
@@ -22,8 +22,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_wallet")]
-    [Description("Creates a new wallet (empty id expected) or updates an existing one")]
-    [return: Description("The created or updated wallet")]
+    [Description("Creates a new wallet (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated wallet")]
     public async Task<Wallet> UpsertWallet(Wallet wallet)
     {
         var state = await stateFactory.Get();
@@ -33,8 +33,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_event")]
-    [Description("Creates a new event (empty id expected) or updates an existing one")]
-    [return: Description("The created or updated event")]
+    [Description("Creates a new event (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated event")]
     public async Task<Event> UpsertEvent(Event @event)
     {
         var state = await stateFactory.Get();
@@ -44,8 +44,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_category")]
-    [Description("Creates a new category (empty id expected) or updates an existing one")]
-    [return: Description("The created or updated category")]
+    [Description("Creates a new category (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated category")]
     public async Task<Category> UpsertCategory(Category category)
     {
         var state = await stateFactory.Get();
@@ -55,8 +55,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_wallet_audit")]
-    [Description("Creates a new wallet audit (empty id expected) or updates an existing one")]
-    [return: Description("The created or updated wallet audit")]
+    [Description("Creates a new wallet audit (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated wallet audit")]
     public async Task<WalletAudit> UpsertWalletAudit(WalletAudit walletAudit)
     {
         var state = await stateFactory.Get();
@@ -66,8 +66,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_budget")]
-    [Description("Creates a new budget (empty id expected) or updates an existing one")]
-    [return: Description("The created or updated budget")]
+    [Description("Creates a new budget (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated budget")]
     public async Task<Budget> UpsertBudget(Budget budget)
     {
         var state = await stateFactory.Get();
@@ -77,8 +77,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_actual_transaction")]
-    [Description("Creates a new actual_transaction (empty id expected) or updates an existing one")]
-    [return: Description("The created or updated actual_transaction")]
+    [Description("Creates a new actual_transaction (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated actual_transaction")]
     public async Task<ActualTransaction> UpsertActualTransaction(ActualTransaction actualTransaction)
     {
         var state = await stateFactory.Get();
@@ -88,8 +88,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_planned_transaction")]
-    [Description("Creates a new planned_transaction (empty id expected) or updates an existing one")]
-    [return: Description("The created or updated planned_transaction")]
+    [Description("Creates a new planned_transaction (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated planned_transaction")]
     public async Task<PlannedTransaction> UpsertPlannedTransaction(PlannedTransaction plannedTransaction)
     {
         var state = await stateFactory.Get();
@@ -99,8 +99,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_conversion")]
-    [Description("Creates a new conversion (empty id expected) or updates an existing one")]
-    [return: Description("The created or updated conversion")]
+    [Description("Creates a new conversion (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated conversion")]
     public async Task<Conversion> UpsertConversion(Conversion conversion)
     {
         var state = await stateFactory.Get();
@@ -110,8 +110,8 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     }
 
     [KernelFunction("create_or_update_transfer")]
-    [Description("Creates a new transfer (empty id expected) or updates an existing one")]
-    [return: Description("The created or updated transfer")]
+    [Description("Creates a new transfer (empty id expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated transfer")]
     public async Task<Transfer> UpsertTransfer(Transfer transfer)
     {
         var state = await stateFactory.Get();
