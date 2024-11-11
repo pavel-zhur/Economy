@@ -21,7 +21,7 @@
             {
                 <tr>
                     <td>@(entity.ToDetails(state.Repositories))</td>
-                    <td>@state.Repositories.WalletAudits.GetAll().Where(x => x.WalletId == entity.Id).MaxBy(x => x.CheckTimestamp)?.Amounts.ToDetails(state.Repositories)</td>
+                    <td>@state.Repositories.WalletAudits.GetAll().Where(x => x.WalletId == entity.Id).MaxBy(x => x.CheckDateAndTime)?.Amounts.ToDetails(state.Repositories)</td>
                 </tr>
             }
         </tbody>

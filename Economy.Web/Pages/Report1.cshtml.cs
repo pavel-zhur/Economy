@@ -41,7 +41,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
         foreach (var actualTransaction in State.Repositories.ActualTransactions.GetAll())
         {
-            var date = actualTransaction.Timestamp.ToDate();
+            var date = actualTransaction.DateAndTime.ToDate();
             var row = rows.GetValueOrDefault(date)
                       ?? (date < From.Value.ToDate() ? before : after);
 
@@ -50,7 +50,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                 TransactionType.Expense => row.ActualExpenses,
                 TransactionType.Income => row.ActualIncomes,
                 _ => throw new ArgumentOutOfRangeException(),
-            }).AddRange(actualTransaction.Entries.SelectMany(e => e.Amounts));
+            }).AddRange(actualTransaction.Entries.SelectMany(e => e.Amounts.Select(a => (actualTransaction, e, a))));
         }
 
         foreach (var plannedTransaction in State.Repositories.PlannedTransactions.GetAll())
@@ -64,7 +64,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                 TransactionType.Expense => row.PlannedExpenses,
                 TransactionType.Income => row.PlannedIncomes,
                 _ => throw new ArgumentOutOfRangeException(),
-            }).AddRange(plannedTransaction.Amounts);
+            }).AddRange(plannedTransaction.Amounts.Select(a => (plannedTransaction, a)));
         }
 
         Rows.AddRange(rows.Values.Append(before).Append(after).OrderBy(x => x.Date));
@@ -85,8 +85,8 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 public class Row
 {
     public Date Date { get; init; }
-    public List<Amount> ActualExpenses { get; } = new();
-    public List<Amount> ActualIncomes { get; } = new();
-    public List<Amount> PlannedExpenses { get; } = new();
-    public List<Amount> PlannedIncomes { get; } = new();
+    public List<(ActualTransaction transaction, ActualTransactionEntry entry, Amount amount)> ActualExpenses { get; } = new();
+    public List<(ActualTransaction transaction, ActualTransactionEntry entry, Amount amount)> ActualIncomes { get; } = new();
+    public List<(PlannedTransaction transaction, Amount amount)> PlannedExpenses { get; } = new();
+    public List<(PlannedTransaction transaction, Amount amount)> PlannedIncomes { get; } = new();
 }

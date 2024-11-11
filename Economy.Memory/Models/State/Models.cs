@@ -121,7 +121,7 @@ public record Category(string Id, string Name, string? SpecialNotes) : EntityBas
 
 [EntityType(EntityType.WalletAudit)]
 [method: JsonConstructor]
-public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, Amounts Amounts) : EntityBase(Id)
+public record WalletAudit(string Id, string WalletId, DateTime CheckDateAndTime, Amounts Amounts) : EntityBase(Id)
 {
     protected override IEnumerable<string?> GetForeignKeysDirty() => Amounts.Select(a => a.CurrencyId).Append(WalletId);
 
@@ -129,7 +129,7 @@ public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, A
     {
         Amounts.Validate(false, true, true);
 
-        if (CheckTimestamp.Year < 2020 || CheckTimestamp.Year > 2040)
+        if (CheckDateAndTime.Year < 2020 || CheckDateAndTime.Year > 2040)
         {
             throw new ArgumentException("Check timestamp must be between 2020 and 2040.");
         }
@@ -139,7 +139,7 @@ public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, A
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {repositories.GetReferenceTitle(WalletId)} {CheckTimestamp} [{Amounts.ToDetails(repositories)}]";
+        => $"{Id} {repositories.GetReferenceTitle(WalletId)} {CheckDateAndTime} [{Amounts.ToDetails(repositories)}]";
 }
 
 [EntityType(EntityType.Budget)]
@@ -224,7 +224,7 @@ public record ActualTransaction(
     string Id,
     string Name,
     string? SpecialNotes,
-    DateTime Timestamp,
+    DateTime DateAndTime,
     TransactionType Type,
     IReadOnlyList<ActualTransactionEntry> Entries)
     : EntityBase(Id)
@@ -250,7 +250,7 @@ public record ActualTransaction(
             throw new ArgumentException("Actual transaction special notes must be null or not empty.");
         }
 
-        if (Timestamp.Year < 2020 || Timestamp.Year > 2040)
+        if (DateAndTime.Year < 2020 || DateAndTime.Year > 2040)
         {
             throw new ArgumentException("Actual transaction timestamp must be between 2020 and 2040.");
         }
@@ -270,7 +270,7 @@ public record ActualTransaction(
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} n:({SpecialNotes}) {Timestamp} {Type} [{string.Join(", ", Entries.Select(e => e.ToDetails(repositories)))}]";
+        => $"{Id} {Name} n:({SpecialNotes}) {DateAndTime} {Type} [{string.Join(", ", Entries.Select(e => e.ToDetails(repositories)))}]";
 }
 
 [EntityType(EntityType.Conversion)]

@@ -23,6 +23,7 @@ public class Chat(ChatHistory chatHistory, Kernel kernel, IChatCompletionService
 - When you call create_or_update_*, pass an empty id if you intend to create a new entity.
 - When you call create_or_update_*, pass all fields in case of update as well. The update will be a full replacement.
 - When create_or_update_* is executed successfully, the user sees the new or updated entity right away. Do not repeat the entity in the response.
+- For date_and_time fields, try to specify realistic the time as well, try to avoid 00:00:00.
 
 ");
 
@@ -30,7 +31,7 @@ public class Chat(ChatHistory chatHistory, Kernel kernel, IChatCompletionService
             chatHistory.AddSystemMessage(JsonSerializer.Serialize(new
             {
                 CurrentDate = new Date(now.Year, now.Month, now.Day),
-                CurrentDateTime = now,
+                CurrentDateAndTime = now,
                 Currencies = state.Repositories.Currencies.GetAll(),
                 Wallets = state.Repositories.Wallets.GetAll(),
                 ActiveBudgets = state.Repositories.Budgets.GetAll(),

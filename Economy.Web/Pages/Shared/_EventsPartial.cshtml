@@ -1,15 +1,16 @@
 ﻿@page
 @model Economy.Web.Pages.EventsModel
 @using Economy.AiInterface.Scope
+@using OneShelf.Common
 @inject StateFactory StateFactory
 
 @{
     var state = await StateFactory.Get();
 }
 
-@foreach (var @event in state.Events)
+@foreach (var (@event, i) in state.Events.WithIndices().Reverse())
 {
     <p>
-        @(@event.ToDetails(state.Repositories))
+        @i. @(@event.ToDetails(state.Repositories))
     </p>
 }
