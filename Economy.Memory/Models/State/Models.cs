@@ -317,15 +317,13 @@ public record Transfer(
     string ToBudgetId,
     Amount TransferredAmount,
     Date Date,
-    TransferType TransferType,
-    Amount? ConvertedAmount)
+    TransferType TransferType)
     : EntityBase(Id)
 {
     protected override IEnumerable<string?> GetForeignKeysDirty() =>
         new List<string?>
         {
             TransferredAmount.CurrencyId,
-            ConvertedAmount?.CurrencyId,
             FromBudgetId,
             ToBudgetId,
         };
@@ -333,21 +331,16 @@ public record Transfer(
     public override void Validate()
     {
         TransferredAmount.Validate(false, false, true);
-        ConvertedAmount?.Validate(false, false, true);
 
-        if (TransferredAmount.CurrencyId == ConvertedAmount?.CurrencyId)
-        {
-            throw new ArgumentException("Transferred and converted (if present) amounts must have different currency IDs.");
-        }
-
+        // todo: probably adjust years or extract to constants
         if (Date.Year < 2020 || Date.Year > 2040)
         {
             throw new ArgumentException("Transfer date must be between 2020 and 2040.");
         }
 
-        if (FromBudgetId == ToBudgetId && ConvertedAmount == null)
+        if (FromBudgetId == ToBudgetId)
         {
-            throw new ArgumentException("Transfer between the same budget must have a converted amount.");
+            throw new ArgumentException("Transfer budgets must be different.");
         }
     }
 
@@ -355,7 +348,7 @@ public record Transfer(
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {repositories.GetReferenceTitle(FromBudgetId)} -> {repositories.GetReferenceTitle(ToBudgetId)} {TransferredAmount.ToDetails(repositories)} {Date} {TransferType} c=({ConvertedAmount?.ToDetails(repositories)})";
+        => $"{Id} {repositories.GetReferenceTitle(FromBudgetId)} -> {repositories.GetReferenceTitle(ToBudgetId)} {TransferredAmount.ToDetails(repositories)} {Date} {TransferType}";
 }
 
 // Sub-entities
