@@ -12,7 +12,7 @@ public abstract record EntityBase(string Id)
 
     public abstract void Validate();
 
-    public abstract string ToReferenceTitle(Repositories repositories);
+    public abstract string ToReferenceTitle();
 
     public abstract string ToDetails(Repositories repositories);
 }
@@ -41,7 +41,7 @@ public record Currency(string Id, string LongName, string Abbreviation, string C
         }
     }
 
-    public override string ToReferenceTitle(Repositories repositories)
+    public override string ToReferenceTitle()
         => $"[{Id} {Abbreviation}]";
 
     public override string ToDetails(Repositories repositories)
@@ -60,7 +60,7 @@ public record Wallet(string Id, string Name) : EntityBase(Id)
         }
     }
 
-    public override string ToReferenceTitle(Repositories repositories)
+    public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
@@ -88,7 +88,7 @@ public record Event(string Id, string Name, string? SpecialNotes, string? Budget
         Date.Validate();
     }
 
-    public override string ToReferenceTitle(Repositories repositories)
+    public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
@@ -112,7 +112,7 @@ public record Category(string Id, string Name, string? SpecialNotes) : EntityBas
         }
     }
 
-    public override string ToReferenceTitle(Repositories repositories)
+    public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
@@ -135,7 +135,7 @@ public record WalletAudit(string Id, string WalletId, DateTime CheckDateAndTime,
         }
     }
 
-    public override string ToReferenceTitle(Repositories repositories)
+    public override string ToReferenceTitle()
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
@@ -177,7 +177,7 @@ public record Budget(
         }
     }
 
-    public override string ToReferenceTitle(Repositories repositories)
+    public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
@@ -208,7 +208,7 @@ public record PlannedTransaction(
         Date?.Validate();
     }
 
-    public override string ToReferenceTitle(Repositories repositories)
+    public override string ToReferenceTitle()
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
@@ -266,7 +266,7 @@ public record ActualTransaction(
         }
     }
 
-    public override string ToReferenceTitle(Repositories repositories)
+    public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
@@ -302,7 +302,7 @@ public record Conversion(
         }
     }
 
-    public override string ToReferenceTitle(Repositories repositories)
+    public override string ToReferenceTitle()
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
@@ -351,7 +351,7 @@ public record Transfer(
         }
     }
 
-    public override string ToReferenceTitle(Repositories repositories)
+    public override string ToReferenceTitle()
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
