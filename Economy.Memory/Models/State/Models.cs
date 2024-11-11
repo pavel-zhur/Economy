@@ -69,7 +69,7 @@ public record Wallet(string Id, string Name) : EntityBase(Id)
 
 [EntityType(EntityType.Event)]
 [method: JsonConstructor]
-public record Event(string Id, string Name, string? Description, string? BudgetId, Date Date) : EntityBase(Id)
+public record Event(string Id, string Name, string? SpecialNotes, string? BudgetId, Date Date) : EntityBase(Id)
 {
     protected override IEnumerable<string?> GetForeignKeysDirty() => BudgetId.Once();
 
@@ -80,9 +80,9 @@ public record Event(string Id, string Name, string? Description, string? BudgetI
             throw new ArgumentException("Event name must be not empty.");
         }
 
-        if (Description != null && string.IsNullOrWhiteSpace(Description))
+        if (SpecialNotes != null && string.IsNullOrWhiteSpace(SpecialNotes))
         {
-            throw new ArgumentException("Event description must be null or not empty.");
+            throw new ArgumentException("Event special notes must be null or not empty.");
         }
 
         Date.Validate();
@@ -92,12 +92,12 @@ public record Event(string Id, string Name, string? Description, string? BudgetI
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} {repositories.GetReferenceTitle(BudgetId)} {Date} d:({Description})";
+        => $"{Id} {Name} {repositories.GetReferenceTitle(BudgetId)} {Date} n:({SpecialNotes})";
 }
 
 [EntityType(EntityType.Category)]
 [method: JsonConstructor]
-public record Category(string Id, string Name, string? Description) : EntityBase(Id)
+public record Category(string Id, string Name, string? SpecialNotes) : EntityBase(Id)
 {
     public override void Validate()
     {
@@ -106,9 +106,9 @@ public record Category(string Id, string Name, string? Description) : EntityBase
             throw new ArgumentException("Category name must be not empty.");
         }
 
-        if (Description != null && string.IsNullOrWhiteSpace(Description))
+        if (SpecialNotes != null && string.IsNullOrWhiteSpace(SpecialNotes))
         {
-            throw new ArgumentException("Category description must be null or not empty.");
+            throw new ArgumentException("Category special notes must be null or not empty.");
         }
     }
 
@@ -116,7 +116,7 @@ public record Category(string Id, string Name, string? Description) : EntityBase
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} d:({Description})";
+        => $"{Id} {Name} n:({SpecialNotes})";
 }
 
 [EntityType(EntityType.WalletAudit)]
@@ -147,10 +147,11 @@ public record WalletAudit(string Id, string WalletId, DateTime CheckTimestamp, A
 public record Budget(
     string Id,
     string Name,
-    string? Description,
+    string? SpecialNotes,
     string? ParentBudgetId,
     Date? StartDate,
-    Date? FinishDate)
+    Date? FinishDate,
+    Schedule? Schedule)
     : EntityBase(Id)
 {
     protected override IEnumerable<string?> GetForeignKeysDirty() => ParentBudgetId.Once();
@@ -162,9 +163,9 @@ public record Budget(
             throw new ArgumentException("Budget name must be not empty.");
         }
 
-        if (Description != null && string.IsNullOrWhiteSpace(Description))
+        if (SpecialNotes != null && string.IsNullOrWhiteSpace(SpecialNotes))
         {
-            throw new ArgumentException("Budget description must be null or not empty.");
+            throw new ArgumentException("Budget special notes must be null or not empty.");
         }
 
         StartDate?.Validate();
@@ -180,27 +181,27 @@ public record Budget(
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} d:({Description}) p:{repositories.GetReferenceTitle(ParentBudgetId)} [{StartDate} - {FinishDate}]";
+        => $"{Id} {Name} n:({SpecialNotes}) p:{repositories.GetReferenceTitle(ParentBudgetId)} [{StartDate} - {FinishDate}] {Schedule}";
 }
 
 [EntityType(EntityType.PlannedTransaction)]
 [method: JsonConstructor]
 public record PlannedTransaction(
     string Id,
-    string? Description,
+    string? SpecialNotes,
     string BudgetId,
     Amounts Amounts,
     TransactionType Type,
-    PlannedTransactionSchedule? Schedule,
+    Schedule? Schedule,
     Date? Date,
     bool IsCompleted)
     : EntityBase(Id)
 {
     public override void Validate()
     {
-        if (Description != null && string.IsNullOrWhiteSpace(Description))
+        if (SpecialNotes != null && string.IsNullOrWhiteSpace(SpecialNotes))
         {
-            throw new ArgumentException("Planned transaction description must be null or not empty.");
+            throw new ArgumentException("Planned transaction special notes must be null or not empty.");
         }
 
         Amounts.Validate(false, false, true);
@@ -211,7 +212,7 @@ public record PlannedTransaction(
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {repositories.GetReferenceTitle(BudgetId)} {Date} {Amounts.ToDetails(repositories)} {Type} {(IsCompleted ? "100%" : "0%")} d:({Description}) {Schedule}";
+        => $"{Id} {repositories.GetReferenceTitle(BudgetId)} {Date} {Amounts.ToDetails(repositories)} {Type} {(IsCompleted ? "100%" : "0%")} n:({SpecialNotes}) {Schedule}";
 
     protected override IEnumerable<string?> GetForeignKeysDirty()
         => Amounts.Select(a => a.CurrencyId).Append(BudgetId);
@@ -222,7 +223,7 @@ public record PlannedTransaction(
 public record ActualTransaction(
     string Id,
     string Name,
-    string? Description,
+    string? SpecialNotes,
     DateTime Timestamp,
     TransactionType Type,
     IReadOnlyList<ActualTransactionEntry> Entries)
@@ -244,9 +245,9 @@ public record ActualTransaction(
             throw new ArgumentException("Actual transaction name must be not empty.");
         }
 
-        if (Description != null && string.IsNullOrWhiteSpace(Description))
+        if (SpecialNotes != null && string.IsNullOrWhiteSpace(SpecialNotes))
         {
-            throw new ArgumentException("Actual transaction description must be null or not empty.");
+            throw new ArgumentException("Actual transaction special notes must be null or not empty.");
         }
 
         if (Timestamp.Year < 2020 || Timestamp.Year > 2040)
@@ -269,7 +270,7 @@ public record ActualTransaction(
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} d:({Description}) {Timestamp} {Type} [{string.Join(", ", Entries.Select(e => e.ToDetails(repositories)))}]";
+        => $"{Id} {Name} n:({SpecialNotes}) {Timestamp} {Type} [{string.Join(", ", Entries.Select(e => e.ToDetails(repositories)))}]";
 }
 
 [EntityType(EntityType.Conversion)]
@@ -362,7 +363,7 @@ public record Transfer(
 [method: JsonConstructor]
 public record ActualTransactionEntry(
     string? Name,
-    string? Description,
+    string? SpecialNotes,
     string? PlannedTransactionId,
     string? CategoryId,
     string? WalletId,
@@ -376,9 +377,9 @@ public record ActualTransactionEntry(
             throw new ArgumentException("ActualTransaction entry name must be null or not empty.");
         }
 
-        if (Description != null && string.IsNullOrWhiteSpace(Description))
+        if (SpecialNotes != null && string.IsNullOrWhiteSpace(SpecialNotes))
         {
-            throw new ArgumentException("ActualTransaction entry description must be null or not empty.");
+            throw new ArgumentException("ActualTransaction entry special notes must be null or not empty.");
         }
 
         Amounts.Validate(false, false, true);
@@ -401,7 +402,7 @@ public enum TransferType
     Usage,
 }
 
-public enum PlannedTransactionSchedule
+public enum Schedule
 {
     Daily,
     Weekly,
