@@ -20,3 +20,44 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+
+.dynamic-reloading-reloading {
+    position: relative;
+}
+
+    .dynamic-reloading-reloading::before {
+        background-color: rgba(200, 200, 200, .5);
+        content: ' ';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 999;
+    }
+
+    .dynamic-reloading-reloading::after {
+        content: ' ';
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 30px;
+        height: 30px;
+        border: 4px solid #fff;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: dynamic-reloading-spin 1s linear infinite;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+    }
+
+@keyframes dynamic-reloading-spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}

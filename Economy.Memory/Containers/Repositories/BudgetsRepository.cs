@@ -31,4 +31,16 @@ public class BudgetsRepository(Repositories repositories, string idPrefix)
             yield return other;
         }
     }
+
+    public IEnumerable<(Budget budget, int depth)> GetBudgetTree(string? parentId = null, int depth = 0)
+    {
+        foreach (var childBudget in GetAll().Where(b => b.ParentBudgetId == parentId).ToList())
+        {
+            yield return (childBudget, depth);
+            foreach (var grandChildBudget in GetBudgetTree(childBudget.Id, depth + 1))
+            {
+                yield return grandChildBudget;
+            }
+        }
+    }
 }

@@ -45,7 +45,7 @@ public class Repositories
     public Repository<Currency> Currencies { get; }
     public Repository<Wallet> Wallets { get; }
     public Repository<WalletAudit> WalletAudits { get; }
-    public Repository<Budget> Budgets { get; }
+    public BudgetsRepository Budgets { get; }
     public Repository<ActualTransaction> ActualTransactions { get; }
     public Repository<PlannedTransaction> PlannedTransactions { get; }
     public Repository<Event> Events { get; }

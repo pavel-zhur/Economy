@@ -4,6 +4,7 @@
 @model Economy.Web.Pages.Report1Model
 @{
     ViewData["Title"] = "Report 1";
+    var repositories = Model.State.Repositories;
 }
 
 <form method="get" class="mb-4">
@@ -59,10 +60,8 @@
         <thead>
             <tr>
                 <th style="width: 15%;">Date</th>
-                <th style="width: 15%;">Actual Incomes</th>
-                <th style="width: 15%;">Planned Incomes</th>
-                <th style="width: 15%;">Actual Expenses</th>
-                <th style="width: 15%;">Planned Expenses</th>
+                <th style="width: 15%;">Planned</th>
+                <th style="width: 15%;">Actual</th>
                 <th style="width: 25%;">Details</th>
             </tr>
         </thead>
@@ -71,10 +70,26 @@
             {
                 <tr class="@(row.Date.ToDateTime().DayOfWeek == Model.WeekStart ? "top-border" : null)">
                     <td>@row.Date.SelectSingle(x => isFirst ? $"<= {x}" : isLast ? $">= {x}" : $"{x}, {x.ToDateTime().DayOfWeek.ToString()[..3]}")</td>
-                    <td>@string.Join(", ", row.ActualIncomes.Select(a => a.amount.ToDetails(Model.State.Repositories)))</td>
-                    <td>@string.Join(", ", row.PlannedIncomes.Select(a => a.amount.ToDetails(Model.State.Repositories)))</td>
-                    <td>@string.Join(", ", row.ActualExpenses.Select(a => a.amount.ToDetails(Model.State.Repositories)))</td>
-                    <td>@string.Join(", ", row.PlannedExpenses.Select(a => a.amount.ToDetails(Model.State.Repositories)))</td>
+                    <td>
+                        @foreach (var (transaction, amount) in row.PlannedIncomes)
+                        {
+                            <div>📈@amount.ToDetails(repositories)</div>
+                        }
+                        @foreach (var (transaction, amount) in row.PlannedExpenses)
+                        {
+                            <div>📉@amount.ToDetails(repositories)</div>
+                        }
+                    </td>
+                    <td>
+                        @foreach (var (transaction, entry, amount) in row.ActualIncomes)
+                        {
+                            <div>📈@amount.ToDetails(repositories)</div>
+                        }
+                        @foreach (var (transaction, entry, amount) in row.ActualExpenses)
+                        {
+                            <div>📉@amount.ToDetails(repositories)</div>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>
