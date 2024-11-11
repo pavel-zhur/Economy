@@ -24,9 +24,10 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
     public async Task OnGet()
     {
-        WeekStart ??= DayOfWeek.Saturday;
         State = await stateFactory.Get();
 
+        // todo: remove hard-coded values
+        WeekStart ??= DayOfWeek.Saturday;
         From ??= new(2024, 10, 31);
         To ??= new(2025, 3, 31);
 
@@ -39,32 +40,100 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             Date = x.ToDate(),
         });
 
+        Row FindRow(Date date) =>
+            rows.GetValueOrDefault(date) ?? (date < From.Value.ToDate() ? before : after);
+
+        Dictionary<string, List<ActualMatch>> plannedTransactionMatches = new();
         foreach (var actualTransaction in State.Repositories.ActualTransactions.GetAll())
         {
-            var date = actualTransaction.DateAndTime.ToDate();
-            var row = rows.GetValueOrDefault(date)
-                      ?? (date < From.Value.ToDate() ? before : after);
+            var row = FindRow(actualTransaction.DateAndTime.ToDate());
 
-            (actualTransaction.Type switch
+            foreach (var actualTransactionEntry in actualTransaction.Entries)
             {
-                TransactionType.Expense => row.ActualExpenses,
-                TransactionType.Income => row.ActualIncomes,
-                _ => throw new ArgumentOutOfRangeException(),
-            }).AddRange(actualTransaction.Entries.SelectMany(e => e.Amounts.Select(a => (actualTransaction, e, a))));
+                TransactionType transactionType;
+                ActualMatch match;
+                if (actualTransactionEntry.PlannedTransactionId != null)
+                {
+                    var plannedTransaction = State.Repositories.PlannedTransactions[actualTransactionEntry.PlannedTransactionId];
+                    transactionType = plannedTransaction.Type;
+                    match = new PlannedAndActualMatch
+                    {
+                        Planned = plannedTransaction,
+                        ActualEntry = actualTransactionEntry,
+                        Actual = actualTransaction,
+                        Negative = actualTransaction.Type != transactionType,
+                    };
+
+                    (plannedTransactionMatches.TryGetValue(actualTransactionEntry.PlannedTransactionId, out var list) 
+                            ? list
+                            : plannedTransactionMatches[actualTransactionEntry.PlannedTransactionId] = new())
+                            .Add(match);
+                }
+                else
+                {
+                    transactionType = actualTransaction.Type;
+                    match = new ActualMatch
+                    {
+                        Actual = actualTransaction,
+                        ActualEntry = actualTransactionEntry,
+                    };
+                }
+
+                (transactionType switch
+                {
+                    TransactionType.Income => row.Incomes,
+                    TransactionType.Expense => row.Expenses,
+                    _ => throw new ArgumentOutOfRangeException()
+                }).Add(match);
+            }
         }
 
         foreach (var plannedTransaction in State.Repositories.PlannedTransactions.GetAll())
         {
-            var date = plannedTransaction.Date ?? FindNearestParentBudget(State, plannedTransaction.BudgetId, x => x.StartDate.HasValue).StartDate!.Value;
-            var row = rows.GetValueOrDefault(date)
-                      ?? (date < From.Value.ToDate() ? before : after);
+            var matches = plannedTransactionMatches.GetValueOrDefault(plannedTransaction.Id);
+            MatchBase match;
+            if (matches != null)
+            {
+                var remainder = new Amounts
+                {
+                    plannedTransaction.Amounts,
+                };
+
+                foreach (var actualMatch in matches)
+                {
+                    remainder.Add(actualMatch.ActualEntry.Amounts, actualMatch.Actual.Type == plannedTransaction.Type);
+                }
+
+                remainder.RemoveAll(x => x.Value < 0);
+
+                if (!remainder.Any())
+                {
+                    continue;
+                }
+
+                match = new PlannedRemainderMatch
+                {
+                    Planned = plannedTransaction,
+                    Remainder = remainder,
+                };
+            }
+            else
+            {
+                match = new PlannedMatch
+                {
+                    Planned = plannedTransaction,
+                };
+            }
+
+            var row = FindRow(plannedTransaction.Date 
+                              ?? FindNearestParentBudget(State, plannedTransaction.BudgetId, x => x.StartDate.HasValue).StartDate!.Value);
 
             (plannedTransaction.Type switch
             {
-                TransactionType.Expense => row.PlannedExpenses,
-                TransactionType.Income => row.PlannedIncomes,
+                TransactionType.Expense => row.Expenses,
+                TransactionType.Income => row.Incomes,
                 _ => throw new ArgumentOutOfRangeException(),
-            }).AddRange(plannedTransaction.Amounts.Select(a => (plannedTransaction, a)));
+            }).Add(match);
         }
 
         Rows.AddRange(rows.Values.Append(before).Append(after).OrderBy(x => x.Date));
@@ -80,13 +149,36 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
         return budget;
     }
-}
 
-public class Row
-{
-    public Date Date { get; init; }
-    public List<(ActualTransaction transaction, ActualTransactionEntry entry, Amount amount)> ActualExpenses { get; } = new();
-    public List<(ActualTransaction transaction, ActualTransactionEntry entry, Amount amount)> ActualIncomes { get; } = new();
-    public List<(PlannedTransaction transaction, Amount amount)> PlannedExpenses { get; } = new();
-    public List<(PlannedTransaction transaction, Amount amount)> PlannedIncomes { get; } = new();
+    public class Row
+    {
+        public Date Date { get; init; }
+        public List<MatchBase> Incomes { get; } = new();
+        public List<MatchBase> Expenses { get; } = new();
+    }
+
+    public abstract class MatchBase;
+
+    public class PlannedAndActualMatch : ActualMatch
+    {
+        public required bool Negative { get; init; }
+        public required PlannedTransaction Planned { get; init; }
+    }
+
+    public class ActualMatch : MatchBase
+    {
+        public required ActualTransaction Actual { get; init; }
+        public required ActualTransactionEntry ActualEntry { get; init; }
+    }
+
+    public class PlannedRemainderMatch : MatchBase
+    {
+        public required PlannedTransaction Planned { get; init; }
+        public required Amounts Remainder { get; init; }
+    }
+
+    public class PlannedMatch : MatchBase
+    {
+        public required PlannedTransaction Planned { get; init; }
+    }
 }

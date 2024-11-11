@@ -4,7 +4,6 @@
 @model Economy.Web.Pages.Report1Model
 @{
     ViewData["Title"] = "Report 1";
-    var repositories = Model.State.Repositories;
 }
 
 <form method="get" class="mb-4">
@@ -49,19 +48,18 @@
                 border-right: none; /* Remove the border from the last column */
             }
 
-
         .table-fixed-header tr.top-border td {
             border-top: 2px solid #53a0ec;
-    }
-    </style>
+        }
+</style>
 
 <div class="table-responsive table-fixed-header overflow-visible">
     <table class="table table-sm">
         <thead>
             <tr>
                 <th>Date</th>
-                <th>Planned</th>
-                <th>Actual</th>
+                <th>Incomes</th>
+                <th>Expenses</th>
             </tr>
         </thead>
         <tbody>
@@ -83,23 +81,19 @@
                         }
                     </td>
                     <td>
-                        @foreach (var (transaction, amount) in row.PlannedIncomes)
+                        @foreach (var match in row.Incomes)
                         {
-                            <div>📈@amount.ToDetails(repositories)</div>
-                        }
-                        @foreach (var (transaction, amount) in row.PlannedExpenses)
-                        {
-                            <div>📉@amount.ToDetails(repositories)</div>
+                            <div>
+                                <partial name="_Report1Match" model="match" />
+                            </div>
                         }
                     </td>
                     <td>
-                        @foreach (var (transaction, entry, amount) in row.ActualIncomes)
+                        @foreach (var match in row.Expenses)
                         {
-                            <div>📈@amount.ToDetails(repositories)</div>
-                        }
-                        @foreach (var (transaction, entry, amount) in row.ActualExpenses)
-                        {
-                            <div>📉@amount.ToDetails(repositories)</div>
+                            <div>
+                                <partial name="_Report1Match" model="match" />
+                            </div>
                         }
                     </td>
                 </tr>

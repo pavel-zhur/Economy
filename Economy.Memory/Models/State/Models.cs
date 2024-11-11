@@ -192,9 +192,7 @@ public record PlannedTransaction(
     string BudgetId,
     Amounts Amounts,
     TransactionType Type,
-    Schedule? Schedule,
-    Date? Date,
-    bool IsCompleted)
+    Date? Date)
     : EntityBase(Id)
 {
     public override void Validate()
@@ -212,7 +210,7 @@ public record PlannedTransaction(
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {repositories.GetReferenceTitle(BudgetId)} {Date} {Amounts.ToDetails(repositories)} {Type} {(IsCompleted ? "100%" : "0%")} n:({SpecialNotes}) {Schedule}";
+        => $"{Id} {repositories.GetReferenceTitle(BudgetId)} {Date} {Amounts.ToDetails(repositories)} {Type} n:({SpecialNotes})";
 
     protected override IEnumerable<string?> GetForeignKeysDirty()
         => Amounts.Select(a => a.CurrencyId).Append(BudgetId);
@@ -408,6 +406,7 @@ public enum TransactionType
     Expense,
 }
 
+[Obsolete("Refactor")]
 public class Amounts : List<Amount>
 {
     public void Validate(bool allowNegative, bool allowZero, bool allowPositive)
@@ -425,6 +424,25 @@ public class Amounts : List<Amount>
 
     public string ToDetails(Repositories repositories)
         => string.Join(", ", this.Select(a => a.ToDetails(repositories)));
+
+    [Obsolete("Refactor")]
+    public void Add(Amounts other, bool subtract = false)
+    {
+        var result = other.Select(a => a.CurrencyId)
+            .Union(this.Select(a => a.CurrencyId))
+            .Select(c =>
+            {
+                var thisValue = this.FirstOrDefault(a => a.CurrencyId == c).Value;
+                var otherValue = other.FirstOrDefault(a => a.CurrencyId == c).Value;
+                var result = subtract ? thisValue - otherValue : thisValue + otherValue;
+                return new Amount(c, result);
+            })
+            .Where(x => x.Value != 0)
+            .ToList();
+
+        Clear();
+        AddRange(result);
+    }
 }
 
 [method: JsonConstructor]
