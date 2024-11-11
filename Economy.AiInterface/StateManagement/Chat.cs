@@ -1,11 +1,9 @@
-using System.ComponentModel;
 using System.Text.Json;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OpenAI.Chat;
 
 namespace Economy.AiInterface.StateManagement;
 

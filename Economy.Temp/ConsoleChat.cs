@@ -13,10 +13,9 @@ public class ConsoleChat(Kernel kernel)
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Enable planning
-        OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new OpenAIPromptExecutionSettings
+        var openAiPromptExecutionSettings = new OpenAIPromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-            
         };
 
         // Create a history store the conversation
@@ -36,7 +35,7 @@ public class ConsoleChat(Kernel kernel)
             // Get the response from the AI
             var result = await chatCompletionService.GetChatMessageContentAsync(
                 history,
-                executionSettings: openAIPromptExecutionSettings,
+                executionSettings: openAiPromptExecutionSettings,
                 kernel: kernel);
 
             // Print the results
