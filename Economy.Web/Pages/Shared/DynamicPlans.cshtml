@@ -1,7 +1,6 @@
 ﻿@page
 @model Economy.Web.Pages.PlansModel
 @using Economy.AiInterface.Scope
-@using Economy.Memory.Models.State
 @inject StateFactory StateFactory
 
 @{
@@ -13,16 +12,31 @@
     <table class="table table-sm">
         <thead>
             <tr>
-                <th style="width: 20%;">Plan ID</th>
-                <th style="width: 40%;">Date Range</th>
+                <th>Plan ID</th>
+                <th>Date Range</th>
+                <th>Schedule</th>
+                <th>Volume</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var (plan, depth) in planTree)
             {
                 <tr>
-                    <td style="padding-left:@(depth * 20)px;">@plan.Id. @plan.Name</td>
-                    <td><code><span class="@(plan.StartDate.HasValue ? "" : "text-muted")">@(plan.StartDate?.ToString() ?? "-- -- ----")</span> - <span class="@(plan.FinishDate.HasValue ? "" : "text-muted")">@(plan.FinishDate?.ToString() ?? "-- -- ----")</span></code></td>
+                    <td style="padding-left:@(depth * 20)px;">
+                        @plan.Id. @plan.Name
+                        @if (plan.SpecialNotes != null)
+                        {
+                            <div>@plan.SpecialNotes</div>
+                        }
+                    </td>
+                    <td class="data-record"><span class="@(plan.StartDate.HasValue ? "" : "text-muted")">@(plan.StartDate?.ToString() ?? "-- -- ----")</span> - <span class="@(plan.FinishDate.HasValue ? "" : "text-muted")">@(plan.FinishDate?.ToString() ?? "-- -- ----")</span></td>
+                    <td>@plan.Schedule</td>
+                    <td class="data-record">
+                        @if (plan.Volume != null)
+                        {
+                            <span>@plan.Volume?.ToDetails(state.Repositories)</span>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>

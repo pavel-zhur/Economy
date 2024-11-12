@@ -99,7 +99,7 @@ public record Event(int Id, string Name, string? SpecialNotes, int? PlanId, Date
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Date} n:({SpecialNotes})";
+        => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Date}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")}";
 }
 
 [EntityType(EntityType.Category)]
@@ -123,7 +123,7 @@ public record Category(int Id, string Name, string? SpecialNotes) : EntityBase(I
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} n:({SpecialNotes})";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")}";
 }
 
 [EntityType(EntityType.WalletAudit)]
@@ -190,14 +190,14 @@ public record Plan(
             throw new ArgumentException("A plan with a schedule may not have parents with schedules.");
         }
 
-        Volume?.Amounts.Validate(false, false, true);
+        Volume?.Validate();
     }
 
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} n:({SpecialNotes}) p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} [{StartDate} - {FinishDate}] {Volume?.Amounts.ToDetails(repositories)} {Volume?.Type} {Schedule}";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} [{StartDate} - {FinishDate}] {Volume?.Amounts.ToDetails(repositories)} {Schedule}";
 }
 
 [EntityType(EntityType.Transaction)]
@@ -250,8 +250,12 @@ public record Transaction(
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
+    [Obsolete] // todo: make better
+    public string ToDetailsNoEntriesNoTypeNoTimestamp(Repositories repositories)
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")}";
+
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name} n:({SpecialNotes}) {DateAndTime} {Type} [{string.Join(", ", Entries.Select(e => e.ToDetails(repositories)))}]";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {DateAndTime} {Type} [{string.Join(", ", Entries.Select(e => e.ToDetails(repositories)))}]";
 }
 
 [EntityType(EntityType.Conversion)]
@@ -359,8 +363,12 @@ public record TransactionEntry(
         Amounts.Validate(false, false, true);
     }
 
+    [Obsolete] // todo: make better
+    public string ToDetailsNoAmounts(Repositories repositories)
+        => $"{Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {repositories.GetReferenceTitle(WalletId, EntityType.Wallet)} {repositories.GetReferenceTitle(CategoryId, EntityType.Category)}";
+
     public string ToDetails(Repositories repositories)
-        => $"{repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {repositories.GetReferenceTitle(WalletId, EntityType.Wallet)} {repositories.GetReferenceTitle(CategoryId, EntityType.Category)} {Amounts.ToDetails(repositories)}";
+        => $"{Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {repositories.GetReferenceTitle(WalletId, EntityType.Wallet)} {repositories.GetReferenceTitle(CategoryId, EntityType.Category)} {Amounts.ToDetails(repositories)}";
 }
 
 // Value objects
@@ -384,7 +392,16 @@ public enum TransactionType
     Expense,
 }
 
-public record PlanVolume(TransactionType Type, Amounts Amounts);
+public record PlanVolume(TransactionType Type, Amounts Amounts)
+{
+    public void Validate()
+    {
+        Amounts.Validate(false, false, true);
+    }
+
+    public string ToDetails(Repositories repositories)
+        => $"{Type} {Amounts.ToDetails(repositories)}";
+}
 
 [Obsolete("Refactor")] // todo: think
 public class Amounts : List<Amount>

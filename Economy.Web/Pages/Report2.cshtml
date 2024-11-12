@@ -22,6 +22,7 @@
                 <th>Timestamp</th>
                 <th>Income</th>
                 <th>Expense</th>
+                <th>Details</th>
                 <th>Balance</th>
             </tr>
         </thead>
@@ -41,6 +42,11 @@
                         {
                             <span>@e.Amounts.ToDetails(Model.State.Repositories)</span>
                         }
+                    </td>
+                    <td class="data-info">
+                        @t.ToDetailsNoEntriesNoTypeNoTimestamp(Model.State.Repositories)
+                        <br/>
+                        @e.ToDetailsNoAmounts(Model.State.Repositories)
                     </td>
                     <td class="data-record">
                         @{
