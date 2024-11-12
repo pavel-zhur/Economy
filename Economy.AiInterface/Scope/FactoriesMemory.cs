@@ -1,9 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.Json;
-using Economy.AiInterface.StateManagement;
 using Economy.Memory.Containers.State;
-using Economy.Memory.Models.EventSourcing;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Economy.AiInterface.Scope;
@@ -11,16 +8,6 @@ namespace Economy.AiInterface.Scope;
 public class FactoriesMemory
 {
     private const string FileNameTemplate = "c:/temp/{0}.json";
-
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
-    {
-        Converters =
-        {
-            new EventBaseConverter(),
-            new EntityBaseConverter(),
-        },
-        WriteIndented = true
-    };
 
     private readonly ConcurrentDictionary<string, (State state, ChatHistory chatHistory, Task initialization)> _memory = new();
 
@@ -31,7 +18,7 @@ public class FactoriesMemory
             _ =>
             {
                 var state = new State();
-                var initialization = LoadFromFile(state, userKey);
+                var initialization = state.LoadFromFile(GetFileName(userKey));
                 return (state, new ChatHistory(), initialization);
             });
 
@@ -42,12 +29,7 @@ public class FactoriesMemory
 
     public async Task Save(string userKey)
     {
-        await SaveToFile(_memory[userKey].state, userKey);
-    }
-
-    private static async Task SaveToFile(State state, string userKey)
-    {
-        await File.WriteAllTextAsync(GetFileName(userKey), JsonSerializer.Serialize(new SerializedEvents(2, state.Events), JsonSerializerOptions));
+        await _memory[userKey].state.SaveToFile(GetFileName(userKey));
     }
 
     private static string GetFileName(string userKey)
@@ -56,21 +38,4 @@ public class FactoriesMemory
 
         return string.Format(FileNameTemplate, userKey);
     }
-
-    private static async Task LoadFromFile(State state, string userKey)
-    {
-        var fileName = GetFileName(userKey);
-        if (!File.Exists(fileName))
-        {
-            return;
-        }
-
-        var events = JsonSerializer.Deserialize<SerializedEvents>(await File.ReadAllTextAsync(fileName), JsonSerializerOptions);
-        foreach (var @event in events!.Events)
-        {
-            state.Apply(@event);
-        }
-    }
-
-    private record SerializedEvents(int Version, List<EventBase> Events);
 }

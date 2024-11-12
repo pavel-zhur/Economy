@@ -2,9 +2,9 @@
 using System.Text.Json.Serialization;
 using Economy.Memory.Models.State;
 
-namespace Economy.AiInterface.Scope;
+namespace Economy.Memory.Containers.State.Serialization;
 
-public class EntityBaseConverter : JsonConverter<EntityBase>
+internal class EntityBaseConverter : JsonConverter<EntityBase>
 {
     private const string TypePropertyName = "Type";
     private const string DataPropertyName = "Data";

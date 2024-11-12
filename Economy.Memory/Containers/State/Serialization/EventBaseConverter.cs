@@ -2,9 +2,9 @@
 using System.Text.Json.Serialization;
 using Economy.Memory.Models.EventSourcing;
 
-namespace Economy.AiInterface.Scope;
+namespace Economy.Memory.Containers.State.Serialization;
 
-public class EventBaseConverter : JsonConverter<EventBase>
+internal class EventBaseConverter : JsonConverter<EventBase>
 {
     private const string TypePropertyName = "Type";
     private const string DataPropertyName = "Data";
