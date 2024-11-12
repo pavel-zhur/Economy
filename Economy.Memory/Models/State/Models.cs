@@ -301,22 +301,22 @@ public record Transfer(
     int Id,
     int FromPlanId,
     int ToPlanId,
-    Amount TransferredAmount,
+    Amount Amount,
     Date Date,
-    TransferType TransferType)
+    TransferType Type)
     : EntityBase(Id)
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
         new List<EntityFullId?>
         {
-            TransferredAmount.CurrencyId.ToEntityFullId(EntityType.Currency),
+            Amount.CurrencyId.ToEntityFullId(EntityType.Currency),
             FromPlanId.ToEntityFullId(EntityType.Plan),
             ToPlanId.ToEntityFullId(EntityType.Plan),
         };
 
     public override void Validate(Repositories repositories)
     {
-        TransferredAmount.Validate(false, false, true);
+        Amount.Validate(false, false, true);
 
         // todo: probably adjust years or extract to constants
         if (Date.Year < 2020 || Date.Year > 2040)
@@ -334,7 +334,7 @@ public record Transfer(
         => $"[{Id}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {TransferredAmount.ToDetails(repositories)} {Date} {TransferType}";
+        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {Amount.ToDetails(repositories)} {Date} {Type}";
 }
 
 // Sub-entities

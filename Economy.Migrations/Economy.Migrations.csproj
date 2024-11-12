@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="V2\" />
+    <ProjectReference Include="..\Economy.Memory\Economy.Memory.csproj" />
   </ItemGroup>
 
 </Project>

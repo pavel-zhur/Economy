@@ -1,10 +1,8 @@
-﻿using Economy.Memory.Models.EventSourcing;
+﻿using System.Text.Json;
+using Economy.Migrations.V2.Containers.State.Serialization;
+using Economy.Migrations.V2.Models.EventSourcing;
 
-namespace Economy.Memory.Containers.State;
-
-using Serialization;
-using Repositories;
-using System.Text.Json;
+namespace Economy.Migrations.V2.Containers.State;
 
 public class State
 {
@@ -20,7 +18,7 @@ public class State
 
     public List<EventBase> Events { get; } = new();
 
-    public Repositories Repositories { get; } = new();
+    public Repositories.Repositories Repositories { get; } = new();
 
     public void Apply(EventBase @event)
     {
@@ -50,7 +48,7 @@ public class State
 
     public async Task SaveToFile(string filePath)
     {
-        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new SerializedEvents(3, Events), JsonSerializerOptions));
+        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new SerializedEvents(2, Events), JsonSerializerOptions));
     }
 
     public async Task LoadFromFile(string filePath)
@@ -61,9 +59,9 @@ public class State
         }
 
         var events = JsonSerializer.Deserialize<SerializedEvents>(await File.ReadAllTextAsync(filePath), JsonSerializerOptions)!;
-        if (events.Version != 3)
+        if (events.Version != 2)
         {
-            throw new ArgumentOutOfRangeException(nameof(events.Version), events.Version, "Expected version 3");
+            throw new ArgumentOutOfRangeException(nameof(events.Version), events.Version, "Expected version 2");
         }
 
         foreach (var @event in events.Events)
