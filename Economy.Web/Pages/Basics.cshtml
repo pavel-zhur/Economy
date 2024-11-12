@@ -21,12 +21,12 @@
             {
                 <tr>
                     <td>@(wallet.ToDetails(state.Repositories))</td>
-                    <td>@(audit?.Amounts.ToDetails(state.Repositories))</td>
+                    <td class="data-record">@(audit?.Amounts.ToDetails(state.Repositories))</td>
                 </tr>
             }
             <tr>
                 <td><strong>Total</strong></td>
-                <td>@Model.Total.ToDetails(state.Repositories)</td>
+                <td class="data-record">@Model.Total.ToDetails(state.Repositories)</td>
             </tr>
         </tbody>
     </table>
