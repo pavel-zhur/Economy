@@ -54,6 +54,7 @@ public class State
         }
 
         Events.Add(@event);
+        @event.SetRevision(Events.Count);
     }
 
     public async Task SaveToFile(string filePath)
@@ -79,4 +80,6 @@ public class State
             Apply(@event);
         }
     }
+
+    internal IHistory CreateHistorySnapshot(int revision) => new StateSnapshot(this, revision);
 }

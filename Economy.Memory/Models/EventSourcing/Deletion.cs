@@ -7,6 +7,6 @@ namespace Economy.Memory.Models.EventSourcing;
 [method: JsonConstructor]
 public record Deletion(EntityFullId EntityFullId, DateTime CreatedOn) : EventBase(CreatedOn)
 {
-    public override string ToDetails(Repositories repositories) =>
-        $"Deleted {EntityFullId} @{base.ToDetails(repositories)}";
+    public override string ToDetails(Containers.State.State state) =>
+        $"Deleted {EntityFullId.Type} {state.CreateHistorySnapshot(GetRevision()).GetDetails(EntityFullId)} @{base.ToDetails(state)}";
 }

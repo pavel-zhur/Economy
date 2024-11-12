@@ -1,10 +1,15 @@
 ﻿using System.Globalization;
-using Economy.Memory.Containers.Repositories;
 
 namespace Economy.Memory.Models.EventSourcing;
 
 // todo: extract to files
 public abstract record EventBase(DateTime CreatedOn)
 {
-    public virtual string ToDetails(Repositories repositories) => CreatedOn.ToString(CultureInfo.InvariantCulture);
+    private int _revision;
+
+    public virtual string ToDetails(Containers.State.State state) => CreatedOn.ToString(CultureInfo.InvariantCulture);
+
+    public int GetRevision() => _revision;
+
+    public void SetRevision(int revision) => _revision = revision;
 }

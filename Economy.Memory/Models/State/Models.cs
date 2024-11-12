@@ -3,7 +3,7 @@ using OneShelf.Common;
 using System.Text.Json.Serialization;
 using Economy.Memory.Tools;
 using System.Reflection;
-using Microsoft.VisualBasic;
+using Economy.Memory.Containers.State;
 
 namespace Economy.Memory.Models.State;
 
@@ -19,7 +19,7 @@ public abstract record EntityBase(int Id)
 
     public abstract string ToReferenceTitle();
 
-    public abstract string ToDetails(Repositories repositories);
+    public abstract string ToDetails(IHistory repositories);
 
     public EntityType GetEntityType() => GetType().GetCustomAttribute<EntityTypeAttribute>()!.EntityType;
 
@@ -53,7 +53,7 @@ public record Currency(int Id, string LongName, string Abbreviation, string Curr
     public override string ToReferenceTitle()
         => $"[{Id} {Abbreviation}]";
 
-    public override string ToDetails(Repositories repositories)
+    public override string ToDetails(IHistory repositories)
         => $"{Id} {LongName} ({Abbreviation}, {CurrencySymbol}) {CustomDisplayUnit}";
 }
 
@@ -72,7 +72,7 @@ public record Wallet(int Id, string Name) : EntityBase(Id)
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
-    public override string ToDetails(Repositories repositories)
+    public override string ToDetails(IHistory repositories)
         => $"{Id} {Name}";
 }
 
@@ -100,7 +100,7 @@ public record Event(int Id, string Name, string? SpecialNotes, int? PlanId, Date
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
-    public override string ToDetails(Repositories repositories)
+    public override string ToDetails(IHistory repositories)
         => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Date}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")}";
 }
 
@@ -124,7 +124,7 @@ public record Category(int Id, string Name, string? SpecialNotes) : EntityBase(I
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
-    public override string ToDetails(Repositories repositories)
+    public override string ToDetails(IHistory repositories)
         => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")}";
 }
 
@@ -144,7 +144,7 @@ public record WalletAudit(int Id, int WalletId, DateTime CheckDateAndTime, Amoun
     public override string ToReferenceTitle()
         => $"[{Id}]";
 
-    public override string ToDetails(Repositories repositories)
+    public override string ToDetails(IHistory repositories)
         => $"{Id} {repositories.GetReferenceTitle(WalletId, EntityType.Wallet)} {CheckDateAndTime} [{Amounts.ToDetails(repositories)}]";
 }
 
@@ -184,7 +184,7 @@ public record Plan(
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
-    public override string ToDetails(Repositories repositories)
+    public override string ToDetails(IHistory repositories)
         => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} {Schedule?.ToDetails()}";
 }
 
@@ -232,7 +232,7 @@ public record Transaction(
     public string ToDetailsNoAmountsOrType(Repositories repositories)
         => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)}";
 
-    public override string ToDetails(Repositories repositories)
+    public override string ToDetails(IHistory repositories)
         => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Type} {Planned?.ToDetails(repositories)} {Actual?.ToDetails(repositories)}";
 }
 
@@ -271,7 +271,7 @@ public record Conversion(
     public override string ToReferenceTitle()
         => $"[{Id}]";
 
-    public override string ToDetails(Repositories repositories)
+    public override string ToDetails(IHistory repositories)
         => $"{Id} {repositories.GetReferenceTitle(FromWalletId, EntityType.Wallet)} {FromAmount.ToDetails(repositories)} -> {repositories.GetReferenceTitle(ToWalletId, EntityType.Wallet)} {ToAmount.ToDetails(repositories)}";
 }
 
@@ -309,7 +309,7 @@ public record Transfer(
     public override string ToReferenceTitle()
         => $"[{Id}]";
 
-    public override string ToDetails(Repositories repositories)
+    public override string ToDetails(IHistory repositories)
         => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {Amount.ToDetails(repositories)} {Date} {Type}";
 }
 
@@ -328,7 +328,7 @@ public record TransactionPlannedAmount(
         Amounts.Validate(false, false, true);
     }
 
-    public string ToDetails(Repositories repositories)
+    public string ToDetails(IHistory repositories)
         => $"[P: {Date} {Amounts.ToDetails(repositories)}]";
 }
 
@@ -346,7 +346,7 @@ public record TransactionActualAmount(
         Amounts.Validate(false, false, true);
     }
 
-    public string ToDetails(Repositories repositories)
+    public string ToDetails(IHistory repositories)
         => $"[A: {DateAndTime} {Amounts.ToDetails(repositories)}]";
 }
 
@@ -414,7 +414,7 @@ public class Amounts : List<Amount>
         }
     }
 
-    public string ToDetails(Repositories repositories)
+    public string ToDetails(IHistory repositories)
         => string.Join(", ", this.Select(a => a.ToDetails(repositories)));
 
     [Obsolete("Refactor")] // todo: think
@@ -460,12 +460,12 @@ public record struct Amount(int CurrencyId, decimal Value)
         }
     }
 
-    public string ToDetails(Repositories repositories)
+    public string ToDetails(IHistory repositories)
     {
-        var currency = repositories.Currencies[CurrencyId];
+        var (currencyCustomDisplayUnit, abbreviation) = repositories.GetCurrencyTitles(CurrencyId);
         var value = Value;
         string? prefix = null;
-        switch (currency.CustomDisplayUnit)
+        switch (currencyCustomDisplayUnit)
         {
             case CurrencyCustomDisplayUnit.Thousands:
                 value /= 1000;
@@ -477,7 +477,7 @@ public record struct Amount(int CurrencyId, decimal Value)
                 break;
         }
 
-        return $"{value} {prefix}{currency.Abbreviation}";
+        return $"{value} {prefix}{abbreviation}";
     }
 }
 

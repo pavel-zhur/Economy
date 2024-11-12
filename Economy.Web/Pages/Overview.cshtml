@@ -13,7 +13,7 @@
 @foreach (var entity in state.Repositories.Events.GetAll().OrderBy(x => x.Id))
 {
     <p>
-        @(entity.ToDetails(state.Repositories))
+        @entity.ToDetails(state.Repositories)
     </p>
 }
 
@@ -21,7 +21,7 @@
 @foreach (var entity in state.Repositories.WalletAudits.GetAll().OrderBy(x => x.Id))
 {
     <p>
-        @(entity.ToDetails(state.Repositories))
+        @entity.ToDetails(state.Repositories)
     </p>
 }
 
@@ -29,7 +29,7 @@
 @foreach (var entity in state.Repositories.Plans.GetAll().OrderBy(x => x.Id))
 {
     <p>
-        @(entity.ToDetails(state.Repositories))
+        @entity.ToDetails(state.Repositories)
     </p>
 }
 
@@ -37,7 +37,7 @@
 @foreach (var entity in state.Repositories.Transactions.GetAll().OrderBy(x => x.Id))
 {
     <p>
-        @(entity.ToDetails(state.Repositories))
+        @entity.ToDetails(state.Repositories)
     </p>
 }
 
@@ -45,7 +45,7 @@
 @foreach (var entity in state.Repositories.Conversions.GetAll().OrderBy(x => x.Id))
 {
     <p>
-        @(entity.ToDetails(state.Repositories))
+        @entity.ToDetails(state.Repositories)
     </p>
 }
 
@@ -53,6 +53,6 @@
 @foreach (var entity in state.Repositories.Transfers.GetAll().OrderBy(x => x.Id))
 {
     <p>
-        @(entity.ToDetails(state.Repositories))
+        @entity.ToDetails(state.Repositories)
     </p>
 }

@@ -22,7 +22,7 @@
             @foreach (var (wallet, audit) in Model.Wallets)
             {
                 <tr>
-                    <td>@(wallet.ToDetails(state.Repositories))</td>
+                    <td>@wallet.ToDetails(state.Repositories)</td>
                     <td class="data-record">@(audit?.Amounts.ToDetails(state.Repositories))</td>
                     <td class="data-record">@(audit?.Amounts.ToEquivalentAmount(state.Repositories).ToDetails())</td>
                 </tr>
@@ -41,7 +41,7 @@
     @foreach (var entity in state.Repositories.Currencies.GetAll().OrderBy(x => x.Id))
     {
         <li>
-            @(entity.ToDetails(state.Repositories))
+            @entity.ToDetails(state.Repositories)
         </li>
     }
 </ul>
@@ -51,7 +51,7 @@
     @foreach (var entity in state.Repositories.Categories.GetAll().OrderBy(x => x.Id))
     {
         <li>
-            @(entity.ToDetails(state.Repositories))
+            @entity.ToDetails(state.Repositories)
         </li>
     }
 </ul>
