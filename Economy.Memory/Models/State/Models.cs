@@ -385,17 +385,6 @@ public enum TransactionType
     Expense,
 }
 
-public record PlanVolume(TransactionType Type, Amounts Amounts)
-{
-    public void Validate()
-    {
-        Amounts.Validate(false, false, true, false);
-    }
-
-    public string ToDetails(Repositories repositories)
-        => $"{Type} {Amounts.ToDetails(repositories)}";
-}
-
 [Obsolete("Refactor")] // todo: think
 public class Amounts : List<Amount>
 {

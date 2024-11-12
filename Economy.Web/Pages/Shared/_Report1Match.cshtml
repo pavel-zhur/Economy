@@ -19,7 +19,7 @@
         <span>@Constants.Plan @match.Planned.Amounts.ToDetails(state.Repositories)</span>
         break;
     case Report1Model.PlannedRemainderMatch match:
-        <span>@Constants.Actual @match.Remainder.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.Amounts.ToDetails(state.Repositories)</span>
+        <span>@Constants.Remainder @match.Remainder.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.Amounts.ToDetails(state.Repositories)</span>
         break;
 }
 
