@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
+using Economy.Web.Tools;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +39,7 @@ var app = builder.Build();
 var customCulture = new CultureInfo("en-US")
 {
     DateTimeFormat = { ShortDatePattern = "dd.MM.yyyy", LongTimePattern = "HH:mm" },
-    NumberFormat = { NumberDecimalSeparator = ".", NumberGroupSeparator = "," }
+    NumberFormat = { NumberDecimalSeparator = ".", NumberGroupSeparator = ",", NegativeSign = Constants.Minus }
 };
 
 var localizationOptions = new RequestLocalizationOptions

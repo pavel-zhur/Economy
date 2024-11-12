@@ -74,3 +74,24 @@ body {
     font-size: .875em;
 }
 
+.table-fixed-header {
+}
+
+    .table-fixed-header thead th {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 1;
+    }
+
+    .table-fixed-header th, .table-fixed-header td {
+        border-right: 1px solid #dee2e6; /* Add vertical column separator lines */
+    }
+
+        .table-fixed-header th:last-child, .table-fixed-header td:last-child {
+            border-right: none; /* Remove the border from the last column */
+        }
+
+    .table-fixed-header tr.top-border td {
+        border-top: 2px solid #53a0ec;
+    }

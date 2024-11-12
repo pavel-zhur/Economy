@@ -1,0 +1,61 @@
+﻿@page
+@using Economy.Memory.Tools
+@using Economy.Memory.Models.State
+@model Economy.Web.Pages.Report2Model
+@{
+    ViewData["Title"] = "Report 2";
+    var balance = new Amounts();
+}
+
+<form method="get">
+    <button type="submit" class="btn btn-primary mt-2">View</button>
+</form>
+
+<div class="mt-4">
+    <h4>Total Balance: <span class="data-record">@Model.Total.ToDetails(Model.State.Repositories)</span></h4>
+</div>
+
+<div class="table-responsive table-fixed-header overflow-visible mt-4">
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Income</th>
+                <th>Expense</th>
+                <th>Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var (t, e) in Model.State.Repositories.Transactions.GetAll().SelectMany(t => t.Entries.Select(e => (t, e))).OrderBy(x => x.t.DateAndTime))
+            {
+                <tr class="data-record">
+                    <td>@t.DateAndTime.WithDayOfWeek()</td>
+                    <td>
+                        @if (t.Type == TransactionType.Income)
+                        {
+                            <span>@e.Amounts.ToDetails(Model.State.Repositories)</span>
+                        }
+                    </td>
+                    <td>
+                        @if (t.Type == TransactionType.Expense)
+                        {
+                            <span>@e.Amounts.ToDetails(Model.State.Repositories)</span>
+                        }
+                    </td>
+                    <td>
+                        @{
+                            balance.Add(e.Amounts, t.Type == TransactionType.Expense);
+                        }
+                        <span>@balance.ToDetails(Model.State.Repositories)</span>
+                    </td>
+                </tr>
+            }
+            <tr>
+                <td><strong>Total: </strong></td>
+                <td class="data-record">@Model.TotalIncomes.ToDetails(Model.State.Repositories)</td>
+                <td class="data-record">@Model.TotalExpenses.ToDetails(Model.State.Repositories)</td>
+                <td class="data-record">@Model.Total.ToDetails(Model.State.Repositories)</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

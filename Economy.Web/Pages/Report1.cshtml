@@ -6,7 +6,7 @@
     ViewData["Title"] = "Report 1";
 }
 
-<form method="get" class="mb-4">
+<form method="get">
     <div class="d-flex justify-content-start flex-wrap">
         <div class="form-group me-3">
             <label for="from">From</label>
@@ -29,31 +29,7 @@
     <button type="submit" class="btn btn-primary mt-2">View</button>
 </form>
 
-<style>
-    .table-fixed-header {
-    }
-
-        .table-fixed-header thead th {
-            position: sticky;
-            top: 0;
-            background-color: white;
-            z-index: 1;
-        }
-
-        .table-fixed-header th, .table-fixed-header td {
-            border-right: 1px solid #dee2e6; /* Add vertical column separator lines */
-        }
-
-            .table-fixed-header th:last-child, .table-fixed-header td:last-child {
-                border-right: none; /* Remove the border from the last column */
-            }
-
-        .table-fixed-header tr.top-border td {
-            border-top: 2px solid #53a0ec;
-        }
-</style>
-
-<div class="table-responsive table-fixed-header overflow-visible">
+<div class="table-responsive table-fixed-header overflow-visible mt-4">
     <table class="table table-sm">
         <thead>
             <tr>
@@ -77,7 +53,7 @@
                         }
                         else
                         {
-                            <span class="data-info">@row.Date.ToDateTime().DayOfWeek.ToString()[..3] @row.Date</span>
+                            <span class="data-info">@row.Date.WithDayOfWeek()</span>
                         }
                     </td>
                     <td>

@@ -20,11 +20,9 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
     public List<Row> Rows { get; } = new();
 
-    public State State { get; set; } = null!;
-
     public async Task OnGet()
     {
-        State = await stateFactory.Get();
+        var state = await stateFactory.Get();
 
         // todo: remove hard-coded values
         WeekStart ??= DayOfWeek.Saturday;
@@ -44,7 +42,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             rows.GetValueOrDefault(date) ?? (date < From.Value.ToDate() ? before : after);
 
         Dictionary<int, List<ActualMatch>> plannedTransactionMatches = new();
-        foreach (var actualTransaction in State.Repositories.Transactions.GetAll())
+        foreach (var actualTransaction in state.Repositories.Transactions.GetAll())
         {
             var row = FindRow(actualTransaction.DateAndTime.ToDate());
 
@@ -52,7 +50,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             {
                 TransactionType transactionType;
                 ActualMatch match;
-                if (actualTransactionEntry.PlanId != null && State.Repositories.Plans[actualTransactionEntry.PlanId.Value] is { Volume: not null } plannedTransaction)
+                if (actualTransactionEntry.PlanId != null && state.Repositories.Plans[actualTransactionEntry.PlanId.Value] is { Volume: not null } plannedTransaction)
                 {
                     var planId = actualTransactionEntry.PlanId.Value;
                     transactionType = plannedTransaction.Volume!.Type;
@@ -88,7 +86,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             }
         }
 
-        foreach (var plannedTransaction in State.Repositories.Plans.GetAll().Where(x => x.Volume != null))
+        foreach (var plannedTransaction in state.Repositories.Plans.GetAll().Where(x => x.Volume != null))
         {
             var matches = plannedTransactionMatches.GetValueOrDefault(plannedTransaction.Id);
             MatchBase match;
@@ -125,7 +123,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                 };
             }
 
-            var row = FindRow(FindNearestParentPlan(State, plannedTransaction.Id, x => x.StartDate.HasValue)?.StartDate ?? new Date());
+            var row = FindRow(FindNearestParentPlan(state, plannedTransaction.Id, x => x.StartDate.HasValue)?.StartDate ?? new Date());
 
             (plannedTransaction.Volume.Type switch
             {
