@@ -37,4 +37,12 @@ public static class Extensions
 
         return new(total);
     }
+
+    internal static void Validate(this DateTime dateTime)
+    {
+        if (dateTime.Year < 2020 || dateTime.Year > 2040)
+        {
+            throw new ArgumentException("Date and time year must be between 2020 and 2040.");
+        }
+    }
 }

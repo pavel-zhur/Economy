@@ -29,31 +29,29 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var (t, e) in Model.State.Repositories.Transactions.GetAll().SelectMany(t => t.Entries.Select(e => (t, e))).OrderBy(x => x.t.DateAndTime))
+            @foreach (var transaction in Model.State.Repositories.Transactions.GetAll().Where(x => x.Actual != null).OrderBy(x => x.Actual!.DateAndTime))
             {
                 <tr>
-                    <td class="data-info">@t.DateAndTime.WithDayOfWeek()</td>
+                    <td class="data-info">@transaction.Actual!.DateAndTime.WithDayOfWeek()</td>
                     <td class="data-record">
-                        @if (t.Type == TransactionType.Income)
+                        @if (transaction.Type == TransactionType.Income)
                         {
-                            <span>@e.Amounts.ToDetails(Model.State.Repositories)</span>
+                            <span>@transaction.Actual.Amounts.ToDetails(Model.State.Repositories)</span>
                         }
                     </td>
                     <td class="data-record">
-                        @if (t.Type == TransactionType.Expense)
+                        @if (transaction.Type == TransactionType.Expense)
                         {
-                            <span>@e.Amounts.ToDetails(Model.State.Repositories)</span>
+                            <span>@transaction.Actual.Amounts.ToDetails(Model.State.Repositories)</span>
                         }
                     </td>
                     <td class="data-info">
-                        @t.ToDetailsNoEntriesNoTypeNoTimestamp(Model.State.Repositories)
-                        <br/>
-                        @e.ToDetailsNoAmounts(Model.State.Repositories)
+                        @transaction.ToDetailsNoAmountsOrType(Model.State.Repositories)
                     </td>
-                    <td class="data-record">@e.Amounts.ToEquivalentAmount(Model.State.Repositories).ToDetails()</td>
+                    <td class="data-record">@transaction.Actual.Amounts.ToEquivalentAmount(Model.State.Repositories).ToDetails()</td>
                     <td class="data-record">
                         @{
-                            balance = balance.Add(e.Amounts.ToEquivalentAmount(Model.State.Repositories), t.Type == TransactionType.Expense);
+                            balance = balance.Add(transaction.Actual.Amounts.ToEquivalentAmount(Model.State.Repositories), transaction.Type == TransactionType.Expense);
                         }
                         <span>@balance.ToDetails()</span>
                     </td>

@@ -3,13 +3,15 @@ using OneShelf.Common;
 using System.Text.Json.Serialization;
 using Economy.Memory.Tools;
 using System.Reflection;
+using Microsoft.VisualBasic;
 
 namespace Economy.Memory.Models.State;
 
 // todo: extract to files
 public abstract record EntityBase(int Id)
 {
-    public IEnumerable<EntityFullId> GetForeignKeys() => GetForeignKeysDirty().Where(x => x.HasValue).Select(x => x!.Value).Distinct();
+    public IEnumerable<EntityFullId> GetForeignKeys() =>
+        GetForeignKeysDirty().Where(x => x.HasValue).Select(x => x!.Value).Distinct();
 
     protected virtual IEnumerable<EntityFullId?> GetForeignKeysDirty() => Enumerable.Empty<EntityFullId?>();
 
@@ -136,10 +138,7 @@ public record WalletAudit(int Id, int WalletId, DateTime CheckDateAndTime, Amoun
     {
         Amounts.Validate(false, true, true);
 
-        if (CheckDateAndTime.Year < 2020 || CheckDateAndTime.Year > 2040)
-        {
-            throw new ArgumentException("Check timestamp must be between 2020 and 2040.");
-        }
+        CheckDateAndTime.Validate();
     }
 
     public override string ToReferenceTitle()
@@ -156,13 +155,10 @@ public record Plan(
     string Name,
     string? SpecialNotes,
     int? ParentPlanId,
-    Date? StartDate,
-    Date? FinishDate,
-    Schedule? Schedule,
-    PlanVolume? Volume)
+    PlanSchedule? Schedule)
     : EntityBase(Id)
 {
-    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => (Volume?.Amounts.GetForeignKeysDirty() ?? Enumerable.Empty<EntityFullId?>()).Append(ParentPlanId.ToEntityFullId(EntityType.Plan));
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => ParentPlanId.ToEntityFullId(EntityType.Plan).Once();
 
     public override void Validate(Repositories repositories)
     {
@@ -176,28 +172,20 @@ public record Plan(
             throw new ArgumentException("Plan special notes must be null or not empty.");
         }
 
-        StartDate?.Validate();
-        FinishDate?.Validate();
+        Schedule?.Validate();
 
-        if (StartDate > FinishDate)
+        if (Schedule != null &&
+            repositories.Plans.GetParents(this).Any(x => x.Schedule != null))
         {
-            throw new ArgumentException("Plan start date must be before finish date.");
+            throw new ArgumentException("Plans with schedules may not be nested.");
         }
-
-        if (Schedule.HasValue && ParentPlanId != null &&
-            repositories.Plans.GetParents(this).Any(x => x.Schedule.HasValue))
-        {
-            throw new ArgumentException("A plan with a schedule may not have parents with schedules.");
-        }
-
-        Volume?.Validate();
     }
 
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} [{StartDate} - {FinishDate}] {Volume?.Amounts.ToDetails(repositories)} {Schedule}";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} {Schedule?.ToDetails()}";
 }
 
 [EntityType(EntityType.Transaction)]
@@ -206,18 +194,16 @@ public record Transaction(
     int Id,
     string Name,
     string? SpecialNotes,
-    DateTime DateAndTime,
+    int PlanId,
     TransactionType Type,
-    IReadOnlyList<TransactionEntry> Entries)
+    TransactionPlannedAmount? Planned,
+    TransactionActualAmount? Actual)
     : EntityBase(Id)
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
-        Entries.SelectMany(e => new[]
-        {
-            e.WalletId.ToEntityFullId(EntityType.Wallet),
-            e.PlanId.ToEntityFullId(EntityType.Plan),
-            e.CategoryId.ToEntityFullId(EntityType.Category),
-        }.Concat(e.Amounts.GetForeignKeysDirty()));
+        (Planned?.GetForeignKeysDirty() ?? Enumerable.Empty<EntityFullId?>())
+        .Concat(Actual?.GetForeignKeysDirty() ?? Enumerable.Empty<EntityFullId?>())
+        .Append(PlanId.ToEntityFullId(EntityType.Plan));
 
     public override void Validate(Repositories repositories)
     {
@@ -226,36 +212,28 @@ public record Transaction(
             throw new ArgumentException("Transaction name must be not empty.");
         }
 
+        if (Planned == null && Actual == null)
+        {
+            throw new ArgumentException("Transaction must have either planned or actual amounts.");
+        }
+
         if (SpecialNotes != null && string.IsNullOrWhiteSpace(SpecialNotes))
         {
             throw new ArgumentException("Transaction special notes must be null or not empty.");
         }
 
-        if (DateAndTime.Year < 2020 || DateAndTime.Year > 2040)
-        {
-            throw new ArgumentException("Transaction timestamp must be between 2020 and 2040.");
-        }
-
-        if (Entries.AnyDuplicates(e => (e.WalletId, e.CategoryId), out _))
-        {
-            throw new ArgumentException("Transaction entries must have unique wallet IDs.");
-        }
-
-        foreach (var entry in Entries)
-        {
-            entry.Validate();
-        }
+        Planned?.Validate();
+        Actual?.Validate();
     }
 
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
-    [Obsolete] // todo: make better
-    public string ToDetailsNoEntriesNoTypeNoTimestamp(Repositories repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")}";
+    public string ToDetailsNoAmountsOrType(Repositories repositories)
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)}";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {DateAndTime} {Type} [{string.Join(", ", Entries.Select(e => e.ToDetails(repositories)))}]";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Type} {Planned} {Actual}";
 }
 
 [EntityType(EntityType.Conversion)]
@@ -281,6 +259,8 @@ public record Conversion(
     {
         FromAmount.Validate(false, false, true);
         ToAmount.Validate(false, false, true);
+
+        DateAndTime.Validate();
 
         if (FromAmount.CurrencyId == ToAmount.CurrencyId)
         {
@@ -318,11 +298,7 @@ public record Transfer(
     {
         Amount.Validate(false, false, true);
 
-        // todo: probably adjust years or extract to constants
-        if (Date.Year < 2020 || Date.Year > 2040)
-        {
-            throw new ArgumentException("Transfer date must be between 2020 and 2040.");
-        }
+        Date.Validate();
 
         if (FromPlanId == ToPlanId)
         {
@@ -340,35 +316,38 @@ public record Transfer(
 // Sub-entities
 
 [method: JsonConstructor]
-public record TransactionEntry(
-    string? Name,
-    string? SpecialNotes,
-    int? CategoryId,
-    int? WalletId,
-    int? PlanId,
+public record TransactionPlannedAmount(
+    Date Date,
     Amounts Amounts)
 {
+    internal IEnumerable<EntityFullId?> GetForeignKeysDirty() => Amounts.GetForeignKeysDirty();
+
     public void Validate()
     {
-        if (Name != null && string.IsNullOrWhiteSpace(Name))
-        {
-            throw new ArgumentException("Transaction entry name must be null or not empty.");
-        }
+        Date.Validate();
+        Amounts.Validate(false, false, true);
+    }
 
-        if (SpecialNotes != null && string.IsNullOrWhiteSpace(SpecialNotes))
-        {
-            throw new ArgumentException("Transaction entry special notes must be null or not empty.");
-        }
+    public string ToDetails(Repositories repositories)
+        => $"[A: {Date} {Amounts.ToDetails(repositories)}]";
+}
+
+[method: JsonConstructor]
+public record TransactionActualAmount(
+    DateTime DateAndTime,
+    Amounts Amounts)
+{
+    internal IEnumerable<EntityFullId?> GetForeignKeysDirty() => Amounts.GetForeignKeysDirty();
+
+    public void Validate()
+    {
+        DateAndTime.Validate();
 
         Amounts.Validate(false, false, true);
     }
 
-    [Obsolete] // todo: make better
-    public string ToDetailsNoAmounts(Repositories repositories)
-        => $"{Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {repositories.GetReferenceTitle(WalletId, EntityType.Wallet)} {repositories.GetReferenceTitle(CategoryId, EntityType.Category)}";
-
     public string ToDetails(Repositories repositories)
-        => $"{Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {repositories.GetReferenceTitle(WalletId, EntityType.Wallet)} {repositories.GetReferenceTitle(CategoryId, EntityType.Category)} {Amounts.ToDetails(repositories)}";
+        => $"[A: {DateAndTime} {Amounts.ToDetails(repositories)}]";
 }
 
 // Value objects
@@ -377,6 +356,22 @@ public enum TransferType
 {
     Reallocation,
     Usage,
+}
+
+public record PlanSchedule(Date StartDate, Date FinishDate, Schedule Schedule)
+{
+    public void Validate()
+    {
+        StartDate.Validate();
+        FinishDate.Validate();
+
+        if (StartDate > FinishDate)
+        {
+            throw new ArgumentException("Plan schedule start date must be before finish date.");
+        }
+    }
+
+    public string ToDetails() => $"[{Schedule} {{StartDate}} - {{FinishDate}}]";
 }
 
 public enum Schedule
@@ -491,7 +486,7 @@ public record struct Date(int Year, int Month, int Day) : IComparable<Date>
 {
     public void Validate()
     {
-        _ = new DateTime(Year, Month, Day);
+        this.ToDateTime().Validate();
     }
 
     public static bool operator <(Date left, Date right) => new DateTime(left.Year, left.Month, left.Day) < new DateTime(right.Year, right.Month, right.Day);

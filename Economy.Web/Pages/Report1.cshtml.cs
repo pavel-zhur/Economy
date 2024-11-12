@@ -4,6 +4,7 @@ using Economy.Memory.Models.State;
 using Economy.Memory.Tools;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using OneShelf.Common;
 
 namespace Economy.Web.Pages;
 
@@ -38,99 +39,59 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             Date = x.ToDate(),
         });
 
-        Row FindRow(Date date) =>
-            rows.GetValueOrDefault(date) ?? (date < From.Value.ToDate() ? before : after);
+        List<MatchBase> FindRow(Date date, TransactionType transactionType) =>
+            (rows.GetValueOrDefault(date) ?? (date < From.Value.ToDate() ? before : after)).SelectSingle(r => transactionType switch
+            {
+                TransactionType.Income => r.Incomes,
+                TransactionType.Expense => r.Expenses,
+                _ => throw new ArgumentOutOfRangeException(nameof(transactionType), transactionType, null)
+            });
 
         Dictionary<int, List<ActualMatch>> plannedTransactionMatches = new();
-        foreach (var actualTransaction in state.Repositories.Transactions.GetAll())
+        foreach (var transaction in state.Repositories.Transactions.GetAll())
         {
-            var row = FindRow(actualTransaction.DateAndTime.ToDate());
-
-            foreach (var actualTransactionEntry in actualTransaction.Entries)
+            if (transaction.Actual != null)
             {
-                TransactionType transactionType;
-                ActualMatch match;
-                if (actualTransactionEntry.PlanId != null && state.Repositories.Plans[actualTransactionEntry.PlanId.Value] is { Volume: not null } plannedTransaction)
+                if (transaction.Planned == null)
                 {
-                    var planId = actualTransactionEntry.PlanId.Value;
-                    transactionType = plannedTransaction.Volume!.Type;
-                    match = new PlannedAndActualMatch
+                    FindRow(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new ActualMatch
                     {
-                        Planned = plannedTransaction,
-                        Entry = actualTransactionEntry,
-                        Actual = actualTransaction,
-                        Negative = actualTransaction.Type != transactionType,
-                    };
-
-                    (plannedTransactionMatches.TryGetValue(planId, out var list) 
-                            ? list
-                            : plannedTransactionMatches[planId] = new())
-                            .Add(match);
+                        Transaction = transaction,
+                        Actual = transaction.Actual,
+                    });
                 }
                 else
                 {
-                    transactionType = actualTransaction.Type;
-                    match = new ActualMatch
+                    var remainder = new Amounts();
+                    remainder.Add(transaction.Planned.Amounts);
+                    remainder.Add(transaction.Actual.Amounts, true);
+
+                    FindRow(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new PlannedAndActualMatch
                     {
-                        Actual = actualTransaction,
-                        Entry = actualTransactionEntry,
-                    };
+                        Transaction = transaction,
+                        Planned = transaction.Planned,
+                        Actual = transaction.Actual,
+                    });
+
+                    if (remainder.ToEquivalentAmount(state.Repositories).Amount > 0)
+                    {
+                        FindRow(transaction.Planned.Date, transaction.Type).Add(new PlannedRemainderMatch
+                        {
+                            Transaction = transaction,
+                            Planned = transaction.Planned,
+                            Remainder = remainder,
+                        });
+                    }
                 }
-
-                (transactionType switch
-                {
-                    TransactionType.Income => row.Incomes,
-                    TransactionType.Expense => row.Expenses,
-                    _ => throw new ArgumentOutOfRangeException()
-                }).Add(match);
-            }
-        }
-
-        foreach (var plannedTransaction in state.Repositories.Plans.GetAll().Where(x => x.Volume != null))
-        {
-            var matches = plannedTransactionMatches.GetValueOrDefault(plannedTransaction.Id);
-            MatchBase match;
-            if (matches != null)
-            {
-                var remainder = new Amounts
-                {
-                    plannedTransaction.Volume!.Amounts,
-                };
-
-                foreach (var actualMatch in matches)
-                {
-                    remainder.Add(actualMatch.Entry.Amounts, actualMatch.Actual.Type == plannedTransaction.Volume.Type);
-                }
-
-                remainder.RemoveAll(x => x.Value < 0);
-
-                if (!remainder.Any())
-                {
-                    continue;
-                }
-
-                match = new PlannedRemainderMatch
-                {
-                    Planned = plannedTransaction,
-                    Remainder = remainder,
-                };
             }
             else
             {
-                match = new PlannedMatch
+                FindRow(transaction.Planned!.Date, transaction.Type).Add(new PlannedMatch
                 {
-                    Planned = plannedTransaction,
-                };
+                    Transaction = transaction,
+                    Planned = transaction.Planned,
+                });
             }
-
-            var row = FindRow(FindNearestParentPlan(state, plannedTransaction.Id, x => x.StartDate.HasValue)?.StartDate ?? new Date());
-
-            (plannedTransaction.Volume.Type switch
-            {
-                TransactionType.Expense => row.Expenses,
-                TransactionType.Income => row.Incomes,
-                _ => throw new ArgumentOutOfRangeException(),
-            }).Add(match);
         }
 
         Rows.AddRange(rows.Values.Append(before).Append(after).OrderBy(x => x.Date));
@@ -154,28 +115,30 @@ public class Report1Model(StateFactory stateFactory) : PageModel
         public List<MatchBase> Expenses { get; } = new();
     }
 
-    public abstract class MatchBase;
-
-    public class PlannedAndActualMatch : ActualMatch
+    public abstract class MatchBase
     {
-        public required bool Negative { get; init; }
-        public required Plan Planned { get; init; }
+        public required Transaction Transaction { get; init; }
+    }
+
+    public class PlannedAndActualMatch : MatchBase
+    {
+        public required TransactionPlannedAmount Planned { get; init; }
+        public required TransactionActualAmount Actual { get; init; }
     }
 
     public class ActualMatch : MatchBase
     {
-        public required Transaction Actual { get; init; }
-        public required TransactionEntry Entry { get; init; }
+        public required TransactionActualAmount Actual { get; init; }
     }
 
     public class PlannedRemainderMatch : MatchBase
     {
-        public required Plan Planned { get; init; }
+        public required TransactionPlannedAmount Planned { get; init; }
         public required Amounts Remainder { get; init; }
     }
 
     public class PlannedMatch : MatchBase
     {
-        public required Plan Planned { get; init; }
+        public required TransactionPlannedAmount Planned { get; init; }
     }
 }

@@ -1,7 +1,5 @@
 ﻿@using Economy.Web.Tools
 @using Economy.AiInterface.Scope
-@using Economy.Memory.Models.State
-@using Economy.Memory.Tools
 @model Report1Model.MatchBase
 @inject StateFactory StateFactory
 
@@ -12,15 +10,17 @@
 @switch (Model)
 {
     case Report1Model.PlannedAndActualMatch match:
-        <span>@Constants.Transaction @(match.Negative ? Constants.Minus : null)@match.Entry.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.Entry.PlanId.ToEntityFullId(EntityType.Plan)) @match.Entry.Name @match.Entry.SpecialNotes @match.Actual.Name @match.Actual.SpecialNotes / @Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
+        <span>@Constants.Actual @match.Actual.Amounts.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
         break;
     case Report1Model.ActualMatch match:
-        <span>@Constants.Transaction @match.Entry.Amounts.ToDetails(state.Repositories) @state.Repositories.GetReferenceTitle(match.Entry.PlanId.ToEntityFullId(EntityType.Plan)) @match.Entry.Name @match.Entry.SpecialNotes @match.Actual.Name @match.Actual.SpecialNotes</span>
+        <span>@Constants.Actual @match.Actual.Amounts.ToDetails(state.Repositories)</span>
         break;
     case Report1Model.PlannedMatch match:
         <span>@Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
         break;
     case Report1Model.PlannedRemainderMatch match:
-        <span>@Constants.Transaction @match.Remainder.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
+        <span>@Constants.Actual @match.Remainder.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
         break;
 }
+
+<span>@Model.Transaction.ToDetailsNoAmountsOrType(state.Repositories)</span>
