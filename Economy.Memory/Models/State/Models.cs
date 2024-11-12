@@ -6,6 +6,7 @@ using System.Reflection;
 
 namespace Economy.Memory.Models.State;
 
+// todo: extract to files
 public abstract record EntityBase(int Id)
 {
     public IEnumerable<EntityFullId> GetForeignKeys() => GetForeignKeysDirty().Where(x => x.HasValue).Select(x => x!.Value).Distinct();
