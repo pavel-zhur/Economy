@@ -157,7 +157,8 @@ public record Plan(
     int Id,
     string Name,
     string? SpecialNotes,
-    int? ParentPlanId)
+    int? ParentPlanId,
+    PlanSchedule? Schedule)
     : EntityBase(Id)
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => ParentPlanId.ToEntityFullId(EntityType.Plan).Once();
@@ -173,13 +174,20 @@ public record Plan(
         {
             throw new ArgumentException("Plan special notes must be null or not empty.");
         }
+
+        Schedule?.Validate();
+
+        if (repositories.Plans.GetParents(this).Any(x => x.Schedule != null))
+        {
+            throw new ArgumentException("Plans with schedules may not have children.");
+        }
     }
 
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)}";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} {Schedule?.ToDetails()}";
 }
 
 [EntityType(EntityType.Transaction)]
@@ -347,6 +355,31 @@ public enum TransferType
 {
     Reallocation,
     Usage,
+}
+
+public record PlanSchedule(Date StartDate, Date FinishDate, Schedule Schedule, Amounts Amounts)
+{
+    public void Validate()
+    {
+        StartDate.Validate();
+        FinishDate.Validate();
+
+        if (StartDate > FinishDate)
+        {
+            throw new ArgumentException("Plan schedule start date must be before finish date.");
+        }
+
+        Amounts.Validate(false, false, true, false);
+    }
+
+    public string ToDetails() => $"[{Schedule} {StartDate} - {FinishDate}]";
+}
+
+public enum Schedule
+{
+    Daily,
+    Weekly,
+    Monthly,
 }
 
 public enum TransactionType
