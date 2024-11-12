@@ -17,13 +17,17 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var entity in state.Repositories.Wallets.GetAll().OrderBy(x => x.Id))
+            @foreach (var (wallet, audit) in Model.Wallets)
             {
                 <tr>
-                    <td>@(entity.ToDetails(state.Repositories))</td>
-                    <td>@state.Repositories.WalletAudits.GetAll().Where(x => x.WalletId == entity.Id).OrderByDescending(x => x.CheckDateAndTime).ThenByDescending(x => x.Id).FirstOrDefault()?.Amounts.ToDetails(state.Repositories)</td>
+                    <td>@(wallet.ToDetails(state.Repositories))</td>
+                    <td>@(audit?.Amounts.ToDetails(state.Repositories))</td>
                 </tr>
             }
+            <tr>
+                <td><strong>Total</strong></td>
+                <td>@Model.Total.ToDetails(state.Repositories)</td>
+            </tr>
         </tbody>
     </table>
 </div>
