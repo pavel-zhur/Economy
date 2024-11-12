@@ -1,5 +1,4 @@
 ﻿using Economy.AiInterface;
-using Economy.AiInterface.Scope;
 using Economy.Memory.Containers.State;
 using Economy.Temp;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,8 +14,3 @@ using var host = builder.Build();
 
 var scope = host.Services.CreateAsyncScope();
 await scope.ServiceProvider.GetRequiredService<ConsoleChat>().Main2();
-
-public class UserGetter : IStateUserGetter
-{
-    public string GetStateUserKey() => "console_user1";
-}
