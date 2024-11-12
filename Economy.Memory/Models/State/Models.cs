@@ -385,7 +385,7 @@ public enum TransactionType
 
 public record PlanVolume(TransactionType Type, Amounts Amounts);
 
-[Obsolete("Refactor")]
+[Obsolete("Refactor")] // todo: think
 public class Amounts : List<Amount>
 {
     public void Validate(bool allowNegative, bool allowZero, bool allowPositive)
@@ -404,7 +404,7 @@ public class Amounts : List<Amount>
     public string ToDetails(Repositories repositories)
         => string.Join(", ", this.Select(a => a.ToDetails(repositories)));
 
-    [Obsolete("Refactor")]
+    [Obsolete("Refactor")] // todo: think
     public void Add(Amounts other, bool subtract = false)
     {
         var result = other.Select(a => a.CurrencyId)

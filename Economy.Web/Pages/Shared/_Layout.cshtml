@@ -55,6 +55,7 @@
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
+                            // todo: think about vertical or horizontal mode and see why these buttons are different
                             <li class="nav-item">
                                 <form method="get" asp-page="Profile">
                                     <button class="nav-link btn btn-link">Hello, @User.Identity.Name!</button>

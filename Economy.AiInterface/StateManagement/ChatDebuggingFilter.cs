@@ -2,7 +2,7 @@
 
 namespace Economy.AiInterface.StateManagement;
 
-[Obsolete("Debugging")]
+[Obsolete("Debugging")] // todo: think
 public class ChatDebuggingFilter : IAutoFunctionInvocationFilter
 {
     public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
