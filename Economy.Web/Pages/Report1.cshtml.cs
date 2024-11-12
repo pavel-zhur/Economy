@@ -1,4 +1,5 @@
 using Economy.AiInterface.Scope;
+using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models;
 using Economy.Memory.Models.State;
@@ -20,7 +21,14 @@ public class Report1Model(StateFactory stateFactory) : PageModel
     [BindProperty(SupportsGet = true)]
     public DayOfWeek? WeekStart { get; set; }
 
+    [BindProperty(SupportsGet = true)]
+    public string? FundsPlanIds { get; set; }
+
+    public List<int>? FundsPlanIdsParsed { get; set; }
+
     public List<Row> Rows { get; } = new();
+
+    public EquivalentAmount Funds { get; set; } = new();
 
     public async Task OnGet()
     {
@@ -30,6 +38,18 @@ public class Report1Model(StateFactory stateFactory) : PageModel
         WeekStart ??= DayOfWeek.Saturday;
         From ??= new(2024, 10, 31);
         To ??= new(2025, 3, 31);
+
+        if (FundsPlanIds == null)
+        {
+            FundsPlanIds = "2";
+        }
+        
+        FundsPlanIdsParsed = FundsPlanIds.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(x => int.TryParse(x, out var y) ? y : (int?)null)
+                .ToList()
+                .SelectSingle(x => x.Any() && x.All(x => x.HasValue) ? x.Select(x => x.Value).ToList() : null);
+
+        FundsPlanIds = FundsPlanIdsParsed == null ? "-" : string.Join(", ", FundsPlanIdsParsed);
 
         if (To < From) To = From.Value.AddDays(1);
 
@@ -52,6 +72,11 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
         foreach (var transaction in state.Repositories.Transactions.GetAll())
         {
+            if (FundsPlanIdsParsed?.Contains(transaction.PlanId) == true)
+            {
+                throw new("ExternalizePlanIdsParsed?.Contains(transaction.PlanId) == true");
+            }
+
             if (transaction.Actual != null)
             {
                 if (transaction.Planned == null)
@@ -60,7 +85,6 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                     {
                         Transaction = transaction,
                         Actual = transaction.Actual,
-                        BalanceDelta = transaction.Actual.Amounts.ToEquivalentAmount(state.Repositories).Negate(transaction.Type == TransactionType.Expense),
                     });
                 }
                 else
@@ -74,7 +98,6 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                         Transaction = transaction,
                         Planned = transaction.Planned,
                         Actual = transaction.Actual,
-                        BalanceDelta = transaction.Actual.Amounts.ToEquivalentAmount(state.Repositories).Negate(transaction.Type == TransactionType.Expense),
                     });
 
                     if (remainder.ToEquivalentAmount(state.Repositories).Amount > 0)
@@ -84,7 +107,6 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                             Transaction = transaction,
                             Planned = transaction.Planned,
                             Remainder = remainder,
-                            BalanceDelta = remainder.ToEquivalentAmount(state.Repositories).Negate(transaction.Type == TransactionType.Expense),
                         });
                     }
                 }
@@ -95,8 +117,23 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                 {
                     Transaction = transaction,
                     Planned = transaction.Planned,
-                    BalanceDelta = transaction.Planned.Amounts.ToEquivalentAmount(state.Repositories).Negate(transaction.Type == TransactionType.Expense),
                 });
+            }
+        }
+
+        if (FundsPlanIdsParsed != null)
+        {
+            foreach (var transfer in state.Repositories.Transfers.GetAll())
+            {
+                if (FundsPlanIdsParsed.Contains(transfer.FromPlanId) !=
+                    FundsPlanIdsParsed.Contains(transfer.ToPlanId))
+                {
+                    FindRow(transfer.Date).Funds.Add(new ExternalMatch
+                    {
+                        Transfer = transfer,
+                        IsOutgoing = FundsPlanIdsParsed.Contains(transfer.ToPlanId),
+                    });
+                }
             }
         }
 
@@ -105,8 +142,10 @@ public class Report1Model(StateFactory stateFactory) : PageModel
         var balance = new EquivalentAmount();
         foreach (var row in Rows)
         {
-            row.Incomes.ForEach(x => balance = balance.Add(x.BalanceDelta));
-            row.Expenses.ForEach(x => balance = balance.Add(x.BalanceDelta));
+            row.Incomes.ForEach(x => balance = balance.Add(x.GetBalanceDelta(state.Repositories)));
+            row.Expenses.ForEach(x => balance = balance.Add(x.GetBalanceDelta(state.Repositories)));
+            row.Funds.ForEach(x => balance = balance.Add(x.GetBalanceDelta(state.Repositories)));
+            row.Funds.ForEach(x => Funds = Funds.Add(x.GetBalanceDelta(state.Repositories), true));
             row.Balance = balance;
         }
 
@@ -132,35 +171,76 @@ public class Report1Model(StateFactory stateFactory) : PageModel
         public Date Date { get; init; }
         public List<MatchBase> Incomes { get; } = new();
         public List<MatchBase> Expenses { get; } = new();
+        public List<MatchBase> Funds { get; } = new();
         public EquivalentAmount Balance { get; set; } = null!;
         public List<Event> Events { get; } = [];
     }
 
     public abstract class MatchBase
     {
-        public required Transaction Transaction { get; init; }
-        public required EquivalentAmount BalanceDelta { get; init; }
+        public abstract EquivalentAmount GetBalanceDelta(Repositories repositories);
+
+        public abstract string ToDetailsNoAmountsOrType(Repositories repositories);
     }
 
-    public class PlannedAndActualMatch : MatchBase
+    public class ExternalMatch : MatchBase
+    {
+        public required Transfer Transfer { get; init; }
+
+        public required bool IsOutgoing { get; init; }
+
+        public override EquivalentAmount GetBalanceDelta(Repositories repositories)
+            => new Amounts
+            {
+                {
+                    new Amounts
+                    {
+                        Transfer.Amount
+                    },
+                    IsOutgoing
+                }
+            }.ToEquivalentAmount(repositories);
+
+        public override string ToDetailsNoAmountsOrType(Repositories repositories)
+            => Transfer.ToDetailsNoAmountOrDate(repositories);
+    }
+
+    public abstract class TransactionBasedMatchBase : MatchBase
+    {
+        public required Transaction Transaction { get; init; }
+
+        public override string ToDetailsNoAmountsOrType(Repositories repositories)
+            => Transaction.ToDetailsNoAmountsOrType(repositories);
+    }
+
+    public class PlannedAndActualMatch : ActualMatch
     {
         public required TransactionPlannedAmount Planned { get; init; }
-        public required TransactionActualAmount Actual { get; init; }
     }
 
-    public class ActualMatch : MatchBase
+    public class ActualMatch : TransactionBasedMatchBase
     {
         public required TransactionActualAmount Actual { get; init; }
+
+        public override EquivalentAmount GetBalanceDelta(Repositories repositories)
+            => Actual.Amounts.ToEquivalentAmount(repositories).Negate(Transaction.Type == TransactionType.Expense);
     }
 
-    public class PlannedRemainderMatch : MatchBase
+    public class PlannedRemainderMatch : TransactionBasedMatchBase
     {
         public required TransactionPlannedAmount Planned { get; init; }
         public required Amounts Remainder { get; init; }
+
+        public override EquivalentAmount GetBalanceDelta(Repositories repositories)
+            => Remainder.ToEquivalentAmount(repositories).Negate(Transaction.Type == TransactionType.Expense);
     }
 
-    public class PlannedMatch : MatchBase
+    public class PlannedMatch : TransactionBasedMatchBase
     {
         public required TransactionPlannedAmount Planned { get; init; }
+
+        public override EquivalentAmount GetBalanceDelta(Repositories repositories)
+            => Planned.Amounts.ToEquivalentAmount(repositories)
+                .Negate(Transaction.Type == TransactionType.Expense);
     }
 }

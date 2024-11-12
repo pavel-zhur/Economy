@@ -21,6 +21,9 @@
     case Report1Model.PlannedRemainderMatch match:
         <span>@Constants.Remainder @match.Remainder.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.Amounts.ToDetails(state.Repositories)</span>
         break;
+    case Report1Model.ExternalMatch match:
+        <span>@(match.IsOutgoing ? "" : Constants.Minus)@match.Transfer.Amount.ToDetails(state.Repositories)</span>
+        break;
 }
 
-<span>@Model.Transaction.ToDetailsNoAmountsOrType(state.Repositories)</span>
+<span>@Model.ToDetailsNoAmountsOrType(state.Repositories)</span>

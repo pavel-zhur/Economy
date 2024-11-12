@@ -299,6 +299,9 @@ public record Transfer(
 
     public override string ToDetails(IHistory repositories)
         => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {Amount.ToDetails(repositories)} {Date} {Type}";
+
+    public string ToDetailsNoAmountOrDate(IHistory repositories)
+        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {Type}";
 }
 
 // Sub-entities
