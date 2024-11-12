@@ -1,6 +1,8 @@
 using Economy.AiInterface.Scope;
 using Economy.Memory.Containers.State;
+using Economy.Memory.Models;
 using Economy.Memory.Models.State;
+using Economy.Memory.Tools;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -13,6 +15,10 @@ namespace Economy.Web.Pages
         public Amounts TotalExpenses { get; set; } = null!;
         public Amounts Total { get; set; } = null!;
 
+        public EquivalentAmount TotalIncomesEquivalent { get; set; } = null!;
+        public EquivalentAmount TotalExpensesEquivalent { get; set; } = null!;
+        public EquivalentAmount TotalEquivalent { get; set; } = null!;
+        
         public async Task OnGet()
         {
             State = await stateFactory.Get();
@@ -25,6 +31,10 @@ namespace Economy.Web.Pages
                 TotalIncomes,
                 { TotalExpenses, true }
             };
+
+            TotalIncomesEquivalent = TotalIncomes.ToEquivalentAmount(State.Repositories);
+            TotalExpensesEquivalent = TotalExpenses.ToEquivalentAmount(State.Repositories);
+            TotalEquivalent = Total.ToEquivalentAmount(State.Repositories);
         }
         
         private Amounts CreateTotal(TransactionType transactionType)

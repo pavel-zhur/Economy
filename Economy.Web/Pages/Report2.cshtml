@@ -1,10 +1,11 @@
 ﻿@page
 @using Economy.Memory.Tools
 @using Economy.Memory.Models.State
+@using Economy.Memory.Models
 @model Economy.Web.Pages.Report2Model
 @{
     ViewData["Title"] = "Report 2";
-    var balance = new Amounts();
+    var balance = new EquivalentAmount();
 }
 
 <form method="get">
@@ -12,7 +13,7 @@
 </form>
 
 <div class="mt-4">
-    <h4>Total Balance: <span class="data-record">@Model.Total.ToDetails(Model.State.Repositories)</span></h4>
+    <h4>Total Balance: <span class="data-record">@Model.TotalEquivalent.ToDetails()</span></h4>
 </div>
 
 <div class="table-responsive table-fixed-header overflow-visible mt-4">
@@ -23,6 +24,7 @@
                 <th>Income</th>
                 <th>Expense</th>
                 <th>Details</th>
+                <th>Equivalent</th>
                 <th>Balance</th>
             </tr>
         </thead>
@@ -48,20 +50,22 @@
                         <br/>
                         @e.ToDetailsNoAmounts(Model.State.Repositories)
                     </td>
+                    <td class="data-record">@e.Amounts.ToEquivalentAmount(Model.State.Repositories).ToDetails()</td>
                     <td class="data-record">
                         @{
-                            balance.Add(e.Amounts, t.Type == TransactionType.Expense);
+                            balance = balance.Add(e.Amounts.ToEquivalentAmount(Model.State.Repositories), t.Type == TransactionType.Expense);
                         }
-                        <span>@balance.ToDetails(Model.State.Repositories)</span>
+                        <span>@balance.ToDetails()</span>
                     </td>
                 </tr>
             }
             <tr>
                 <td><strong>Total: </strong></td>
-                <td class="data-info">@Model.TotalIncomes.ToDetails(Model.State.Repositories)</td>
-                <td class="data-info">@Model.TotalExpenses.ToDetails(Model.State.Repositories)</td>
+                <td class="data-info">@Model.TotalIncomesEquivalent.ToDetails()</td>
+                <td class="data-info">@Model.TotalExpensesEquivalent.ToDetails()</td>
                 <td></td>
-                <td class="data-info">@Model.Total.ToDetails(Model.State.Repositories)</td>
+                <td></td>
+                <td class="data-info">@Model.TotalEquivalent.ToDetails()</td>
             </tr>
         </tbody>
     </table>

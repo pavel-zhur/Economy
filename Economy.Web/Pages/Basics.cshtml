@@ -1,6 +1,7 @@
 ﻿@page
 @inject StateFactory StateFactory
 @using Economy.AiInterface.Scope
+@using Economy.Memory.Tools
 @model Economy.Web.Pages.BasicsModel
 @{
     ViewData["Title"] = "Basics";
@@ -14,6 +15,7 @@
             <tr>
                 <th>Wallet</th>
                 <th>Latest Inventory</th>
+                <th>Equivalent</th>
             </tr>
         </thead>
         <tbody>
@@ -22,11 +24,13 @@
                 <tr>
                     <td>@(wallet.ToDetails(state.Repositories))</td>
                     <td class="data-record">@(audit?.Amounts.ToDetails(state.Repositories))</td>
+                    <td class="data-record">@(audit?.Amounts.ToEquivalentAmount(state.Repositories).ToDetails())</td>
                 </tr>
             }
             <tr>
                 <td><strong>Total</strong></td>
                 <td class="data-record">@Model.Total.ToDetails(state.Repositories)</td>
+                <td class="data-record">@Model.Total.ToEquivalentAmount(state.Repositories).ToDetails()</td>
             </tr>
         </tbody>
     </table>

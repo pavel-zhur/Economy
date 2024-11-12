@@ -482,7 +482,7 @@ public record struct Amount(int CurrencyId, decimal Value)
                 break;
         }
 
-        return $"{value.ToString("###,###,###,##0.##")} {prefix}{currency.Abbreviation}";
+        return $"{value} {prefix}{currency.Abbreviation}";
     }
 }
 
