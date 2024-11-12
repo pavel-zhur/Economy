@@ -42,13 +42,18 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
         Row FindRow(Date date) => (rows.GetValueOrDefault(date) ?? (date < From.Value.ToDate() ? before : after));
 
-        List<MatchBase> FindMatches(Date date, TransactionType transactionType) =>
+        List<MatchBase> FindMatches(Date date, TransactionType? transactionType) =>
             FindRow(date).SelectSingle(r => transactionType switch
             {
                 TransactionType.Income => r.Incomes,
                 TransactionType.Expense => r.Expenses,
+                null => r.Schedules,
                 _ => throw new ArgumentOutOfRangeException(nameof(transactionType), transactionType, null)
             });
+
+        var spendOnSchedules = state.Repositories.Plans.GetAll()
+            .Where(x => x.Schedule != null)
+            .ToDictionary(x => x.Id, x => new Amounts());
 
         foreach (var transaction in state.Repositories.Transactions.GetAll())
         {
@@ -56,12 +61,27 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             {
                 if (transaction.Planned == null)
                 {
-                    FindMatches(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new ActualMatch
+                    if (state.Repositories.Plans[transaction.PlanId].Schedule is { } schedule && transaction.Type == TransactionType.Expense)
                     {
-                        Transaction = transaction,
-                        Actual = transaction.Actual,
-                        BalanceDelta = transaction.Actual.Amounts.ToEquivalentAmount(state.Repositories).Negate(transaction.Type == TransactionType.Expense),
-                    });
+                        var spent = spendOnSchedules[transaction.PlanId];
+                        spent.Add(transaction.Actual.Amounts);
+                        FindMatches(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new ScheduleAndActualMatch
+                        {
+                            Transaction = transaction,
+                            Actual = transaction.Actual,
+                            BalanceDelta = transaction.Actual.Amounts.ToEquivalentAmount(state.Repositories).Negate(transaction.Type == TransactionType.Expense),
+                        });
+                    }
+                    else
+                    {
+                        FindMatches(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new ActualMatch
+                        {
+                            Transaction = transaction,
+                            Actual = transaction.Actual,
+                            BalanceDelta = transaction.Actual.Amounts.ToEquivalentAmount(state.Repositories)
+                                .Negate(transaction.Type == TransactionType.Expense),
+                        });
+                    }
                 }
                 else
                 {
@@ -100,6 +120,12 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             }
         }
 
+        foreach (var plan in state.Repositories.Plans.GetAll().Where(x => x.Schedule != null))
+        {
+            var spent = spendOnSchedules[plan.Id];
+
+        }
+
         Rows.AddRange(rows.Values.Append(before).Append(after).OrderBy(x => x.Date));
 
         var balance = new EquivalentAmount();
@@ -132,6 +158,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
         public Date Date { get; init; }
         public List<MatchBase> Incomes { get; } = new();
         public List<MatchBase> Expenses { get; } = new();
+        public List<MatchBase> Schedules { get; } = new();
         public EquivalentAmount Balance { get; set; } = null!;
         public List<Event> Events { get; } = [];
     }
@@ -145,6 +172,11 @@ public class Report1Model(StateFactory stateFactory) : PageModel
     public class PlannedAndActualMatch : MatchBase
     {
         public required TransactionPlannedAmount Planned { get; init; }
+        public required TransactionActualAmount Actual { get; init; }
+    }
+
+    public class ScheduleAndActualMatch : MatchBase
+    {
         public required TransactionActualAmount Actual { get; init; }
     }
 
