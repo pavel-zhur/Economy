@@ -10,12 +10,12 @@ namespace Economy.Memory.Models.State;
 // todo: extract to files
 public abstract record EntityBase(int Id)
 {
-    public IEnumerable<EntityFullId> GetForeignKeys() =>
+    internal IEnumerable<EntityFullId> GetForeignKeys() =>
         GetForeignKeysDirty().Where(x => x.HasValue).Select(x => x!.Value).Distinct();
 
     protected virtual IEnumerable<EntityFullId?> GetForeignKeysDirty() => Enumerable.Empty<EntityFullId?>();
 
-    public abstract void Validate(Repositories repositories);
+    internal abstract void Validate(Repositories repositories);
 
     public abstract string ToReferenceTitle();
 
@@ -32,7 +32,7 @@ public abstract record EntityBase(int Id)
 [method: JsonConstructor]
 public record Currency(int Id, string LongName, string Abbreviation, string CurrencySymbol, CurrencyCustomDisplayUnit? CustomDisplayUnit) : EntityBase(Id)
 {
-    public override void Validate(Repositories repositories)
+    internal override void Validate(Repositories repositories)
     {
         if (Abbreviation.Length != 3)
         {
@@ -61,7 +61,7 @@ public record Currency(int Id, string LongName, string Abbreviation, string Curr
 [method: JsonConstructor]
 public record Wallet(int Id, string Name) : EntityBase(Id)
 {
-    public override void Validate(Repositories repositories)
+    internal override void Validate(Repositories repositories)
     {
         if (string.IsNullOrWhiteSpace(Name))
         {
@@ -82,7 +82,7 @@ public record Event(int Id, string Name, string? SpecialNotes, int? PlanId, Date
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => PlanId.ToEntityFullId(EntityType.Plan).Once();
 
-    public override void Validate(Repositories repositories)
+    internal override void Validate(Repositories repositories)
     {
         if (string.IsNullOrWhiteSpace(Name))
         {
@@ -111,7 +111,7 @@ public record Event(int Id, string Name, string? SpecialNotes, int? PlanId, Date
 [method: JsonConstructor]
 public record Category(int Id, string Name, string? SpecialNotes) : EntityBase(Id)
 {
-    public override void Validate(Repositories repositories)
+    internal override void Validate(Repositories repositories)
     {
         if (string.IsNullOrWhiteSpace(Name))
         {
@@ -137,9 +137,9 @@ public record WalletAudit(int Id, int WalletId, DateTime CheckDateAndTime, Amoun
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => Amounts.GetForeignKeysDirty().Append(WalletId.ToEntityFullId(EntityType.Wallet));
 
-    public override void Validate(Repositories repositories)
+    internal override void Validate(Repositories repositories)
     {
-        Amounts.Validate(false, true, true);
+        Amounts.Validate(false, true, true, false);
 
         CheckDateAndTime.Validate();
     }
@@ -163,7 +163,7 @@ public record Plan(
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => ParentPlanId.ToEntityFullId(EntityType.Plan).Once();
 
-    public override void Validate(Repositories repositories)
+    internal override void Validate(Repositories repositories)
     {
         if (string.IsNullOrWhiteSpace(Name))
         {
@@ -177,10 +177,9 @@ public record Plan(
 
         Schedule?.Validate();
 
-        if (Schedule != null &&
-            repositories.Plans.GetParents(this).Any(x => x.Schedule != null))
+        if (repositories.Plans.GetParents(this).Any(x => x.Schedule != null))
         {
-            throw new ArgumentException("Plans with schedules may not be nested.");
+            throw new ArgumentException("Plans with schedules may not have children.");
         }
     }
 
@@ -207,7 +206,7 @@ public record Transaction(
         .Concat(Actual?.GetForeignKeysDirty() ?? Enumerable.Empty<EntityFullId?>())
         .Append(PlanId.ToEntityFullId(EntityType.Plan));
 
-    public override void Validate(Repositories repositories)
+    internal override void Validate(Repositories repositories)
     {
         if (Planned == null && Actual == null)
         {
@@ -252,7 +251,7 @@ public record Conversion(
         ToAmount.CurrencyId.ToEntityFullId(EntityType.Currency), 
     ];
 
-    public override void Validate(Repositories repositories)
+    internal override void Validate(Repositories repositories)
     {
         FromAmount.Validate(false, false, true);
         ToAmount.Validate(false, false, true);
@@ -291,7 +290,7 @@ public record Transfer(
             ToPlanId.ToEntityFullId(EntityType.Plan),
         };
 
-    public override void Validate(Repositories repositories)
+    internal override void Validate(Repositories repositories)
     {
         Amount.Validate(false, false, true);
 
@@ -322,7 +321,7 @@ public record TransactionPlannedAmount(
     public void Validate()
     {
         Date.Validate();
-        Amounts.Validate(false, false, true);
+        Amounts.Validate(false, false, true, false);
     }
 
     public string ToDetails(IHistory repositories)
@@ -340,7 +339,7 @@ public record TransactionActualAmount(
     {
         DateAndTime.Validate();
 
-        Amounts.Validate(false, false, true);
+        Amounts.Validate(false, false, true, false);
     }
 
     public string ToDetails(IHistory repositories)
@@ -355,7 +354,7 @@ public enum TransferType
     Usage,
 }
 
-public record PlanSchedule(Date StartDate, Date FinishDate, Schedule Schedule)
+public record PlanSchedule(Date StartDate, Date FinishDate, Schedule Schedule, Amounts Amounts)
 {
     public void Validate()
     {
@@ -366,6 +365,8 @@ public record PlanSchedule(Date StartDate, Date FinishDate, Schedule Schedule)
         {
             throw new ArgumentException("Plan schedule start date must be before finish date.");
         }
+
+        Amounts.Validate(false, false, true, false);
     }
 
     public string ToDetails() => $"[{Schedule} {StartDate} - {FinishDate}]";
@@ -388,7 +389,7 @@ public record PlanVolume(TransactionType Type, Amounts Amounts)
 {
     public void Validate()
     {
-        Amounts.Validate(false, false, true);
+        Amounts.Validate(false, false, true, false);
     }
 
     public string ToDetails(Repositories repositories)
@@ -398,7 +399,7 @@ public record PlanVolume(TransactionType Type, Amounts Amounts)
 [Obsolete("Refactor")] // todo: think
 public class Amounts : List<Amount>
 {
-    public void Validate(bool allowNegative, bool allowZero, bool allowPositive)
+    public void Validate(bool allowNegative, bool allowZero, bool allowPositive, bool allowEmpty)
     {
         if (this.AnyDuplicates(a => a.CurrencyId, out _))
         {
@@ -408,6 +409,11 @@ public class Amounts : List<Amount>
         foreach (var amount in this)
         {
             amount.Validate(allowNegative, allowZero, allowPositive);
+        }
+
+        if (!allowEmpty && !this.Any())
+        {
+            throw new ArgumentException("Amounts must not be empty.");
         }
     }
 
