@@ -1,5 +1,6 @@
 using Economy.AiInterface.Scope;
 using Economy.Memory.Containers.State;
+using Economy.Memory.Models;
 using Economy.Memory.Models.State;
 using Economy.Memory.Tools;
 using Microsoft.AspNetCore.Mvc;
@@ -39,8 +40,10 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             Date = x.ToDate(),
         });
 
-        List<MatchBase> FindRow(Date date, TransactionType transactionType) =>
-            (rows.GetValueOrDefault(date) ?? (date < From.Value.ToDate() ? before : after)).SelectSingle(r => transactionType switch
+        Row FindRow(Date date) => (rows.GetValueOrDefault(date) ?? (date < From.Value.ToDate() ? before : after));
+
+        List<MatchBase> FindMatches(Date date, TransactionType transactionType) =>
+            FindRow(date).SelectSingle(r => transactionType switch
             {
                 TransactionType.Income => r.Incomes,
                 TransactionType.Expense => r.Expenses,
@@ -54,10 +57,11 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             {
                 if (transaction.Planned == null)
                 {
-                    FindRow(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new ActualMatch
+                    FindMatches(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new ActualMatch
                     {
                         Transaction = transaction,
                         Actual = transaction.Actual,
+                        BalanceDelta = transaction.Actual.Amounts.ToEquivalentAmount(state.Repositories).Negate(transaction.Type == TransactionType.Expense),
                     });
                 }
                 else
@@ -66,35 +70,51 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                     remainder.Add(transaction.Planned.Amounts);
                     remainder.Add(transaction.Actual.Amounts, true);
 
-                    FindRow(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new PlannedAndActualMatch
+                    FindMatches(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new PlannedAndActualMatch
                     {
                         Transaction = transaction,
                         Planned = transaction.Planned,
                         Actual = transaction.Actual,
+                        BalanceDelta = transaction.Actual.Amounts.ToEquivalentAmount(state.Repositories).Negate(transaction.Type == TransactionType.Expense),
                     });
 
                     if (remainder.ToEquivalentAmount(state.Repositories).Amount > 0)
                     {
-                        FindRow(transaction.Planned.Date, transaction.Type).Add(new PlannedRemainderMatch
+                        FindMatches(transaction.Planned.Date, transaction.Type).Add(new PlannedRemainderMatch
                         {
                             Transaction = transaction,
                             Planned = transaction.Planned,
                             Remainder = remainder,
+                            BalanceDelta = remainder.ToEquivalentAmount(state.Repositories).Negate(transaction.Type == TransactionType.Expense),
                         });
                     }
                 }
             }
             else
             {
-                FindRow(transaction.Planned!.Date, transaction.Type).Add(new PlannedMatch
+                FindMatches(transaction.Planned!.Date, transaction.Type).Add(new PlannedMatch
                 {
                     Transaction = transaction,
                     Planned = transaction.Planned,
+                    BalanceDelta = transaction.Planned.Amounts.ToEquivalentAmount(state.Repositories).Negate(transaction.Type == TransactionType.Expense),
                 });
             }
         }
 
         Rows.AddRange(rows.Values.Append(before).Append(after).OrderBy(x => x.Date));
+
+        var balance = new EquivalentAmount();
+        foreach (var row in Rows)
+        {
+            row.Incomes.ForEach(x => balance = balance.Add(x.BalanceDelta));
+            row.Expenses.ForEach(x => balance = balance.Add(x.BalanceDelta));
+            row.Balance = balance;
+        }
+
+        foreach (var @event in state.Repositories.Events.GetAll().Where(e => e.Date >= From.Value.ToDate() && e.Date <= To.Value.ToDate()))
+        {
+            FindRow(@event.Date).Events.Add(@event);
+        }
     }
 
     private Plan? FindNearestParentPlan(State state, int planId, Func<Plan, bool> planSelector)
@@ -113,11 +133,14 @@ public class Report1Model(StateFactory stateFactory) : PageModel
         public Date Date { get; init; }
         public List<MatchBase> Incomes { get; } = new();
         public List<MatchBase> Expenses { get; } = new();
+        public EquivalentAmount Balance { get; set; } = null!;
+        public List<Event> Events { get; } = [];
     }
 
     public abstract class MatchBase
     {
         public required Transaction Transaction { get; init; }
+        public required EquivalentAmount BalanceDelta { get; init; }
     }
 
     public class PlannedAndActualMatch : MatchBase

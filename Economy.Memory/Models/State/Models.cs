@@ -100,8 +100,11 @@ public record Event(int Id, string Name, string? SpecialNotes, int? PlanId, Date
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
+    public string ToDetailsNoReferenceOrDate()
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
+
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Date}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")}";
+        => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Date}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
 }
 
 [EntityType(EntityType.Category)]
@@ -125,7 +128,7 @@ public record Category(int Id, string Name, string? SpecialNotes) : EntityBase(I
         => $"[{Id} {Name}]";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")}";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
 }
 
 [EntityType(EntityType.WalletAudit)]
@@ -185,14 +188,13 @@ public record Plan(
         => $"[{Id} {Name}]";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} {Schedule?.ToDetails()}";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} {Schedule?.ToDetails()}";
 }
 
 [EntityType(EntityType.Transaction)]
 [method: JsonConstructor]
 public record Transaction(
     int Id,
-    string Name,
     string? SpecialNotes,
     int PlanId,
     TransactionType Type,
@@ -207,11 +209,6 @@ public record Transaction(
 
     public override void Validate(Repositories repositories)
     {
-        if (string.IsNullOrWhiteSpace(Name))
-        {
-            throw new ArgumentException("Transaction name must be not empty.");
-        }
-
         if (Planned == null && Actual == null)
         {
             throw new ArgumentException("Transaction must have either planned or actual amounts.");
@@ -227,13 +224,13 @@ public record Transaction(
     }
 
     public override string ToReferenceTitle()
-        => $"[{Id} {Name}]";
+        => $"[T-{Id}]";
 
     public string ToDetailsNoAmountsOrType(Repositories repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)}";
+        => $"{Id} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)}";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Type} {Planned?.ToDetails(repositories)} {Actual?.ToDetails(repositories)}";
+        => $"{Id} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Type} {Planned?.ToDetails(repositories)} {Actual?.ToDetails(repositories)}";
 }
 
 [EntityType(EntityType.Conversion)]

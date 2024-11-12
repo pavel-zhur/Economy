@@ -11,4 +11,6 @@ public record EquivalentAmount(decimal Amount = 0)
     [Pure]
     public EquivalentAmount Add(EquivalentAmount another, bool subtract = false)
         => subtract ? new(Amount - another.Amount) : new(Amount + another.Amount);
+
+    public EquivalentAmount Negate(bool @do) => @do ? new(-Amount) : this;
 }
