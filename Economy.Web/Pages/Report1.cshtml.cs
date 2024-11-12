@@ -50,7 +50,6 @@ public class Report1Model(StateFactory stateFactory) : PageModel
                 _ => throw new ArgumentOutOfRangeException(nameof(transactionType), transactionType, null)
             });
 
-        Dictionary<int, List<ActualMatch>> plannedTransactionMatches = new();
         foreach (var transaction in state.Repositories.Transactions.GetAll())
         {
             if (transaction.Actual != null)
