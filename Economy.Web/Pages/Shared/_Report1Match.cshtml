@@ -10,16 +10,16 @@
 @switch (Model)
 {
     case Report1Model.PlannedAndActualMatch match:
-        <span>@Constants.Actual @match.Actual.Amounts.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
+        <span>@Constants.Actual @match.Actual.Amounts.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.Amounts.ToDetails(state.Repositories)</span>
         break;
     case Report1Model.ActualMatch match:
         <span>@Constants.Actual @match.Actual.Amounts.ToDetails(state.Repositories)</span>
         break;
     case Report1Model.PlannedMatch match:
-        <span>@Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
+        <span>@Constants.Plan @match.Planned.Amounts.ToDetails(state.Repositories)</span>
         break;
     case Report1Model.PlannedRemainderMatch match:
-        <span>@Constants.Actual @match.Remainder.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.ToDetails(state.Repositories)</span>
+        <span>@Constants.Actual @match.Remainder.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.Amounts.ToDetails(state.Repositories)</span>
         break;
 }
 

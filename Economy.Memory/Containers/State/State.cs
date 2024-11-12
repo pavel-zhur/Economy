@@ -1,4 +1,5 @@
 ﻿using Economy.Memory.Models.EventSourcing;
+using Economy.Memory.Models.State;
 
 namespace Economy.Memory.Containers.State;
 
@@ -18,9 +19,13 @@ public class State
         WriteIndented = true
     };
 
+    private readonly Dictionary<EntityFullId, List<EventBase>> _eventsByEntityFullId = new();
+
     public List<EventBase> Events { get; } = new();
 
     public Repositories Repositories { get; } = new();
+
+    public IReadOnlyList<EventBase> GetEventsByEntityFullId(EntityFullId entityFullId) => _eventsByEntityFullId[entityFullId];
 
     public void Apply(EventBase @event)
     {
@@ -30,16 +35,19 @@ public class State
                 Repositories
                     .GetRepository(creation.Entity.GetEntityType())
                     .Add(creation.Entity);
+                _eventsByEntityFullId[creation.Entity.GetFullId()] = [creation];
                 break;
             case Deletion deletion:
                 Repositories
                     .GetRepository(deletion.EntityFullId.Type)
                     .Delete(deletion.EntityFullId.Id);
+                _eventsByEntityFullId[deletion.EntityFullId].Add(deletion);
                 break;
             case Update update:
                 Repositories
                     .GetRepository(update.Entity.GetEntityType())
                     .Update(update.Entity);
+                _eventsByEntityFullId[update.Entity.GetFullId()].Add(update);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(@event));

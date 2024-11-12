@@ -233,7 +233,7 @@ public record Transaction(
         => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)}";
 
     public override string ToDetails(Repositories repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Type} {Planned} {Actual}";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $"n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Type} {Planned?.ToDetails(repositories)} {Actual?.ToDetails(repositories)}";
 }
 
 [EntityType(EntityType.Conversion)]
@@ -329,7 +329,7 @@ public record TransactionPlannedAmount(
     }
 
     public string ToDetails(Repositories repositories)
-        => $"[A: {Date} {Amounts.ToDetails(repositories)}]";
+        => $"[P: {Date} {Amounts.ToDetails(repositories)}]";
 }
 
 [method: JsonConstructor]
@@ -371,7 +371,7 @@ public record PlanSchedule(Date StartDate, Date FinishDate, Schedule Schedule)
         }
     }
 
-    public string ToDetails() => $"[{Schedule} {{StartDate}} - {{FinishDate}}]";
+    public string ToDetails() => $"[{Schedule} {StartDate} - {FinishDate}]";
 }
 
 public enum Schedule

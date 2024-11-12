@@ -27,7 +27,7 @@
                             <div>@plan.SpecialNotes</div>
                         }
                     </td>
-                    <td>@plan.Schedule</td>
+                    <td>@plan.Schedule?.ToDetails()</td>
                 </tr>
             }
         </tbody>

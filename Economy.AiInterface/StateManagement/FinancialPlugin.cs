@@ -109,21 +109,17 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
         return transfer;
     }
 
-    [KernelFunction("delete_entities")]
-    [Description("Deletes entities of a given type by their ids")]
-    public async Task DeleteEntities(EntityType entityType, IReadOnlyList<int> ids)
+    [KernelFunction("delete_entity")]
+    [Description("Deletes entity of a given type by id")]
+    public async Task DeleteEntities(EntityType entityType, int id)
     {
         var state = await stateFactory.Get();
-        var notFound = ids.Where(x => state.Repositories.GetRepository(entityType).TryGetById(x) == null).ToList();
-        if (notFound.Any())
+        if (state.Repositories.GetRepository(entityType).TryGetById(id) == null)
         {
-            throw new InvalidOperationException($"Entities not found: {string.Join(", ", notFound)}.");
+            throw new InvalidOperationException($"{entityType}with id {id} is not found.");
         }
 
-        foreach (var id in ids)
-        {
-            state.Apply(new Deletion(new EntityFullId(entityType, id), DateTime.UtcNow));
-        }
+        state.Apply(new Deletion(new EntityFullId(entityType, id), DateTime.UtcNow));
     }
 
     [KernelFunction("get_entities")]
