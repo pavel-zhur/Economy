@@ -62,12 +62,23 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
         Row FindRow(Date date) => (rows.GetValueOrDefault(date) ?? (date < From.Value.ToDate() ? before : after));
 
-        List<MatchBase> FindMatches(Date date, TransactionType transactionType) =>
+        List<MatchBase> FindMatches(Date date, TransactionType? transactionType) =>
             FindRow(date).SelectSingle(r => transactionType switch
             {
                 TransactionType.Income => r.Incomes,
                 TransactionType.Expense => r.Expenses,
+                null => r.Schedules,
                 _ => throw new ArgumentOutOfRangeException(nameof(transactionType), transactionType, null)
+            });
+
+        var spendOnSchedules = state.Repositories.Plans.GetAll()
+            .Where(x => x.Schedule != null)
+            .ToDictionary(x => x.Id, x =>
+            {
+                var total = new Amounts();
+                var duration = (int)(x.Schedule.FinishDate.ToDateTime() - x.Schedule.StartDate.ToDateTime()).TotalDays + 1;
+                total.Add(x.Schedule!.Amounts, multiplication: duration);
+                return (spent: new Amounts(), total, duration);
             });
 
         foreach (var transaction in state.Repositories.Transactions.GetAll())
@@ -81,11 +92,26 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             {
                 if (transaction.Planned == null)
                 {
-                    FindMatches(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new ActualMatch
+                    if (state.Repositories.Plans[transaction.PlanId].Schedule is { } schedule && transaction.Type == TransactionType.Expense)
                     {
-                        Transaction = transaction,
-                        Actual = transaction.Actual,
-                    });
+                        var (spent, total, _) = spendOnSchedules[transaction.PlanId];
+                        spent.Add(transaction.Actual.Amounts);
+                        FindMatches(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new ScheduleAndActualMatch
+                        {
+                            Transaction = transaction,
+                            Actual = transaction.Actual,
+                            Schedule = schedule,
+                            TotalSchedulePlanned = total,
+                        });
+                    }
+                    else
+                    {
+                        FindMatches(transaction.Actual.DateAndTime.ToDate(), transaction.Type).Add(new ActualMatch
+                        {
+                            Transaction = transaction,
+                            Actual = transaction.Actual,
+                        });
+                    }
                 }
                 else
                 {
@@ -137,6 +163,26 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             }
         }
 
+        foreach (var plan in state.Repositories.Plans.GetAll().Where(x => x.Schedule != null))
+        {
+            var (spent, total, duration) = spendOnSchedules[plan.Id];
+            var remainder = new EquivalentAmount(
+                Math.Max(Math.Round(
+                    (total.ToEquivalentAmount(state.Repositories).Amount -
+                     spent.ToEquivalentAmount(state.Repositories).Amount)
+                    / duration,
+                    2), 0));
+            for (Date date = plan.Schedule.StartDate; date <= plan.Schedule.FinishDate; date = date.AddDays(1))
+            {
+                FindRow(date).Schedules.Add(new ScheduleRemainderMatch
+                {
+                    IsFull = !spendOnSchedules[plan.Id].spent.Any(),
+                    Plan = plan,
+                    Remainder = remainder,
+                });
+            }
+        }
+
         Rows.AddRange(rows.Values.Append(before).Append(after).OrderBy(x => x.Date));
 
         var balance = new EquivalentAmount();
@@ -145,6 +191,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
             row.Incomes.ForEach(x => balance = balance.Add(x.GetBalanceDelta(state.Repositories)));
             row.Expenses.ForEach(x => balance = balance.Add(x.GetBalanceDelta(state.Repositories)));
             row.Funds.ForEach(x => balance = balance.Add(x.GetBalanceDelta(state.Repositories)));
+            row.Schedules.ForEach(x => balance = balance.Add(x.GetBalanceDelta(state.Repositories)));
             row.Funds.ForEach(x => Funds = Funds.Add(x.GetBalanceDelta(state.Repositories), true));
             row.Balance = balance;
         }
@@ -172,6 +219,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
         public List<MatchBase> Incomes { get; } = new();
         public List<MatchBase> Expenses { get; } = new();
         public List<MatchBase> Funds { get; } = new();
+        public List<MatchBase> Schedules { get; } = new();
         public EquivalentAmount Balance { get; set; } = null!;
         public List<Event> Events { get; } = [];
     }
@@ -216,6 +264,25 @@ public class Report1Model(StateFactory stateFactory) : PageModel
     public class PlannedAndActualMatch : ActualMatch
     {
         public required TransactionPlannedAmount Planned { get; init; }
+    }
+
+    public class ScheduleAndActualMatch : ActualMatch
+    {
+        public required PlanSchedule Schedule { get; init; }
+        public required Amounts TotalSchedulePlanned { get; set; }
+    }
+
+    public class ScheduleRemainderMatch : MatchBase
+    {
+        public required Plan Plan { get; init; }
+        public required EquivalentAmount Remainder { get; init; }
+        public required bool IsFull { get; init; }
+
+        public override EquivalentAmount GetBalanceDelta(Repositories repositories)
+            => Remainder.Negate(true);
+
+        public override string ToDetailsNoAmountsOrType(Repositories repositories)
+            => $"SP-{Plan.Id}";
     }
 
     public class ActualMatch : TransactionBasedMatchBase

@@ -12,6 +12,19 @@
     case Report1Model.PlannedAndActualMatch match:
         <span>@Constants.Actual @match.Actual.Amounts.ToDetails(state.Repositories) / @Constants.Plan @match.Planned.Amounts.ToDetails(state.Repositories)</span>
         break;
+    case Report1Model.ScheduleAndActualMatch match:
+        <span>@Constants.Actual @match.Actual.Amounts.ToDetails(state.Repositories) / @match.TotalSchedulePlanned.ToDetails(state.Repositories)</span>
+        break;
+    case Report1Model.ScheduleRemainderMatch match:
+        if (match.IsFull)
+        {
+            <span>@Constants.Schedule @match.Plan.Schedule!.Amounts.ToDetails(state.Repositories)</span>
+        }
+        else
+        {
+            <span>@Constants.Remainder @match.Remainder.ToDetails() / @Constants.Schedule @match.Plan.Schedule!.Amounts.ToDetails(state.Repositories)</span>
+        }
+        break;
     case Report1Model.ActualMatch match:
         <span>@Constants.Actual @match.Actual.Amounts.ToDetails(state.Repositories)</span>
         break;

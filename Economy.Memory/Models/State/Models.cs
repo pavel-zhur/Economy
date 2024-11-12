@@ -413,7 +413,7 @@ public class Amounts : List<Amount>
         => string.Join(", ", this.Select(a => a.ToDetails(repositories)));
 
     [Obsolete("Refactor")] // todo: think
-    public void Add(Amounts other, bool subtract = false)
+    public void Add(Amounts other, bool subtract = false, int multiplication = 1)
     {
         var result = other.Select(a => a.CurrencyId)
             .Union(this.Select(a => a.CurrencyId))
@@ -421,6 +421,7 @@ public class Amounts : List<Amount>
             {
                 var thisValue = this.FirstOrDefault(a => a.CurrencyId == c).Value;
                 var otherValue = other.FirstOrDefault(a => a.CurrencyId == c).Value;
+                otherValue *= multiplication;
                 var result = subtract ? thisValue - otherValue : thisValue + otherValue;
                 return new Amount(c, result);
             })
