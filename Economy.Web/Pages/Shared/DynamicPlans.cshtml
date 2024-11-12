@@ -13,6 +13,7 @@
         <thead>
             <tr>
                 <th>Plan ID</th>
+                <th>Schedule</th>
             </tr>
         </thead>
         <tbody>
@@ -26,6 +27,7 @@
                             <div>@plan.SpecialNotes</div>
                         }
                     </td>
+                    <td>@plan.Schedule?.ToDetails()</td>
                 </tr>
             }
         </tbody>
