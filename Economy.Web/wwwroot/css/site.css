@@ -18,9 +18,27 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    padding-top: 56px; /* Adjust based on header height */
+    padding-bottom: 56px; /* Adjust based on footer height */
 }
 
+.fixed-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1030; /* Ensure it is above other content */
+}
+
+.fixed-footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1030; /* Ensure it is above other content */
+}
+
+.footer {
+    line-height: 60px;
+}
 
 .dynamic-reloading-reloading {
     position: relative;
@@ -76,13 +94,6 @@ body {
 
 .table-fixed-header {
 }
-
-    .table-fixed-header thead th {
-        position: sticky;
-        top: 0;
-        background-color: white;
-        z-index: 1;
-    }
 
     .table-fixed-header th, .table-fixed-header td {
         border-right: 1px solid #dee2e6; /* Add vertical column separator lines */
