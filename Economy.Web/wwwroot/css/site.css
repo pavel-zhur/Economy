@@ -112,6 +112,10 @@ body {
     --bs-offcanvas-height: 40vh; /* Set desired height */
 }
 
+.offcanvas-menu {
+    --bs-offcanvas-width: 270px; /* Set desired height */
+}
+
 .chat-buttons-container {
     position: fixed;
     bottom: 15px;
