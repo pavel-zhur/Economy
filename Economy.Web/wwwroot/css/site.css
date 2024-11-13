@@ -95,3 +95,27 @@ body {
     .table-fixed-header tr.top-border td {
         border-top: 2px solid #53a0ec;
     }
+
+/* Override the Offcanvas height */
+.offcanvas {
+    --bs-offcanvas-height: 40vh; /* Set desired height */
+}
+
+.chat-buttons-container {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    display: flex;
+    gap: 10px; /* Adjust the gap between buttons as needed */
+    z-index: 1046;
+}
+
+.chat-button {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
