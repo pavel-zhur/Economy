@@ -93,15 +93,7 @@ body {
 }
 
 .table-fixed-header {
-    overflow: clip;
 }
-
-    .table-fixed-header th {
-        position: sticky;
-        top: 48px;
-        background-color: white;
-        z-index: 1020; /* Ensure it is above other content */
-    }
 
     .table-fixed-header th, .table-fixed-header td {
         border-right: 1px solid #dee2e6; /* Add vertical column separator lines */
@@ -118,10 +110,6 @@ body {
 /* Override the Offcanvas height */
 .offcanvas-chat {
     --bs-offcanvas-height: 40vh; /* Set desired height */
-}
-
-.offcanvas-menu {
-    --bs-offcanvas-width: 270px; /* Set desired height */
 }
 
 .chat-buttons-container {
