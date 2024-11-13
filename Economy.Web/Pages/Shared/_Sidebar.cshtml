@@ -1,0 +1,51 @@
+﻿<ul class="nav flex-column">
+    <li class="nav-item">
+        <a class="nav-link active" aria-current="page" asp-area="" asp-page="/Index">Home</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/Basics">Basics</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/Plans">Plans</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/Overview">Overview</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/Events">Events</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/TranscriptionTest">Transcription Test</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/Report1">Report 1 - Perspective</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/Report2">Report 2 - Transactions</a>
+    </li>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        // todo: think about vertical or horizontal mode and see why these buttons are different
+        <li class="nav-item">
+            <form method="get" asp-page="Profile">
+                <button class="nav-link btn btn-link">Hello, @User.Identity.Name!</button>
+            </form>
+        </li>
+        <li class="nav-item">
+            <form method="post" asp-page="Profile" asp-page-handler="Logout">
+                <button type="submit" class="btn btn-link nav-link">Logout</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <form method="post" asp-page="Profile" asp-page-handler="Login">
+                <button type="submit" class="btn btn-link nav-link">Login with Google</button>
+            </form>
+        </li>
+    }
+</ul>

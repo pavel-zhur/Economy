@@ -17,7 +17,7 @@
 
             // Create new offcanvas
             const newOffcanvas = document.createElement('div');
-            newOffcanvas.className = window.innerWidth >= 768 ? 'offcanvas offcanvas-end' : 'offcanvas offcanvas-bottom';
+            newOffcanvas.className = window.innerWidth >= 768 ? 'offcanvas offcanvas-chat offcanvas-end' : 'offcanvas offcanvas-chat offcanvas-bottom';
             newOffcanvas.tabIndex = -1;
             newOffcanvas.id = `chatOffcanvas${offcanvasCount}`;
             newOffcanvas.setAttribute('aria-labelledby', `chatOffcanvasLabel${offcanvasCount}`);
@@ -60,7 +60,7 @@
         });
 
         function updateOffcanvasPlacement() {
-            document.querySelectorAll('.offcanvas').forEach(offcanvasElement => {
+            document.querySelectorAll('.offcanvas-chat').forEach(offcanvasElement => {
                 if (window.innerWidth >= 768) {
                     offcanvasElement.classList.remove('offcanvas-bottom');
                     offcanvasElement.classList.add('offcanvas-end');

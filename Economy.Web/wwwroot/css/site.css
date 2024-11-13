@@ -97,7 +97,7 @@ body {
     }
 
 /* Override the Offcanvas height */
-.offcanvas {
+.offcanvas-chat {
     --bs-offcanvas-height: 40vh; /* Set desired height */
 }
 
