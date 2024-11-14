@@ -39,3 +39,23 @@ button.accept-policy {
   line-height: inherit;
 }
 
+header.fixed-header div.animated-background {
+    position: relative;
+}
+
+    header.fixed-header div.animated-background div.background {
+        position: absolute;
+        height: 49px;
+        left: 0;
+        right: 0;
+        background: black;
+    }
+
+    header.fixed-header div.animated-background div.animation {
+        position: absolute;
+        height: 49px;
+        left: 0;
+        right: 0;
+        background-image: url('img/one-compressed.png');
+        opacity: 0.7;
+    }
