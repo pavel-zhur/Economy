@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services
     .AddRazorPages();
 
@@ -23,7 +22,6 @@ builder.Services
 
 builder.Services.AddControllers();
 
-// Add authentication services
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -37,11 +35,11 @@ builder.Services.AddAuthentication(options =>
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? throw new InvalidOperationException("Google ClientSecret is not configured.");
     options.Scope.Add(GoogleStorage.Scope);
     options.SaveTokens = true;
+    options.AccessType = "offline"; 
 });
 
 var app = builder.Build();
 
-// Configure the default culture
 var customCulture = new CultureInfo("en-US")
 {
     DateTimeFormat = { ShortDatePattern = "dd.MM.yyyy", LongTimePattern = "HH:mm" },
@@ -57,11 +55,9 @@ var localizationOptions = new RequestLocalizationOptions
 
 app.UseRequestLocalization(localizationOptions);
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -70,9 +66,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Add authentication and authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<ReauthenticationMiddleware>();
 
 app.MapRazorPages();
 app.MapControllers();
