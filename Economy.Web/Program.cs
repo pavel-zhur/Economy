@@ -7,7 +7,6 @@ using System.Globalization;
 using Economy.UserStorage;
 using Economy.Web.Hubs;
 using Economy.Web.Tools;
-using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +17,8 @@ builder.Services
     .AddAudioTranscriptionService(builder.Configuration)
     .AddFinancialKernel<UserDataStorage>(builder.Configuration)
     .AddHttpContextAccessor()
-    .AddUserStorage<GoogleAuthService>(builder.Configuration);
+    .AddUserStorage<GoogleAuthService>(builder.Configuration)
+    .AddSingleton<ChatsService>();
 
 builder.Services.AddControllers();
 
@@ -35,7 +35,7 @@ builder.Services.AddAuthentication(options =>
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? throw new InvalidOperationException("Google ClientSecret is not configured.");
     options.Scope.Add(GoogleStorage.Scope);
     options.SaveTokens = true;
-    options.AccessType = "offline"; 
+    options.AccessType = "offline";
 });
 
 builder.Services
