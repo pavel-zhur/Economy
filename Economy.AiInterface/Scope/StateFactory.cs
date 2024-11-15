@@ -2,16 +2,16 @@
 
 namespace Economy.AiInterface.Scope;
 
-public class StateFactory(FactoriesMemory factoriesMemory, IStateUserGetter stateUserGetter)
+public class StateFactory(FactoriesMemory factoriesMemory, IUserDataStorage userDataStorage)
 {
     public async Task<State> Get()
     {
-        var (state, _) = await factoriesMemory.GetOrCreate(stateUserGetter.GetStateUserKey());
+        var (state, _) = await factoriesMemory.GetOrCreate(userDataStorage);
         return state;
     }
 
     public async Task Save()
     {
-        await factoriesMemory.Save(stateUserGetter.GetStateUserKey());
+        await factoriesMemory.Save(userDataStorage);
     }
 }

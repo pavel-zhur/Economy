@@ -28,8 +28,8 @@ public static class ServiceCollectionExtensions
             .AddScoped<TranscriptionService>();
     }
 
-    public static IServiceCollection AddFinancialKernel<TStateUserGetter>(this IServiceCollection services, IConfiguration configuration)
-        where TStateUserGetter : class, IStateUserGetter
+    public static IServiceCollection AddFinancialKernel<TUserDataStorage>(this IServiceCollection services, IConfiguration configuration)
+        where TUserDataStorage : class, IUserDataStorage
     {
         var tempOptions = configuration.GetSection(nameof(AiInterfaceOptions)).Get<AiInterfaceOptions>()!;
 
@@ -44,7 +44,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<FactoriesMemory>();
         services.AddScoped<StateFactory>();
-        services.AddScoped<IStateUserGetter, TStateUserGetter>();
+        services.AddScoped<TUserDataStorage>()
+            .AddScoped<IUserDataStorage>(x => x.GetRequiredService<TUserDataStorage>());
 
         services.AddScoped(serviceProvider =>
         {

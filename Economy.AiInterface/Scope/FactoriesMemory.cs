@@ -1,41 +1,73 @@
-﻿using System.Collections.Concurrent;
-using System.Text.Json;
-using Economy.Memory.Containers.State;
+﻿using Economy.Memory.Containers.State;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Economy.AiInterface.Scope;
 
 public class FactoriesMemory
 {
-    private const string FileNameTemplate = "c:/temp/{0}.json";
+    private readonly Dictionary<string, UserSession> _memory = new();
 
-    private readonly ConcurrentDictionary<string, (State state, ChatHistory chatHistory, Task initialization)> _memory = new();
-
-    public async Task<(State state, ChatHistory chatHistory)> GetOrCreate(string userKey)
+    public async Task<(State state, ChatHistory chatHistory)> GetOrCreate(IUserDataStorage storage)
     {
-        var result = _memory.GetOrAdd(
-            userKey,
-            _ =>
+        var userKey = storage.GetUserKey();
+
+        UserSession session;
+        lock (_memory)
+        {
+            session = _memory.TryGetValue(userKey, out var value) ? value : _memory[userKey] = new();
+        }
+
+        await session.InitializeAsync(storage);
+
+        return (session.State, session.ChatHistory);
+    }
+
+    public async Task Save(IUserDataStorage storage)
+    {
+        UserSession userSession;
+        
+        lock (_memory)
+        {
+            userSession = _memory[storage.GetUserKey()];
+        }
+        
+        await storage.SaveUserData(userSession.State.SaveToBinary());
+    }
+
+    private class UserSession
+    {
+        private readonly SemaphoreSlim _initializationLock = new(1, 1);
+        private bool _initialized;
+
+        public State State { get; } = new();
+        public ChatHistory ChatHistory { get; } = new();
+
+        public async Task InitializeAsync(IUserDataStorage storage)
+        {
+            if (_initialized)
+                return;
+
+            await _initializationLock.WaitAsync();
+            try
             {
-                var state = new State();
-                var initialization = state.LoadFromFile(GetFileName(userKey));
-                return (state, new ChatHistory(), initialization);
-            });
+                if (!_initialized)
+                {
+                    await LoadAsync(storage);
+                    _initialized = true;
+                }
+            }
+            finally
+            {
+                _initializationLock.Release();
+            }
+        }
 
-        await result.initialization;
+        private async Task LoadAsync(IUserDataStorage storage)
+        {
+            var userData = await storage.GetUserData();
 
-        return (result.state, result.chatHistory);
-    }
-
-    public async Task Save(string userKey)
-    {
-        await _memory[userKey].state.SaveToFile(GetFileName(userKey));
-    }
-
-    private static string GetFileName(string userKey)
-    {
-        userKey = Path.GetInvalidFileNameChars().Append('.').Aggregate(userKey, (x, c) => x.Replace(c, '_'));
-
-        return string.Format(FileNameTemplate, userKey);
+            if (userData != null)
+                State.LoadFromBinary(userData);
+        }
     }
 }

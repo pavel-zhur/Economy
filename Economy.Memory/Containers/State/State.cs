@@ -1,4 +1,5 @@
-﻿using Economy.Memory.Models.EventSourcing;
+﻿using System.Text;
+using Economy.Memory.Models.EventSourcing;
 using Economy.Memory.Models.State;
 
 namespace Economy.Memory.Containers.State;
@@ -57,19 +58,14 @@ public class State
         @event.SetRevision(Events.Count);
     }
 
-    public async Task SaveToFile(string filePath)
+    public byte[] SaveToBinary()
     {
-        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new SerializedEvents(3, Events), JsonSerializerOptions));
+        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new SerializedEvents(3, Events), JsonSerializerOptions));
     }
 
-    public async Task LoadFromFile(string filePath)
+    public void LoadFromBinary(byte[]? data)
     {
-        if (!File.Exists(filePath))
-        {
-            return;
-        }
-
-        var events = JsonSerializer.Deserialize<SerializedEvents>(await File.ReadAllTextAsync(filePath), JsonSerializerOptions)!;
+        var events = JsonSerializer.Deserialize<SerializedEvents>(data, JsonSerializerOptions)!;
         if (events.Version != 3)
         {
             throw new ArgumentOutOfRangeException(nameof(events.Version), events.Version, "Expected version 3");

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using System.Security.Claims;
+using Economy.UserStorage;
 using Economy.Web.Tools;
 using Microsoft.AspNetCore.Authentication;
 
@@ -16,8 +17,9 @@ builder.Services
 
 builder.Services
     .AddAudioTranscriptionService(builder.Configuration)
-    .AddFinancialKernel<StateUserGetter>(builder.Configuration)
-    .AddHttpContextAccessor();
+    .AddFinancialKernel<UserDataStorage>(builder.Configuration)
+    .AddHttpContextAccessor()
+    .AddUserStorage<GoogleAuthService>(builder.Configuration);
 
 builder.Services.AddControllers();
 
@@ -33,6 +35,8 @@ builder.Services.AddAuthentication(options =>
 {
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? throw new InvalidOperationException("Google ClientId is not configured.");
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? throw new InvalidOperationException("Google ClientSecret is not configured.");
+    options.Scope.Add(GoogleStorage.Scope);
+    options.SaveTokens = true;
 });
 
 var app = builder.Build();

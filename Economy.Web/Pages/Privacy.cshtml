@@ -7,6 +7,14 @@
 
 <p>Use this page to detail your site's privacy policy.</p>
 
-<form method="post" asp-page-handler="Save">
-    <button type="submit">Save</button>
+<form method="post" asp-page-handler="Save" class="form">
+    <button type="submit" class="btn btn-primary">Save state</button>
+</form>
+
+<form method="post" asp-page-handler="UploadUserDataFromFile" class="form">
+    <button type="submit" class="btn btn-secondary">Upload user data from file</button>
+</form>
+
+<form method="post" asp-page-handler="CopyUserDataToFile" class="form">
+    <button type="submit" class="btn btn-secondary">Copy user data to file</button>
 </form>
