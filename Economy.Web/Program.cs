@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using Economy.UserStorage;
+using Economy.Web.Hubs;
 using Economy.Web.Tools;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +36,8 @@ builder.Services.AddAuthentication(options =>
     options.SaveTokens = true;
     options.AccessType = "offline"; 
 });
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -71,5 +74,7 @@ app.UseMiddleware<ReauthenticationMiddleware>();
 
 app.MapRazorPages();
 app.MapControllers();
+
+app.MapHub<ChatHub>("/chathub");
 
 app.Run();
