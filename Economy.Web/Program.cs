@@ -4,10 +4,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
-using System.Security.Claims;
 using Economy.UserStorage;
 using Economy.Web.Tools;
-using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,23 +71,5 @@ app.UseMiddleware<ReauthenticationMiddleware>();
 
 app.MapRazorPages();
 app.MapControllers();
-
-// Map the custom authentication endpoint for development
-if (app.Environment.IsDevelopment())
-{
-    app.MapGet("/auth-dev/{userid}", async context =>
-    {
-        var userId = context.Request.RouteValues["userid"]?.ToString() ?? throw new InvalidOperationException("UserId is not provided.");
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.Name, userId),
-            new Claim(ClaimTypes.NameIdentifier, userId),
-        };
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
-        await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-        context.Response.Redirect("/");
-    });
-}
 
 app.Run();
