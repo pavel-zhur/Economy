@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Economy.AiInterface.Scope;
 using Economy.UserStorage;
+using Economy.Web.Tools;
 
 namespace Economy.Web.Services;
 
@@ -13,7 +14,7 @@ public class UserDataStorage(IHttpContextAccessor httpContextAccessor, GoogleSto
         var user = httpContextAccessor.HttpContext?.User;
         if (user == null)
         {
-            throw new InvalidOperationException("No user is currently logged in.");
+            throw new ReauthenticationRequiredException("No user is currently logged in.");
         }
 
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;

@@ -1,4 +1,6 @@
-﻿using Google.Apis.Auth.OAuth2;
+﻿using System.Net;
+using Google;
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Upload;
@@ -18,42 +20,49 @@ public class GoogleStorage(ILogger<GoogleStorage> logger, IGoogleAuthService goo
     {
         using var driveService = await CreateDriveService();
 
-        var fileId = await GetExistingFileId(driveService);
-        using var stream = new MemoryStream(fileContent);
-
-        if (fileId == null)
+        try
         {
-            var fileMetadata = new Google.Apis.Drive.v3.Data.File
+            var fileId = await GetExistingFileId(driveService);
+            using var stream = new MemoryStream(fileContent);
+
+            if (fileId == null)
             {
-                Name = FileName,
-                MimeType = "application/octet-stream",
-                Parents =
-                [
-                    Folder
-                ]
-            };
+                var fileMetadata = new Google.Apis.Drive.v3.Data.File
+                {
+                    Name = FileName,
+                    MimeType = "application/octet-stream",
+                    Parents =
+                    [
+                        Folder
+                    ]
+                };
 
-            var request = driveService.Files.Create(
-                fileMetadata,
-                stream,
-                "application/octet-stream");
+                var request = driveService.Files.Create(
+                    fileMetadata,
+                    stream,
+                    "application/octet-stream");
 
-            request.Fields = "id";
+                request.Fields = "id";
 
-            var result = await request.UploadAsync();
-            result.ThrowOnFailure();
-            logger.LogInformation("A new file uploaded to Google Drive with ID: {0}", request.ResponseBody.Id);
+                var result = await request.UploadAsync();
+                result.ThrowOnFailure();
+                logger.LogInformation("A new file uploaded to Google Drive with ID: {0}", request.ResponseBody.Id);
+            }
+            else
+            {
+                var request = await driveService.Files.Update(
+                    new(),
+                    fileId,
+                    stream,
+                    "application/octet-stream").UploadAsync();
+
+                request.ThrowOnFailure();
+                logger.LogInformation("The file updated in Google Drive with ID: {0}", fileId);
+            }
         }
-        else
+        catch (GoogleApiException e) when (e.HttpStatusCode == HttpStatusCode.Forbidden)
         {
-            var request = await driveService.Files.Update(
-                new(),
-                fileId,
-                stream,
-                "application/octet-stream").UploadAsync();
-
-            request.ThrowOnFailure();
-            logger.LogInformation("The file updated in Google Drive with ID: {0}", fileId);
+            throw new InsufficientScopesException();
         }
     }
 
@@ -74,15 +83,22 @@ public class GoogleStorage(ILogger<GoogleStorage> logger, IGoogleAuthService goo
     {
         using var driveService = await CreateDriveService();
 
-        var fileId = await GetExistingFileId(driveService);
-        if (fileId == null)
+        try
         {
-            return null;
-        }
+            var fileId = await GetExistingFileId(driveService);
+            if (fileId == null)
+            {
+                return null;
+            }
 
-        using var stream = new MemoryStream();
-        await driveService.Files.Get(fileId).DownloadAsync(stream);
-        return stream.ToArray();
+            using var stream = new MemoryStream();
+            await driveService.Files.Get(fileId).DownloadAsync(stream);
+            return stream.ToArray();
+        }
+        catch (GoogleApiException e) when (e.HttpStatusCode == HttpStatusCode.Forbidden)
+        {
+            throw new InsufficientScopesException();
+        }
     }
 
     private static async Task<string?> GetExistingFileId(DriveService driveService)
@@ -91,7 +107,7 @@ public class GoogleStorage(ILogger<GoogleStorage> logger, IGoogleAuthService goo
         request.Spaces = Folder;
         request.Fields = "files(id)";
         var files = await request.ExecuteAsync();
-        
+
         switch (files.Files.Count)
         {
             case 0:

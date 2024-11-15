@@ -1,3 +1,4 @@
+using Economy.UserStorage;
 using Economy.Web.Tools;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -13,6 +14,10 @@ public class ReauthenticationMiddleware(RequestDelegate next)
             await next(context);
         }
         catch (ReauthenticationRequiredException)
+        {
+            await context.ChallengeAsync(GoogleDefaults.AuthenticationScheme);
+        }
+        catch (InsufficientScopesException)
         {
             await context.ChallengeAsync(GoogleDefaults.AuthenticationScheme);
         }
