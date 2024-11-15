@@ -7,6 +7,9 @@
 <h2>Chat</h2>
 
 <input id="userInput" type="text" placeholder="User" />
+<button id="micButton">
+    <i class="fa fa-microphone"></i>
+</button>
 <input id="messageInput" type="text" placeholder="Message" />
 <button id="sendButton">Send</button>
 
@@ -16,9 +19,17 @@
     <script>
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chathub")
+            .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
             .build();
 
         connection.on("ReceiveMessage", (user, message) => {
+            const msg = `${user}: ${message}`;
+            const li = document.createElement("li");
+            li.textContent = msg;
+            document.getElementById("messagesList").appendChild(li);
+        });
+
+        connection.on("ReceiveAudio", (user, message) => {
             const msg = `${user}: ${message}`;
             const li = document.createElement("li");
             li.textContent = msg;
@@ -33,5 +44,35 @@
             connection.send("SendMessage", user, message).catch(err => console.error(err.toString()));
             event.preventDefault();
         });
+
+        const micButton = document.getElementById("micButton");
+        let mediaRecorder;
+        let audioChunks = [];
+
+        micButton.addEventListener("click", async () => {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                return;
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                audioChunks = [];
+                const arrayBuffer = await audioBlob.arrayBuffer();
+                const byteArray = new Uint8Array(arrayBuffer);
+                const user = document.getElementById("userInput").value;
+                connection.invoke("SendAudio", user, byteArray).catch(err => console.error(err.toString()));
+            };
+
+            mediaRecorder.start();
+        });
     </script>
 }
+

@@ -7,6 +7,7 @@ using System.Globalization;
 using Economy.UserStorage;
 using Economy.Web.Hubs;
 using Economy.Web.Tools;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +38,12 @@ builder.Services.AddAuthentication(options =>
     options.AccessType = "offline"; 
 });
 
-builder.Services.AddSignalR();
+builder.Services
+    .AddSignalR(o =>
+    {
+        o.MaximumReceiveMessageSize = 300_000_000;
+    })
+    .AddMessagePackProtocol();
 
 var app = builder.Build();
 
