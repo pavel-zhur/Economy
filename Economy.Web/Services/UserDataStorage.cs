@@ -20,7 +20,7 @@ public class UserDataStorage(IHttpContextAccessor httpContextAccessor, GoogleSto
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null)
         {
-            throw new InvalidOperationException("User ID not found.");
+            throw new ReauthenticationRequiredException("User ID not found.");
         }
 
         return userId;
