@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class PrivacyModel(ILogger<PrivacyModel> logger, StateFactory stateFactory, UserDataStorage userDataStorage) : PageModel
+public class PrivacyModel(ILogger<PrivacyModel> logger, StateFactory stateFactory, UserDataStorage userDataStorage, IHostEnvironment hostEnvironment) : PageModel
 {
     public void OnGet()
     {
@@ -19,12 +19,22 @@ public class PrivacyModel(ILogger<PrivacyModel> logger, StateFactory stateFactor
 
     public async Task<RedirectResult> OnPostCopyUserDataToFile()
     {
+        if (!hostEnvironment.IsDevelopment())
+        {
+            return Redirect("/Privacy");
+        }
+
         await userDataStorage.CopyUserDataToFile();
         return Redirect("/Privacy");
     }
 
     public async Task<RedirectResult> OnPostUploadUserDataFromFile()
     {
+        if (!hostEnvironment.IsDevelopment())
+        {
+            return Redirect("/Privacy");
+        }
+
         await userDataStorage.UploadUserDataFromFile();
         return Redirect("/Privacy");
     }

@@ -1,5 +1,6 @@
 ﻿@page
 @model PrivacyModel
+@inject IHostEnvironment HostEnvironment
 @{
     ViewData["Title"] = "Privacy Policy";
 }
@@ -11,10 +12,13 @@
     <button type="submit" class="btn btn-primary">Save state</button>
 </form>
 
-<form method="post" asp-page-handler="UploadUserDataFromFile" class="form">
-    <button type="submit" class="btn btn-secondary">Upload user data from file</button>
-</form>
+@if (HostEnvironment.IsDevelopment())
+{
+    <form method="post" asp-page-handler="UploadUserDataFromFile" class="form">
+        <button type="submit" class="btn btn-secondary">Upload user data from file</button>
+    </form>
 
-<form method="post" asp-page-handler="CopyUserDataToFile" class="form">
-    <button type="submit" class="btn btn-secondary">Copy user data to file</button>
-</form>
+    <form method="post" asp-page-handler="CopyUserDataToFile" class="form">
+        <button type="submit" class="btn btn-secondary">Copy user data to file</button>
+    </form>
+}
