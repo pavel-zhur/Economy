@@ -12,15 +12,51 @@
 </button>
 <input id="messageInput" type="text" placeholder="Message" />
 <button id="sendButton">Send</button>
+<br/>
+<button id="stopButton">stop connection</button>
+<button id="startButton">start connection</button>
 
 <ul id="messagesList"></ul>
 
 @section Scripts {
     <script>
+        function displayMessage(msg) {
+            const li = document.createElement("li");
+            li.textContent = msg;
+            document.getElementById("messagesList").appendChild(li);
+        }
+
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chathub")
             .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
+            .withAutomaticReconnect({
+                nextRetryDelayInMilliseconds: retryContext => {
+                    if (retryContext.elapsedMilliseconds < 60000) {
+                        // If we've been reconnecting for less than 60 seconds so far,
+                        // wait between 0 and 3 seconds before the next reconnect attempt.
+                        return Math.random() * 3000;
+                    } else {
+                        // If we've been reconnecting for more than 60 seconds so far, stop reconnecting.
+                        return null;
+                    }
+                }
+            })
             .build();
+
+        connection.onclose(error => {
+            document.getElementById("messageInput").disabled = true;
+            displayMessage('disconnected');
+        });
+
+        connection.onreconnecting(error => {
+            document.getElementById("messageInput").disabled = true;
+            displayMessage('reconnecting');
+        });
+
+        connection.onreconnected(connectionId => {
+            document.getElementById("messageInput").disabled = false;
+            displayMessage('reconnected');
+        });
 
         connection.on("ReceiveMessage", (user, message) => {
             const msg = `${user}: ${message}`;
@@ -31,17 +67,44 @@
 
         connection.on("ReceiveAudio", (user, message) => {
             const msg = `${user}: ${message}`;
-            const li = document.createElement("li");
-            li.textContent = msg;
-            document.getElementById("messagesList").appendChild(li);
+            displayMessage(msg);
         });
 
-        connection.start().catch(err => console.error(err.toString()));
+        connection.start().catch(err => console.error(err.toString())).then(() => {
+                displayMessage('initial connection succeeded');
+            });
 
         document.getElementById("sendButton").addEventListener("click", event => {
             const user = document.getElementById("userInput").value;
             const message = document.getElementById("messageInput").value;
-            connection.send("SendMessage", user, message).catch(err => console.error(err.toString()));
+            connection.send("SendMessage", user, message).then(() => {
+                displayMessage(`sent ${user}: ${message}`);
+            }).catch(err => {
+                displayMessage('send unsuccessful');
+                console.error(err.toString());
+            });
+            event.preventDefault();
+        });
+
+        document.getElementById("startButton").addEventListener("click", event => {
+            displayMessage('starting connection');
+            connection.start().then(() => {
+                displayMessage('connection succeeded');
+            }).catch(err => {
+                displayMessage('connection unsuccessful');
+                console.error(err.toString());
+            });
+            event.preventDefault();
+        });
+
+        document.getElementById("stopButton").addEventListener("click", event => {
+            connection.stop()
+            .then(() => {
+                displayMessage('connection stopped');
+            }).catch(err => {
+                displayMessage('connection stop unsuccessful');
+                console.error(err.toString());
+            });
             event.preventDefault();
         });
 
