@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const animationElement = document.querySelector('header.fixed-header div.animated-background div.animation');
+    const animationElement = document.querySelector('div.animated-background div.animation');
 
     if (animationElement) {
         const keyframes = [

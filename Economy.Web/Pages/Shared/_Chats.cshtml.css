@@ -1,0 +1,22 @@
+﻿.offcanvas-chat {
+    --bs-offcanvas-height: 40vh;
+}
+
+.chat-buttons-container {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    display: flex;
+    gap: 10px; /* Adjust the gap between buttons as needed */
+    z-index: 1046;
+}
+
+    .chat-buttons-container ::deep > .chat-button {
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
