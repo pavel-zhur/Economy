@@ -1,3 +1,8 @@
+using MessagePack;
+
 namespace Economy.Web.Hubs.Models;
 
-public record StateModel(int LatestRevision, IReadOnlyList<ChatModel> Chats);
+[MessagePackObject]
+public record StateModel(
+    [property: Key("latestRevision")] int LatestRevision,
+    [property: Key("chats")] IReadOnlyList<ChatModel> Chats);

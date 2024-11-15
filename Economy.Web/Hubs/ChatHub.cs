@@ -104,7 +104,6 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, IUserDa
                             null,
                             "A server error occurred. A page refresh could help.",
                             null,
-                            null,
                             SystemMessageSeverity.Error)
                     ],
                     ChatStatus.FatalError

@@ -7,6 +7,9 @@ using System.Globalization;
 using Economy.UserStorage;
 using Economy.Web.Hubs;
 using Economy.Web.Tools;
+using MessagePack;
+using MessagePack.Formatters;
+using MessagePack.Resolvers;
 
 var builder = WebApplication.CreateBuilder(args);
 

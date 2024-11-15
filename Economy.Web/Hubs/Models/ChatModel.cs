@@ -1,3 +1,9 @@
+using MessagePack;
+
 namespace Economy.Web.Hubs.Models;
 
-public record ChatModel(string RandomChatId, List<MessageModel> Messages, ChatStatus Status);
+[MessagePackObject]
+public record ChatModel(
+    [property: Key("randomChatId")] string RandomChatId,
+    [property: Key("messages")] List<MessageModel> Messages,
+    [property: Key("status")] ChatStatus Status);

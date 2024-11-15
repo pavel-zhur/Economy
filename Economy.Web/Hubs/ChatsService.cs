@@ -14,7 +14,7 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
     public async Task GotMessage(IUserDataStorage userDataStorage, string userId, string randomChatId, string randomMessageId, string message)
     {
         CancellationTokenSource cancellationTokenSource = new();
-        var messageModel = new MessageModel(DateTime.UtcNow, MessageType.UserText, randomMessageId, message, null, UserMessageStatus.Thinking, null);
+        var messageModel = new MessageModel(DateTime.UtcNow, MessageType.UserText, randomMessageId, message, UserMessageStatus.Thinking, null);
 
         AddUserMessage(userId, randomChatId, messageModel, chatStatus =>
         {
@@ -32,7 +32,7 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
     public async Task GotAudio(IUserDataStorage userDataStorage, string userId, string randomChatId, string randomMessageId, byte[] audioData)
     {
         CancellationTokenSource cancellationTokenSource = new();
-        var messageModel = new MessageModel(DateTime.UtcNow, MessageType.UserText, randomMessageId, null, audioData, UserMessageStatus.Thinking, null);
+        var messageModel = new MessageModel(DateTime.UtcNow, MessageType.UserVoice, randomMessageId, $"({audioData.Length / 1024:N1} KB)", UserMessageStatus.Thinking, null);
 
         AddUserMessage(userId, randomChatId, messageModel, chatStatus =>
         {
@@ -44,7 +44,7 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
 
         await Task.WhenAll(
             SendUpdate(userDataStorage, userId),
-            Process(userDataStorage, userId, randomChatId, cancellationTokenSource));
+            Process(userDataStorage, userId, randomChatId, cancellationTokenSource, audioData));
     }
 
     public async Task<StateModel> GetState(IUserDataStorage userDataStorage, string userId)
@@ -60,7 +60,7 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
 
         return new StateModel(
             state.Events.Count,
-            chats);
+            chats.Where(x => x.Status is not ChatStatus.Closed).ToList());
     }
 
     public async Task TryCancel(string userId, string randomChatId, string randomMessageId)
@@ -105,7 +105,7 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
     }
 
     // reacts to cancellation, sends updates on any update
-    private async Task Process(IUserDataStorage userDataStorage, string userId, string randomChatId, CancellationTokenSource cancellationTokenSource)
+    private async Task Process(IUserDataStorage userDataStorage, string userId, string randomChatId, CancellationTokenSource cancellationTokenSource, byte[]? audioData = null)
     {
         var cancellationToken = cancellationTokenSource.Token;
         int chatIndex = -1;
@@ -139,7 +139,7 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
                     Status = UserMessageStatus.Done,
                 };
 
-                _chats[userId][chatIndex].Messages.Add(new(DateTime.UtcNow, MessageType.ServerText, null, "Success.", null, null, SystemMessageSeverity.Success));
+                _chats[userId][chatIndex].Messages.Add(new(DateTime.UtcNow, MessageType.ServerText, null, "Success.", null, SystemMessageSeverity.Success));
 
                 _chats[userId][chatIndex] = _chats[userId][chatIndex] with
                 {

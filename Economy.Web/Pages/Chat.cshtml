@@ -37,8 +37,7 @@
                 try {
                     connection = new signalR.HubConnectionBuilder()
                         .withUrl("/chathub")
-                        // Uncomment the following line if you're using MessagePack protocol
-                        //.withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
+                        .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
                         .withAutomaticReconnect({
                             nextRetryDelayInMilliseconds: retryContext => {
                                 if (retryContext.elapsedMilliseconds < 60000) {
@@ -99,23 +98,6 @@
                             location.reload();
                         } catch (err) {
                             console.error('Error in Authenticate handler:', err);
-                        }
-                    });
-
-                    // Incoming messages
-                    connection.on('ReceiveMessage', (randomChatId, message) => {
-                        try {
-                            handleIncomingMessage(randomChatId, message);
-                        } catch (err) {
-                            console.error('Error in ReceiveMessage handler:', err);
-                        }
-                    });
-
-                    connection.on('ReceiveAudio', (randomChatId, audioData) => {
-                        try {
-                            handleIncomingAudio(randomChatId, audioData);
-                        } catch (err) {
-                            console.error('Error in ReceiveAudio handler:', err);
                         }
                     });
 
@@ -301,12 +283,14 @@
             const formatMessage = (message) => {
                 try {
                     let msgText = '';
-                    if (message.type === 'UserText') {
+                    if (message.type === 'UserText' || message.type === 'UserVoice') {
                         msgText = `You: ${message.text}`;
                     } else if (message.type === 'ServerText') {
                         msgText = `Server: ${message.text}`;
                     } else if (message.type === 'SystemText') {
                         msgText = `[${message.systemMessageSeverity}] ${message.text}`;
+                    } else if (message.type === 'ActionLog') {
+                        msgText = `${message.text}`;
                     }
                     return msgText;
                 } catch (err) {
@@ -329,7 +313,6 @@
                         type: 'UserText',
                         randomMessageId: randomMessageId,
                         text: messageText,
-                        audioData: null,
                         status: 'Thinking',
                         systemMessageSeverity: null
                     };
@@ -369,8 +352,7 @@
                         timestamp: new Date().toISOString(),
                         type: 'UserVoice',
                         randomMessageId: randomMessageId,
-                        text: null,
-                        audioData: audioBlob,
+                        text: "(...)",
                         status: 'Thinking',
                         systemMessageSeverity: null
                     };
@@ -456,69 +438,6 @@
                         reject(err);
                     }
                 });
-            };
-
-            // Handle incoming messages
-            const handleIncomingMessage = (randomChatId, message) => {
-                try {
-                    if (!chats[randomChatId]) {
-                        // If chat doesn't exist, create it
-                        chats[randomChatId] = {
-                            randomChatId: randomChatId,
-                            messages: [],
-                            status: 'Success'
-                        };
-                        renderChat(chats[randomChatId]);
-                    }
-
-                    const messageModel = {
-                        timestamp: new Date().toISOString(),
-                        type: 'ServerText',
-                        randomMessageId: generateRandomId(),
-                        text: message,
-                        audioData: null,
-                        status: 'Success',
-                        systemMessageSeverity: null
-                    };
-
-                    chats[randomChatId].messages.push(messageModel);
-                    updateChatUI(chats[randomChatId]);
-                } catch (err) {
-                    console.error('Error handling incoming message:', err);
-                }
-            };
-
-            const handleIncomingAudio = (randomChatId, audioData) => {
-                try {
-                    if (!chats[randomChatId]) {
-                        // If chat doesn't exist, create it
-                        chats[randomChatId] = {
-                            randomChatId: randomChatId,
-                            messages: [],
-                            status: 'Success'
-                        };
-                        renderChat(chats[randomChatId]);
-                    }
-
-                    // Create a blob from the audio data
-                    const audioBlob = new Blob([audioData], { type: 'audio/webm' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-
-                    const messageModel = {
-                        timestamp: new Date().toISOString(),
-                        type: 'ServerVoice',
-                        randomMessageId: generateRandomId(),
-                        text: null,
-                        audioData: audioUrl,
-                        status: 'Success',
-                        systemMessageSeverity: null
-                    };
-
-                    chats[randomChatId].messages.push(messageModel);
-                    updateChatUI(chats[randomChatId]);
-                } catch (err) {
-                    console.error('Error handling incoming audio:', err);
-                }
             };
 
             const newChatButtonHandler = () => {
