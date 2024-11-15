@@ -40,22 +40,22 @@ button.accept-policy {
 }
 
 header.fixed-header div.animated-background {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    background: black;
+    align-items: center; /* Center the .animation div vertically */
+    z-index: -1;
 }
-
-    header.fixed-header div.animated-background div.background {
-        position: absolute;
-        height: 49px;
-        left: 0;
-        right: 0;
-        background: black;
-    }
 
     header.fixed-header div.animated-background div.animation {
         position: absolute;
-        height: 49px;
-        left: 0;
-        right: 0;
+        width: 100%;
+        max-height: 49px; /* Set the maximum height */
+        height: 100%;
         background-image: url('img/one-compressed.png');
-        opacity: 0.7;
+        opacity: 0.8;
     }
