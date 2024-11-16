@@ -138,6 +138,13 @@
                         if (localChats[chatModel.randomChatId]) {
                             delete localChats[chatModel.randomChatId];
                         }
+
+                        // Clear pending messages if they exist in the new model
+                        chatModel.messages.forEach(message => {
+                            if (pendingMessages[chatModel.randomChatId] && pendingMessages[chatModel.randomChatId].messageModel.randomMessageId === message.randomMessageId) {
+                                delete pendingMessages[chatModel.randomChatId];
+                            }
+                        });
                     });
                     chats = { ...serverChats };
                     renderChats();
@@ -190,7 +197,7 @@
                     const allChats = [
                         ...Object.values(chats),
                         ...Object.values(localChats)
-                    ];
+                            ];
 
                     // Sort: server chats first based on server order, then local chats by creation
                     allChats.sort((a, b) => {
@@ -302,23 +309,20 @@
                     let messagesList = document.getElementById(`messagesList-${randomChatId}`);
                     if (!messagesList) return;
 
-                    // Add pending message if not already present
-                    if (!document.getElementById(`message-${messageModel.randomMessageId}`)) {
-                        const li = document.createElement('li');
-                        li.id = `message-${messageModel.randomMessageId}`;
-                        li.textContent = `${messageModel.type === 'UserText' ? 'You' : 'You (Audio)'}: ${messageModel.text} - ${messageModel.status}`;
+                    const li = document.createElement('li');
+                    li.id = `message-${messageModel.randomMessageId}`;
+                    li.textContent = `${messageModel.type === 'UserText' ? 'You' : 'You (Audio)'}: ${messageModel.text} - ${messageModel.status}`;
 
-                        const resendButton = createButton('Resend', null, () => {
-                            try {
-                                resendMessage(randomChatId, messageModel.randomMessageId, messageModel.text, messageModel.type);
-                            } catch (err) {
-                                console.error('Error in resend button click handler:', err);
-                            }
-                        });
-                        li.appendChild(resendButton);
+                    const resendButton = createButton('Resend', null, () => {
+                        try {
+                            resendMessage(randomChatId, messageModel.randomMessageId, messageModel.text, messageModel.type);
+                        } catch (err) {
+                            console.error('Error in resend button click handler:', err);
+                        }
+                    });
+                    li.appendChild(resendButton);
 
-                        messagesList.appendChild(li);
-                    }
+                    messagesList.appendChild(li);
                 } catch (err) {
                     console.error('Error rendering pending message:', err);
                 }
@@ -405,7 +409,7 @@
                     toggleChatButtons(randomChatId, true);
 
                     // Optimistically add message to local chats
-                    if (!localChats[randomChatId]) {
+                    if (!chats[randomChatId] && !localChats[randomChatId]) {
                         localChats[randomChatId] = {
                             randomChatId: randomChatId,
                             messages: [],
@@ -422,7 +426,7 @@
                         systemMessageSeverity: null
                     };
 
-                    localChats[randomChatId].messages.push(messageModel);
+                    (localChats[randomChatId] || chats[randomChatId]).messages.push(messageModel);
                     renderChats();
 
                     // Add to pending messages
