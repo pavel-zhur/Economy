@@ -6,7 +6,7 @@
 
 <h2>Chat Application</h2>
 
-<div id="connectionStatus">Status: <span id="statusText">Disconnected</span></div>
+<div id="connectionStatus">Status: <span id="statusText" class="disconnected">Disconnected</span></div>
 
 <div id="chatsContainer"></div>
 
@@ -21,7 +21,9 @@
             const chatsContainer = document.getElementById('chatsContainer');
             const newChatButton = document.getElementById('newChatButton');
 
-            let chats = {}; // Stores chat data with randomChatId as the key
+            let chats = {}; // Stores server chats with randomChatId as the key
+            let localChats = {}; // Stores local chats with 0 or 1 unsent message
+            let pendingMessages = {}; // Stores pending messages per chat
             let connection;
 
             // Global error handlers
@@ -54,42 +56,19 @@
 
                     // Event handlers
                     connection.onclose(error => {
-                        try {
-                            updateConnectionStatus('Disconnected');
-                            disableInputs(true);
-                            logError('Connection closed', error);
-                        } catch (err) {
-                            console.error('Error in onclose handler:', err);
-                        }
+                        handleConnectionClose(error);
                     });
 
                     connection.onreconnecting(error => {
-                        try {
-                            updateConnectionStatus('Reconnecting');
-                            disableInputs(true);
-                            logError('Connection reconnecting', error);
-                        } catch (err) {
-                            console.error('Error in onreconnecting handler:', err);
-                        }
+                        handleConnectionReconnecting(error);
                     });
 
                     connection.onreconnected(connectionId => {
-                        try {
-                            updateConnectionStatus('Connected');
-                            disableInputs(false);
-                            sendHello();
-                            logInfo('Reconnected with connectionId:', connectionId);
-                        } catch (err) {
-                            console.error('Error in onreconnected handler:', err);
-                        }
+                        handleConnectionReconnected(connectionId);
                     });
 
                     connection.on('HelloResponse', state => {
-                        try {
-                            handleHelloResponse(state);
-                        } catch (err) {
-                            console.error('Error in HelloResponse handler:', err);
-                        }
+                        handleHelloResponse(state);
                     });
 
                     connection.on('Authenticate', () => {
@@ -115,6 +94,55 @@
                         });
                 } catch (err) {
                     console.error('Error initializing SignalR connection:', err);
+                }
+            };
+
+            const handleConnectionClose = (error) => {
+                try {
+                    updateConnectionStatus('Disconnected');
+                    disableInputs(true);
+                    logError('Connection closed', error);
+                } catch (err) {
+                    console.error('Error in handleConnectionClose:', err);
+                }
+            };
+
+            const handleConnectionReconnecting = (error) => {
+                try {
+                    updateConnectionStatus('Reconnecting');
+                    disableInputs(true);
+                    logError('Connection reconnecting', error);
+                } catch (err) {
+                    console.error('Error in handleConnectionReconnecting:', err);
+                }
+            };
+
+            const handleConnectionReconnected = (connectionId) => {
+                try {
+                    updateConnectionStatus('Connected');
+                    disableInputs(false);
+                    sendHello();
+                    logInfo('Reconnected with connectionId:', connectionId);
+                } catch (err) {
+                    console.error('Error in handleConnectionReconnected:', err);
+                }
+            };
+
+            const handleHelloResponse = (state) => {
+                try {
+                    // Merge server chats with local chats
+                    const serverChats = {};
+                    state.chats.forEach(chatModel => {
+                        serverChats[chatModel.randomChatId] = chatModel;
+                        // Remove from localChats if exists
+                        if (localChats[chatModel.randomChatId]) {
+                            delete localChats[chatModel.randomChatId];
+                        }
+                    });
+                    chats = { ...serverChats };
+                    renderChats();
+                } catch (err) {
+                    console.error('Error handling HelloResponse:', err);
                 }
             };
 
@@ -147,25 +175,50 @@
                 }
             };
 
-            const handleHelloResponse = (state) => {
-                try {
-                    // Overwrite all chats with the state received from the server
-                    chats = {};
-                    state.chats.forEach(chatModel => {
-                        chats[chatModel.randomChatId] = chatModel;
-                    });
-                    renderChats();
-                } catch (err) {
-                    console.error('Error handling HelloResponse:', err);
-                }
-            };
-
             const renderChats = () => {
                 try {
+                    // Preserve input values
+                    const inputValues = {};
+                    Object.keys(localChats).forEach(chatId => {
+                        const input = document.getElementById(`messageInput-${chatId}`);
+                        if (input) {
+                            inputValues[chatId] = input.value;
+                        }
+                    });
+
+                    // Combine server and local chats
+                    const allChats = [
+                        ...Object.values(chats),
+                        ...Object.values(localChats)
+                    ];
+
+                    // Sort: server chats first based on server order, then local chats by creation
+                    allChats.sort((a, b) => {
+                        if (chats[a.randomChatId] && chats[b.randomChatId]) {
+                            return 0; // Maintain server order
+                        }
+                        if (chats[a.randomChatId]) return -1;
+                        if (chats[b.randomChatId]) return 1;
+                        return 0;
+                    });
+
                     // Clear existing chats
                     chatsContainer.innerHTML = '';
-                    Object.values(chats).forEach(chatModel => {
+                    allChats.forEach(chatModel => {
                         renderChat(chatModel);
+                    });
+
+                    // Restore input values
+                    Object.keys(inputValues).forEach(chatId => {
+                        const input = document.getElementById(`messageInput-${chatId}`);
+                        if (input) {
+                            input.value = inputValues[chatId];
+                        }
+                    });
+
+                    // Render pending messages
+                    Object.values(pendingMessages).forEach(pending => {
+                        renderPendingMessage(pending);
                     });
                 } catch (err) {
                     console.error('Error rendering chats:', err);
@@ -195,11 +248,7 @@
                         messageInput.id = `messageInput-${chatModel.randomChatId}`;
                         chatDiv.appendChild(messageInput);
 
-                        const sendButton = document.createElement('button');
-                        sendButton.textContent = 'Send';
-                        sendButton.classList.add('sendButton');
-                        sendButton.id = `sendButton-${chatModel.randomChatId}`;
-                        sendButton.addEventListener('click', () => {
+                        const sendButton = createButton('Send', `sendButton-${chatModel.randomChatId}`, () => {
                             try {
                                 sendMessage(chatModel.randomChatId);
                             } catch (err) {
@@ -208,11 +257,7 @@
                         });
                         chatDiv.appendChild(sendButton);
 
-                        const micButton = document.createElement('button');
-                        micButton.innerHTML = '<i class="fa fa-microphone"></i>';
-                        micButton.classList.add('micButton');
-                        micButton.id = `micButton-${chatModel.randomChatId}`;
-                        micButton.addEventListener('click', () => {
+                        const micButton = createButton('🔊', `micButton-${chatModel.randomChatId}`, () => {
                             try {
                                 startVoiceRecording(chatModel.randomChatId);
                             } catch (err) {
@@ -221,9 +266,7 @@
                         });
                         chatDiv.appendChild(micButton);
 
-                        const closeChatButton = document.createElement('button');
-                        closeChatButton.textContent = 'Close Chat';
-                        closeChatButton.addEventListener('click', () => {
+                        const closeChatButton = createButton('Close Chat', null, () => {
                             try {
                                 closeChat(chatModel.randomChatId);
                             } catch (err) {
@@ -241,6 +284,46 @@
                 }
             };
 
+            const createButton = (text, id, onClick) => {
+                const button = document.createElement('button');
+                button.textContent = text;
+                if (id) button.id = id;
+                button.classList.add('sendButton'); // Adjust class if needed
+                button.addEventListener('click', onClick);
+                return button;
+            };
+
+            const renderPendingMessage = (pending) => {
+                try {
+                    const { randomChatId, messageModel } = pending;
+                    let chatDiv = document.getElementById(`chat-${randomChatId}`);
+                    if (!chatDiv) return;
+
+                    let messagesList = document.getElementById(`messagesList-${randomChatId}`);
+                    if (!messagesList) return;
+
+                    // Add pending message if not already present
+                    if (!document.getElementById(`message-${messageModel.randomMessageId}`)) {
+                        const li = document.createElement('li');
+                        li.id = `message-${messageModel.randomMessageId}`;
+                        li.textContent = `${messageModel.type === 'UserText' ? 'You' : 'You (Audio)'}: ${messageModel.text} - ${messageModel.status}`;
+
+                        const resendButton = createButton('Resend', null, () => {
+                            try {
+                                resendMessage(randomChatId, messageModel.randomMessageId, messageModel.text, messageModel.type);
+                            } catch (err) {
+                                console.error('Error in resend button click handler:', err);
+                            }
+                        });
+                        li.appendChild(resendButton);
+
+                        messagesList.appendChild(li);
+                    }
+                } catch (err) {
+                    console.error('Error rendering pending message:', err);
+                }
+            };
+
             const updateChatUI = (chatModel) => {
                 try {
                     const messagesList = document.getElementById(`messagesList-${chatModel.randomChatId}`);
@@ -248,22 +331,19 @@
                         messagesList.innerHTML = '';
                         chatModel.messages.forEach(message => {
                             const li = document.createElement('li');
+                            li.id = `message-${message.randomMessageId}`;
                             li.textContent = formatMessage(message);
 
                             // Add cancel button for user's message if cancellation is possible
-                            if (message.type === 'UserText' || message.type === 'UserVoice') {
-                                if (message.status === 'Thinking') {
-                                    const cancelButton = document.createElement('button');
-                                    cancelButton.textContent = 'Cancel';
-                                    cancelButton.addEventListener('click', () => {
-                                        try {
-                                            tryCancelMessage(chatModel.randomChatId, message.randomMessageId);
-                                        } catch (err) {
-                                            console.error('Error in cancel button click handler:', err);
-                                        }
-                                    });
-                                    li.appendChild(cancelButton);
-                                }
+                            if ((message.type === 'UserText' || message.type === 'UserVoice') && message.status === 'Thinking') {
+                                const cancelButton = createButton('Cancel', null, () => {
+                                    try {
+                                        tryCancelMessage(chatModel.randomChatId, message.randomMessageId);
+                                    } catch (err) {
+                                        console.error('Error in cancel button click handler:', err);
+                                    }
+                                });
+                                li.appendChild(cancelButton);
                             }
 
                             messagesList.appendChild(li);
@@ -271,12 +351,21 @@
                         messagesList.scrollTop = messagesList.scrollHeight;
                     }
 
-                    // Enable or disable inputs based on chat status
+                    // Determine if inputs should be disabled based on chat status
+                    const { status } = chatModel;
+                    const shouldDisable = status === 'FatalError';
                     const sendButton = document.getElementById(`sendButton-${chatModel.randomChatId}`);
                     const micButton = document.getElementById(`micButton-${chatModel.randomChatId}`);
-                    const isDisabled = (chatModel.status !== 'Success' && chatModel.status !== 'Processing');
-                    if (sendButton) sendButton.disabled = isDisabled;
-                    if (micButton) micButton.disabled = isDisabled;
+                    const messageInput = document.getElementById(`messageInput-${chatModel.randomChatId}`);
+
+                    if (sendButton) sendButton.disabled = shouldDisable;
+                    if (micButton) micButton.disabled = shouldDisable;
+                    if (messageInput) {
+                        messageInput.disabled = shouldDisable;
+                        if (status === 'Normal') {
+                            messageInput.disabled = false;
+                        }
+                    }
                 } catch (err) {
                     console.error('Error updating chat UI:', err);
                 }
@@ -285,8 +374,11 @@
             const formatMessage = (message) => {
                 try {
                     let msgText = '';
-                    if (message.type === 'UserText' || message.type === 'UserVoice') {
-                        msgText = `You: ${message.text}`;
+                    if (message.type === 'UserText') {
+                        msgText = `You: ${message.text} - ${message.status}`;
+                    } else if (message.type === 'UserVoice') {
+                        msgText = `You (Audio): Transcription - ${message.text} - ${message.status}`;
+                        // Optionally, display audio playback if audioData exists
                     } else if (message.type === 'ServerText') {
                         msgText = `Server: ${message.text}`;
                     } else if (message.type === 'SystemText') {
@@ -309,74 +401,182 @@
 
                     const randomMessageId = generateRandomId();
 
-                    // Optimistically add message to chat
+                    // Disable buttons in the chat
+                    toggleChatButtons(randomChatId, true);
+
+                    // Optimistically add message to local chats
+                    if (!localChats[randomChatId]) {
+                        localChats[randomChatId] = {
+                            randomChatId: randomChatId,
+                            messages: [],
+                            status: 'Local'
+                        };
+                    }
+
                     const messageModel = {
                         timestamp: new Date().toISOString(),
                         type: 'UserText',
                         randomMessageId: randomMessageId,
                         text: messageText,
-                        status: 'Thinking',
+                        status: 'Sending',
                         systemMessageSeverity: null
                     };
 
-                    // If the chat is closed or doesn't exist, create a new chat
-                    if (!chats[randomChatId]) {
-                        chats[randomChatId] = {
-                            randomChatId: randomChatId,
-                            messages: [],
-                            status: 'Processing'
-                        };
-                    }
+                    localChats[randomChatId].messages.push(messageModel);
+                    renderChats();
 
-                    chats[randomChatId].messages.push(messageModel);
-                    renderChat(chats[randomChatId]);
+                    // Add to pending messages
+                    pendingMessages[randomChatId] = {
+                        randomChatId: randomChatId,
+                        messageModel: messageModel
+                    };
 
                     // Send the message to the server
                     connection.invoke('SendMessage', randomChatId, randomMessageId, messageText)
+                        .then(() => {
+                            // Update message status upon successful send
+                            if (localChats[randomChatId]) {
+                                const msg = localChats[randomChatId].messages.find(m => m.randomMessageId === randomMessageId);
+                                if (msg) msg.status = 'Sent';
+                                renderChats();
+                            }
+                        })
                         .catch(err => {
                             console.error('SendMessage error:', err.toString());
+                            if (localChats[randomChatId]) {
+                                const msg = localChats[randomChatId].messages.find(m => m.randomMessageId === randomMessageId);
+                                if (msg) msg.status = 'Failed';
+                                renderChats();
+                            }
+                        })
+                        .finally(() => {
+                            // Re-enable buttons
+                            toggleChatButtons(randomChatId, false);
                         });
 
+                    // Clear the message input after sending
                     messageInput.value = '';
                 } catch (err) {
                     console.error('Error in sendMessage:', err);
                 }
             };
 
+            const resendMessage = (randomChatId, randomMessageId, text, type) => {
+                try {
+                    // Remove existing pending message
+                    delete pendingMessages[randomChatId];
+
+                    // Update message status
+                    const chat = localChats[randomChatId];
+                    if (chat) {
+                        const msg = chat.messages.find(m => m.randomMessageId === randomMessageId);
+                        if (msg) {
+                            msg.status = 'Sending';
+                            renderChats();
+
+                            // Re-invoke send based on message type
+                            if (type === 'UserText') {
+                                connection.invoke('SendMessage', randomChatId, randomMessageId, text)
+                                    .then(() => {
+                                        msg.status = 'Sent';
+                                        renderChats();
+                                    })
+                                    .catch(err => {
+                                        console.error('Resend SendMessage error:', err.toString());
+                                        msg.status = 'Failed';
+                                        renderChats();
+                                    });
+                            } else if (type === 'UserVoice') {
+                                // Use stored audioData for resend
+                                if (msg.audioData) {
+                                    connection.invoke('SendAudio', randomChatId, randomMessageId, msg.audioData)
+                                        .then(() => {
+                                            msg.status = 'Sent';
+                                            renderChats();
+                                        })
+                                        .catch(err => {
+                                            console.error('Resend SendAudio error:', err.toString());
+                                            msg.status = 'Failed';
+                                            renderChats();
+                                        });
+                                } else {
+                                    console.error('No audio data available for resend.');
+                                    msg.status = 'Failed';
+                                    renderChats();
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error in resendMessage:', err);
+                }
+            };
+
             const startVoiceRecording = async (randomChatId) => {
                 try {
+                    // Disable buttons during recording
+                    toggleChatButtons(randomChatId, true);
+
                     // Start voice recording
-                    const audioBlob = await recordAudio();
+                    const audioBlob = await recordAudio(randomChatId);
                     const randomMessageId = generateRandomId();
 
-                    // Optimistically add message to chat
-                    const messageModel = {
-                        timestamp: new Date().toISOString(),
-                        type: 'UserVoice',
-                        randomMessageId: randomMessageId,
-                        text: "(...)",
-                        status: 'Thinking',
-                        systemMessageSeverity: null
-                    };
-
-                    if (!chats[randomChatId]) {
-                        chats[randomChatId] = {
-                            randomChatId: randomChatId,
-                            messages: [],
-                            status: 'Processing'
-                        };
-                    }
-
-                    chats[randomChatId].messages.push(messageModel);
-                    renderChat(chats[randomChatId]);
+                    // Check if a pending message already exists
+                    if (pendingMessages[randomChatId]) return;
 
                     // Convert audio data to byte array
                     const arrayBuffer = await audioBlob.arrayBuffer();
                     const byteArray = new Uint8Array(arrayBuffer);
 
+                    // Optimistically add audio message to local chats
+                    if (!localChats[randomChatId]) {
+                        localChats[randomChatId] = {
+                            randomChatId: randomChatId,
+                            messages: [],
+                            status: 'Local'
+                        };
+                    }
+
+                    const messageModel = {
+                        timestamp: new Date().toISOString(),
+                        type: 'UserVoice',
+                        randomMessageId: randomMessageId,
+                        text: "(Audio)",
+                        status: 'Sending',
+                        systemMessageSeverity: null,
+                        audioData: byteArray // Storing audio data for retry
+                    };
+
+                    localChats[randomChatId].messages.push(messageModel);
+                    renderChats();
+
+                    // Add to pending messages
+                    pendingMessages[randomChatId] = {
+                        randomChatId: randomChatId,
+                        messageModel: messageModel
+                    };
+
+                    // Send the audio message to the server
                     connection.invoke('SendAudio', randomChatId, randomMessageId, byteArray)
+                        .then(() => {
+                            // Update message status upon successful send
+                            if (localChats[randomChatId]) {
+                                const msg = localChats[randomChatId].messages.find(m => m.randomMessageId === randomMessageId);
+                                if (msg) msg.status = 'Sent';
+                                renderChats();
+                            }
+                        })
                         .catch(err => {
                             console.error('SendAudio error:', err.toString());
+                            if (localChats[randomChatId]) {
+                                const msg = localChats[randomChatId].messages.find(m => m.randomMessageId === randomMessageId);
+                                if (msg) msg.status = 'Failed';
+                                renderChats();
+                            }
+                        })
+                        .finally(() => {
+                            // Re-enable buttons
+                            toggleChatButtons(randomChatId, false);
                         });
                 } catch (err) {
                     console.error('Error in startVoiceRecording:', err);
@@ -396,6 +596,13 @@
 
             const closeChat = (randomChatId) => {
                 try {
+                    // Remove from server and local chats
+                    delete chats[randomChatId];
+                    delete localChats[randomChatId];
+                    delete pendingMessages[randomChatId];
+                    renderChats();
+
+                    // Optionally notify the server
                     connection.invoke('CloseChat', randomChatId)
                         .catch(err => {
                             console.error('CloseChat error:', err.toString());
@@ -405,13 +612,25 @@
                 }
             };
 
+            const toggleChatButtons = (randomChatId, disable) => {
+                try {
+                    const sendButton = document.getElementById(`sendButton-${randomChatId}`);
+                    const micButton = document.getElementById(`micButton-${randomChatId}`);
+                    const messageInput = document.getElementById(`messageInput-${randomChatId}`);
+                    if (sendButton) sendButton.disabled = disable;
+                    if (micButton) micButton.disabled = disable;
+                    if (messageInput) messageInput.disabled = disable;
+                } catch (err) {
+                    console.error('Error toggling chat buttons:', err);
+                }
+            };
+
             const generateRandomId = () => {
                 // Simple function to generate a random ID
                 return 'id-' + Math.random().toString(36).substr(2, 9);
             };
 
-            // Define recordAudio here or ensure it's defined before use
-            const recordAudio = () => {
+            const recordAudio = (randomChatId) => {
                 return new Promise(async (resolve, reject) => {
                     try {
                         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -427,13 +646,17 @@
                         mediaRecorder.onstop = () => {
                             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                             resolve(audioBlob);
+                            // Stop all tracks to release the microphone
+                            stream.getTracks().forEach(track => track.stop());
                         };
 
                         mediaRecorder.start();
 
                         // Stop recording after 5 seconds or implement your own logic
                         setTimeout(() => {
-                            mediaRecorder.stop();
+                            if (mediaRecorder.state !== 'inactive') {
+                                mediaRecorder.stop();
+                            }
                         }, 5000);
                     } catch (err) {
                         console.error('Error recording audio:', err);
@@ -445,12 +668,12 @@
             const newChatButtonHandler = () => {
                 try {
                     const randomChatId = generateRandomId();
-                    chats[randomChatId] = {
+                    localChats[randomChatId] = {
                         randomChatId: randomChatId,
                         messages: [],
-                        status: 'Success' // or 'Processing' based on your logic
+                        status: 'Local'
                     };
-                    renderChat(chats[randomChatId]);
+                    renderChats();
                 } catch (err) {
                     console.error('Error starting a new chat:', err);
                 }
