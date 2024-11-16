@@ -102,11 +102,13 @@
                     });
 
                     // Start the connection
+                    updateConnectionStatus('Reconnecting');
                     connection.start()
                         .then(() => {
                             updateConnectionStatus('Connected');
-                            sendHello();
+                            disableInputs(false);
                             console.info('SignalR connection established.');
+                            sendHello();
                         })
                         .catch(err => {
                             console.error('Connection error:', err.toString());
