@@ -22,8 +22,8 @@
             const newChatButton = document.getElementById('newChatButton');
 
             let chats = {}; // Stores server chats with randomChatId as the key
-            let localChats = {}; // Stores local chats with 0 or 1 unsent message
-            let pendingMessages = {}; // Stores pending messages per chat
+            let localChats = new Set(); // Stores local chat IDs
+            let sendingMessages = new Set(); // Tracks chat IDs with messages being sent
             let connection;
 
             // Global error handlers
@@ -135,16 +135,9 @@
                     state.chats.forEach(chatModel => {
                         serverChats[chatModel.randomChatId] = chatModel;
                         // Remove from localChats if exists
-                        if (localChats[chatModel.randomChatId]) {
-                            delete localChats[chatModel.randomChatId];
+                        if (localChats.has(chatModel.randomChatId)) {
+                            localChats.delete(chatModel.randomChatId);
                         }
-
-                        // Clear pending messages if they exist in the new model
-                        chatModel.messages.forEach(message => {
-                            if (pendingMessages[chatModel.randomChatId] && pendingMessages[chatModel.randomChatId].messageModel.randomMessageId === message.randomMessageId) {
-                                delete pendingMessages[chatModel.randomChatId];
-                            }
-                        });
                     });
                     chats = { ...serverChats };
                     renderChats();
@@ -186,33 +179,22 @@
                 try {
                     // Preserve input values
                     const inputValues = {};
-                    Object.keys(localChats).forEach(chatId => {
+                    localChats.forEach(chatId => {
                         const input = document.getElementById(`messageInput-${chatId}`);
                         if (input) {
                             inputValues[chatId] = input.value;
                         }
                     });
 
-                    // Combine server and local chats
-                    const allChats = [
-                        ...Object.values(chats),
-                        ...Object.values(localChats)
-                            ];
-
-                    // Sort: server chats first based on server order, then local chats by creation
-                    allChats.sort((a, b) => {
-                        if (chats[a.randomChatId] && chats[b.randomChatId]) {
-                            return 0; // Maintain server order
-                        }
-                        if (chats[a.randomChatId]) return -1;
-                        if (chats[b.randomChatId]) return 1;
-                        return 0;
-                    });
-
                     // Clear existing chats
                     chatsContainer.innerHTML = '';
-                    allChats.forEach(chatModel => {
+                    Object.values(chats).forEach(chatModel => {
                         renderChat(chatModel);
+                    });
+
+                    // Render local chats
+                    localChats.forEach(chatId => {
+                        renderChat({ randomChatId: chatId, messages: [], status: 'Local' });
                     });
 
                     // Restore input values
@@ -221,11 +203,6 @@
                         if (input) {
                             input.value = inputValues[chatId];
                         }
-                    });
-
-                    // Render pending messages
-                    Object.values(pendingMessages).forEach(pending => {
-                        renderPendingMessage(pending);
                     });
                 } catch (err) {
                     console.error('Error rendering chats:', err);
@@ -300,34 +277,6 @@
                 return button;
             };
 
-            const renderPendingMessage = (pending) => {
-                try {
-                    const { randomChatId, messageModel } = pending;
-                    let chatDiv = document.getElementById(`chat-${randomChatId}`);
-                    if (!chatDiv) return;
-
-                    let messagesList = document.getElementById(`messagesList-${randomChatId}`);
-                    if (!messagesList) return;
-
-                    const li = document.createElement('li');
-                    li.id = `message-${messageModel.randomMessageId}`;
-                    li.textContent = `${messageModel.type === 'UserText' ? 'You' : 'You (Audio)'}: ${messageModel.text} - ${messageModel.status}`;
-
-                    const resendButton = createButton('Resend', null, () => {
-                        try {
-                            resendMessage(randomChatId, messageModel.randomMessageId, messageModel.text, messageModel.type);
-                        } catch (err) {
-                            console.error('Error in resend button click handler:', err);
-                        }
-                    });
-                    li.appendChild(resendButton);
-
-                    messagesList.appendChild(li);
-                } catch (err) {
-                    console.error('Error rendering pending message:', err);
-                }
-            };
-
             const updateChatUI = (chatModel) => {
                 try {
                     const messagesList = document.getElementById(`messagesList-${chatModel.randomChatId}`);
@@ -357,7 +306,7 @@
 
                     // Determine if inputs should be disabled based on chat status
                     const { status } = chatModel;
-                    const shouldDisable = status === 'FatalError';
+                    const shouldDisable = status === 'FatalError' || status === 'Processing';
                     const sendButton = document.getElementById(`sendButton-${chatModel.randomChatId}`);
                     const micButton = document.getElementById(`micButton-${chatModel.randomChatId}`);
                     const messageInput = document.getElementById(`messageInput-${chatModel.randomChatId}`);
@@ -365,10 +314,7 @@
                     if (sendButton) sendButton.disabled = shouldDisable;
                     if (micButton) micButton.disabled = shouldDisable;
                     if (messageInput) {
-                        messageInput.disabled = shouldDisable;
-                        if (status === 'Normal') {
-                            messageInput.disabled = false;
-                        }
+                        messageInput.disabled = shouldDisable || sendingMessages.has(chatModel.randomChatId);
                     }
                 } catch (err) {
                     console.error('Error updating chat UI:', err);
@@ -405,114 +351,26 @@
 
                     const randomMessageId = generateRandomId();
 
-                    // Disable buttons in the chat
-                    toggleChatButtons(randomChatId, true);
-
-                    // Optimistically add message to local chats
-                    if (!chats[randomChatId] && !localChats[randomChatId]) {
-                        localChats[randomChatId] = {
-                            randomChatId: randomChatId,
-                            messages: [],
-                            status: 'Local'
-                        };
-                    }
-
-                    const messageModel = {
-                        timestamp: new Date().toISOString(),
-                        type: 'UserText',
-                        randomMessageId: randomMessageId,
-                        text: messageText,
-                        status: 'Sending',
-                        systemMessageSeverity: null
-                    };
-
-                    (localChats[randomChatId] || chats[randomChatId]).messages.push(messageModel);
-                    renderChats();
-
-                    // Add to pending messages
-                    pendingMessages[randomChatId] = {
-                        randomChatId: randomChatId,
-                        messageModel: messageModel
-                    };
+                    // Disable the message input while sending
+                    messageInput.disabled = true;
+                    sendingMessages.add(randomChatId);
 
                     // Send the message to the server
                     connection.invoke('SendMessage', randomChatId, randomMessageId, messageText)
                         .then(() => {
                             // Update message status upon successful send
-                            if (localChats[randomChatId]) {
-                                const msg = localChats[randomChatId].messages.find(m => m.randomMessageId === randomMessageId);
-                                if (msg) msg.status = 'Sent';
-                                renderChats();
-                            }
+                            messageInput.disabled = false;
+                            sendingMessages.delete(randomChatId);
+                            messageInput.value = '';
+                            renderChats();
                         })
                         .catch(err => {
                             console.error('SendMessage error:', err.toString());
-                            if (localChats[randomChatId]) {
-                                const msg = localChats[randomChatId].messages.find(m => m.randomMessageId === randomMessageId);
-                                if (msg) msg.status = 'Failed';
-                                renderChats();
-                            }
-                        })
-                        .finally(() => {
-                            // Re-enable buttons
-                            toggleChatButtons(randomChatId, false);
+                            messageInput.disabled = false;
+                            sendingMessages.delete(randomChatId);
                         });
-
-                    // Clear the message input after sending
-                    messageInput.value = '';
                 } catch (err) {
                     console.error('Error in sendMessage:', err);
-                }
-            };
-
-            const resendMessage = (randomChatId, randomMessageId, text, type) => {
-                try {
-                    // Remove existing pending message
-                    delete pendingMessages[randomChatId];
-
-                    // Update message status
-                    const chat = localChats[randomChatId];
-                    if (chat) {
-                        const msg = chat.messages.find(m => m.randomMessageId === randomMessageId);
-                        if (msg) {
-                            msg.status = 'Sending';
-                            renderChats();
-
-                            // Re-invoke send based on message type
-                            if (type === 'UserText') {
-                                connection.invoke('SendMessage', randomChatId, randomMessageId, text)
-                                    .then(() => {
-                                        msg.status = 'Sent';
-                                        renderChats();
-                                    })
-                                    .catch(err => {
-                                        console.error('Resend SendMessage error:', err.toString());
-                                        msg.status = 'Failed';
-                                        renderChats();
-                                    });
-                            } else if (type === 'UserVoice') {
-                                // Use stored audioData for resend
-                                if (msg.audioData) {
-                                    connection.invoke('SendAudio', randomChatId, randomMessageId, msg.audioData)
-                                        .then(() => {
-                                            msg.status = 'Sent';
-                                            renderChats();
-                                        })
-                                        .catch(err => {
-                                            console.error('Resend SendAudio error:', err.toString());
-                                            msg.status = 'Failed';
-                                            renderChats();
-                                        });
-                                } else {
-                                    console.error('No audio data available for resend.');
-                                    msg.status = 'Failed';
-                                    renderChats();
-                                }
-                            }
-                        }
-                    }
-                } catch (err) {
-                    console.error('Error in resendMessage:', err);
                 }
             };
 
@@ -525,58 +383,22 @@
                     const audioBlob = await recordAudio(randomChatId);
                     const randomMessageId = generateRandomId();
 
-                    // Check if a pending message already exists
-                    if (pendingMessages[randomChatId]) return;
-
                     // Convert audio data to byte array
                     const arrayBuffer = await audioBlob.arrayBuffer();
                     const byteArray = new Uint8Array(arrayBuffer);
 
-                    // Optimistically add audio message to local chats
-                    if (!localChats[randomChatId]) {
-                        localChats[randomChatId] = {
-                            randomChatId: randomChatId,
-                            messages: [],
-                            status: 'Local'
-                        };
+                    // Add chat ID to localChats if not already present
+                    if (!localChats.has(randomChatId)) {
+                        localChats.add(randomChatId);
                     }
-
-                    const messageModel = {
-                        timestamp: new Date().toISOString(),
-                        type: 'UserVoice',
-                        randomMessageId: randomMessageId,
-                        text: "(Audio)",
-                        status: 'Sending',
-                        systemMessageSeverity: null,
-                        audioData: byteArray // Storing audio data for retry
-                    };
-
-                    localChats[randomChatId].messages.push(messageModel);
-                    renderChats();
-
-                    // Add to pending messages
-                    pendingMessages[randomChatId] = {
-                        randomChatId: randomChatId,
-                        messageModel: messageModel
-                    };
 
                     // Send the audio message to the server
                     connection.invoke('SendAudio', randomChatId, randomMessageId, byteArray)
                         .then(() => {
-                            // Update message status upon successful send
-                            if (localChats[randomChatId]) {
-                                const msg = localChats[randomChatId].messages.find(m => m.randomMessageId === randomMessageId);
-                                if (msg) msg.status = 'Sent';
-                                renderChats();
-                            }
+                            renderChats();
                         })
                         .catch(err => {
                             console.error('SendAudio error:', err.toString());
-                            if (localChats[randomChatId]) {
-                                const msg = localChats[randomChatId].messages.find(m => m.randomMessageId === randomMessageId);
-                                if (msg) msg.status = 'Failed';
-                                renderChats();
-                            }
                         })
                         .finally(() => {
                             // Re-enable buttons
@@ -602,8 +424,7 @@
                 try {
                     // Remove from server and local chats
                     delete chats[randomChatId];
-                    delete localChats[randomChatId];
-                    delete pendingMessages[randomChatId];
+                    localChats.delete(randomChatId);
                     renderChats();
 
                     // Optionally notify the server
@@ -672,11 +493,7 @@
             const newChatButtonHandler = () => {
                 try {
                     const randomChatId = generateRandomId();
-                    localChats[randomChatId] = {
-                        randomChatId: randomChatId,
-                        messages: [],
-                        status: 'Local'
-                    };
+                    localChats.add(randomChatId);
                     renderChats();
                 } catch (err) {
                     console.error('Error starting a new chat:', err);
@@ -697,6 +514,7 @@
             initializeConnection();
         })();
     </script>
+}
 
     <style>
         .chat {
@@ -750,4 +568,3 @@
             color: blue;
         }
     </style>
-}
