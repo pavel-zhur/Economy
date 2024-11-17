@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Economy.Web.Services;
 
-public class GoogleAuthService(IHttpContextAccessor httpContextAccessor, IAuthenticationService authenticationService, ILogger<GoogleAuthService> logger) : IGoogleAuthService
+public class GoogleAuthService(IHttpContextAccessor httpContextAccessor, ILogger<GoogleAuthService> logger) : IGoogleAuthService
 {
     public async Task<string> GetAccessTokenAsync()
     {
@@ -43,15 +43,5 @@ public class GoogleAuthService(IHttpContextAccessor httpContextAccessor, IAuthen
         {
             logger.LogError(e, "Failed to revoke the token.");
         }
-    }
-
-    private bool TokenExpired(AuthenticationProperties properties)
-    {
-        var expiresAt = properties.GetTokenValue("expires_at");
-        if (DateTime.TryParse(expiresAt, out var expiresAtDateTime))
-        {
-            return expiresAtDateTime < DateTime.UtcNow;
-        }
-        return true;
     }
 }
