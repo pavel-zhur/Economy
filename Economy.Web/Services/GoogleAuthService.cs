@@ -23,12 +23,6 @@ public class GoogleAuthService(IHttpContextAccessor httpContextAccessor, IAuthen
         var authenticateResult = await httpContext.AuthenticateAsync();
 
         var accessToken = authenticateResult.Properties?.GetTokenValue("access_token");
-        var refreshToken = authenticateResult.Properties?.GetTokenValue("refresh_token");
-
-        if (!string.IsNullOrEmpty(refreshToken))
-        {
-            await RevokeTokenAsync(refreshToken);
-        }
 
         if (!string.IsNullOrEmpty(accessToken))
         {
