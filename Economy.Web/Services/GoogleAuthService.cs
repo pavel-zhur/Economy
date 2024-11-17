@@ -13,21 +13,6 @@ public class GoogleAuthService(IHttpContextAccessor httpContextAccessor, IAuthen
         var authenticateResult = await httpContext.AuthenticateAsync();
 
         var accessToken = authenticateResult.Properties?.GetTokenValue("access_token");
-        var refreshToken = authenticateResult.Properties?.GetTokenValue("refresh_token");
-
-        if (string.IsNullOrEmpty(accessToken) || TokenExpired(authenticateResult.Properties))
-        {
-            if (string.IsNullOrEmpty(refreshToken))
-            {
-                throw new ReauthenticationRequiredException("The refresh_token is unavailable. User needs to re-authenticate.");
-            }
-
-            var tokens = await RefreshTokenAsync(refreshToken);
-            accessToken = tokens.AccessToken;
-            authenticateResult.Properties.UpdateTokenValue("access_token", tokens.AccessToken);
-            authenticateResult.Properties.UpdateTokenValue("refresh_token", tokens.RefreshToken);
-            await authenticationService.SignInAsync(httpContext, CookieAuthenticationDefaults.AuthenticationScheme, authenticateResult.Principal, authenticateResult.Properties);
-        }
 
         return accessToken ?? throw new InvalidOperationException("The access_token is unavailable.");
     }
@@ -37,11 +22,17 @@ public class GoogleAuthService(IHttpContextAccessor httpContextAccessor, IAuthen
         var httpContext = httpContextAccessor.HttpContext ?? throw new InvalidOperationException("The http context is unavailable.");
         var authenticateResult = await httpContext.AuthenticateAsync();
 
+        var accessToken = authenticateResult.Properties?.GetTokenValue("access_token");
         var refreshToken = authenticateResult.Properties?.GetTokenValue("refresh_token");
 
         if (!string.IsNullOrEmpty(refreshToken))
         {
             await RevokeTokenAsync(refreshToken);
+        }
+
+        if (!string.IsNullOrEmpty(accessToken))
+        {
+            await RevokeTokenAsync(accessToken);
         }
     }
 
@@ -68,14 +59,5 @@ public class GoogleAuthService(IHttpContextAccessor httpContextAccessor, IAuthen
             return expiresAtDateTime < DateTime.UtcNow;
         }
         return true;
-    }
-
-    private async Task<(string AccessToken, string RefreshToken)> RefreshTokenAsync(string refreshToken)
-    {
-        // Implement the logic to refresh the token using Google API
-        // This is a placeholder implementation
-        var newAccessToken = "new_access_token";
-        var newRefreshToken = "new_refresh_token";
-        return (newAccessToken, newRefreshToken);
     }
 }
