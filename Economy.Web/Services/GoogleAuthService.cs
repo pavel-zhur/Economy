@@ -1,7 +1,5 @@
 using Economy.UserStorage;
-using Economy.Web.Tools;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Economy.Web.Services;
 

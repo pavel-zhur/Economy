@@ -38,7 +38,6 @@ builder.Services.AddAuthentication(options =>
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? throw new InvalidOperationException("Google ClientSecret is not configured.");
     options.Scope.Add(GoogleStorage.Scope);
     options.SaveTokens = true;
-    options.AccessType = "offline";
 });
 
 builder.Services
