@@ -6,7 +6,7 @@ namespace Economy.Web.Hubs.Models;
 public record MessageModel(
     [property: Key("timestamp")] DateTime Timestamp,
     [property: Key("type")] MessageType Type, 
-    [property: Key("randomMessageId")] string? RandomMessageId,
+    [property: Key("messageId")] string? MessageId,
     [property: Key("text")] string? Text,
     [property: Key("status")] UserMessageStatus? Status,
     [property: Key("systemMessageSeverity")] SystemMessageSeverity? SystemMessageSeverity);

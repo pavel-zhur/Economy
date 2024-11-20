@@ -18,7 +18,8 @@ builder.Services
     .AddFinancialKernel<UserDataStorage>(builder.Configuration)
     .AddHttpContextAccessor()
     .AddUserStorage<GoogleAuthService>(builder.Configuration)
-    .AddSingleton<ChatsService>();
+    .AddSingleton<ChatsService>()
+    .AddSingleton<ChatsRenderer>();
 
 builder.Services.AddControllers();
 

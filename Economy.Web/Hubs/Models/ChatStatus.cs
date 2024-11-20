@@ -5,6 +5,7 @@ namespace Economy.Web.Hubs.Models;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ChatStatus
 {
+    Ready,
     Success,
     Processing,
     Error,

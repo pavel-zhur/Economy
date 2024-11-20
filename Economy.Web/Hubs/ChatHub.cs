@@ -1,51 +1,55 @@
 using Economy.AiInterface.Scope;
+using Economy.Memory.Containers.State;
 using Economy.UserStorage;
 using Economy.Web.Hubs.Models;
+using Economy.Web.Services;
 using Economy.Web.Tools;
 using Microsoft.AspNetCore.SignalR;
+using Exception = System.Exception;
 
 namespace Economy.Web.Hubs;
 
-public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, IUserDataStorage userDataStorage) : Hub
+public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRenderer chatsRenderer, IUserDataStorage userDataStorage, IHubContext<ChatHub> hubContext, FactoriesMemory factoriesMemory) : Hub
 {
-    public async Task SendMessage(string randomChatId, string randomMessageId, string message)
+    public async Task SendMessage(Guid chatId, string messageId, string message)
     {
-        await ProcessSafe(async userId =>
+        await ProcessSafe(Context.ConnectionId, async (userId, state) =>
         {
-            await chatsService.GotMessage(userDataStorage, userId, randomChatId, randomMessageId, message);
+            await chatsService.GotMessage(state, userId, chatId, messageId, message);
         });
     }
 
-    public async Task SendAudio(string randomChatId, string randomMessageId, byte[] audioData)
+    public async Task SendAudio(Guid chatId, string messageId, byte[] audioData)
     {
-        await ProcessSafe(async userId =>
+        await ProcessSafe(Context.ConnectionId, async (userId, state) =>
         {
-            await chatsService.GotAudio(userDataStorage, userId, randomChatId, randomMessageId, audioData);
+            await chatsService.GotAudio(state, userId, chatId, messageId, audioData);
         });
     }
 
     public async Task Hello()
     {
-        await ProcessSafe(async userId =>
+        var connectionId = Context.ConnectionId;
+        await ProcessSafe(connectionId, async (userId, state) =>
         {
-            var state = await chatsService.GetState(userDataStorage, userId);
-            await RespondSafe(ChatHubClientMethods.HelloResponse, state);
+            var stateModel = await chatsService.GetState(state, userId);
+            await RespondSafe(connectionId, ChatHubClientMethods.HelloResponse, stateModel);
         });
     }
 
-    public async Task TryCancel(string randomMessageId, string randomChatId)
+    public async Task TryCancel(Guid chatId, string messageId)
     {
-        await ProcessSafe(async userId =>
+        await ProcessSafe(Context.ConnectionId, async (userId, _) =>
         {
-            await chatsService.TryCancel(userId, randomChatId, randomMessageId);
+            await chatsService.TryCancel(userId, chatId, messageId);
         });
     }
 
-    public async Task CloseChat(string randomChatId)
+    public async Task CloseChat(Guid chatId)
     {
-        await ProcessSafe(async userId =>
+        await ProcessSafe(Context.ConnectionId, async (userId, state) =>
         {
-            await chatsService.CloseChat(userDataStorage, userId, randomChatId);
+            await chatsService.CloseChat(state, userId, chatId);
         });
     }
 
@@ -54,7 +58,7 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, IUserDa
         await base.OnConnectedAsync();
         logger.LogInformation($"User {Context.UserIdentifier} connected");
 
-        await ProcessSafe(_ => Task.CompletedTask);
+        await ProcessSafe(Context.ConnectionId, (_, _) => Task.CompletedTask);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -62,18 +66,40 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, IUserDa
         await base.OnDisconnectedAsync(exception);
         logger.LogInformation($"User {Context.UserIdentifier} disconnected");
     }
-    
-    private async Task ProcessSafe(Func<string, Task> action)
+
+    private async Task ProcessSafe(string connectionId, Func<string, State, Task> action)
     {
         try
         {
-            await action(GetUserId());
+            if (Context.User?.Identity?.IsAuthenticated != true)
+            {
+                throw new ReauthenticationNeededException("Authentication check failed.");
+            }
+
+            var userId = Context.UserIdentifier ?? throw new ReauthenticationNeededException("Authentication check 2 failed.");
+
+            var (state, _) = await factoriesMemory.GetOrCreate(userDataStorage);
+            
+            action(userId, state).ContinueWith(async t =>
+            {
+                logger.LogError(t.Exception, "Exception processing the incoming chat hub message.");
+
+                try
+                {
+                    var stateModel = await chatsService.GetState(state, userId);
+                    await RespondSafe(connectionId, ChatHubClientMethods.HelloResponse, stateModel);
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(e, "Exception sending the hello response after an error.");
+                }
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
         catch (ReauthenticationNeededException)
         {
             try
             {
-                await RespondAuthenticationNeeded();
+                await RespondAuthenticationNeeded(connectionId);
             }
             catch (Exception e)
             {
@@ -86,51 +112,46 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, IUserDa
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Exception processing the incoming chat hub message.");
-            await RespondSafe(ChatHubClientMethods.HelloResponse, GetFatalErrorHelloResponse(), "fatal error");
+            logger.LogError(e, "Fatal exception processing the incoming chat hub message.");
+            await RespondSafe(connectionId, ChatHubClientMethods.HelloResponse, await GetFatalErrorHelloResponse(), "fatal error");
             Context.Abort();
         }
     }
 
-    private static StateModel GetFatalErrorHelloResponse() =>
-        new(
-            0, 
-            [
-                new(
-                    string.Empty, 
-                    [
-                        new(
-                            DateTime.UtcNow, 
-                            MessageType.ServerText, 
-                            null,
-                            "A server error occurred. A page refresh could help.",
-                            null,
-                            SystemMessageSeverity.Error)
-                    ],
-                    ChatStatus.FatalError
-                )
-            ]);
-
-    private string GetUserId()
+    private async Task<StateModel> GetFatalErrorHelloResponse()
     {
-        if (Context.User?.Identity?.IsAuthenticated != true)
-        {
-            throw new ReauthenticationNeededException("Authentication check failed.");
-        }
+        IReadOnlyList<ChatModel> chats = [
+            new(
+                Guid.NewGuid(),
+                [
+                    new(
+                        DateTime.UtcNow,
+                        MessageType.ServerText,
+                        null,
+                        "A server error occurred. A page refresh could help.",
+                        null,
+                        SystemMessageSeverity.Error)
+                ],
+                ChatStatus.FatalError
+            )
+        ];
 
-        return Context.UserIdentifier ?? throw new ReauthenticationNeededException("Authentication check 2 failed.");
+        return new(
+            0,
+            chats,
+            await chatsRenderer.RenderChatsToHtmlAsync(chats));
     }
 
-    private async Task RespondAuthenticationNeeded()
+    private async Task RespondAuthenticationNeeded(string connectionId)
     {
-        await RespondSafe(ChatHubClientMethods.Authenticate);
+        await RespondSafe(connectionId, ChatHubClientMethods.Authenticate);
     }
 
-    private async Task RespondSafe(string method, object? arg1 = null, string? useCase = "default")
+    private async Task RespondSafe(string connectionId, string method, object? arg1 = null, string? useCase = "default")
     {
         try
         {
-            await Clients.Caller.SendAsync(method, arg1);
+            await hubContext.Clients.Client(connectionId).SendAsync(method, arg1);
         }
         catch (Exception e)
         {

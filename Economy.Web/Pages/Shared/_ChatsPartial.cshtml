@@ -1,0 +1,54 @@
+﻿@using Economy.Web.Hubs.Models
+@model IReadOnlyList<Economy.Web.Hubs.Models.ChatModel>
+
+@foreach (var chat in Model)
+{
+    <div id="chat-@chat.ChatId" class="chat">
+        <h3>Chat @chat.ChatId</h3>
+        <h4>Chat @chat.Status</h4>
+        <ul id="messagesList-@chat.ChatId">
+            @foreach (var message in chat.Messages)
+            {
+                <li id="message-@message.MessageId">
+                    @if (message.Type == MessageType.UserText)
+                    {
+                        <span><strong>You:</strong> @message.Text - <em>@message.Status</em></span>
+                    }
+                    else if (message.Type == MessageType.UserVoice)
+                    {
+                        <span><strong>You (Audio):</strong> Transcription - @message.Text - <em>@message.Status</em></span>
+                    }
+                    else if (message.Type == MessageType.ServerText)
+                    {
+                        <span><strong>Server:</strong> @message.Text</span>
+                    }
+                    else if (message.Type == MessageType.SystemText)
+                    {
+                        <span class="system-message">[@message.SystemMessageSeverity] @message.Text</span>
+                    }
+                    else if (message.Type == MessageType.ActionLog)
+                    {
+                        @message.Text
+                    }
+                    else
+                    {
+                        <span>Unknown message type</span>
+                    }
+
+                    @if (message.Type is MessageType.UserText or MessageType.UserVoice && message.Status == UserMessageStatus.Thinking)
+                    {
+                        <button onclick="window.chatsComponent.tryCancelMessage('@chat.ChatId', '@message.MessageId')">Cancel</button>
+                    }
+                </li>
+            }
+        </ul>
+        <input type="text" id="messageInput-@chat.ChatId" class="messageInput" placeholder="Type a message..."/>
+        <button id="sendButton-@chat.ChatId" class="sendButton" onclick="window.chatsComponent.sendMessage('@chat.ChatId')">Send</button>
+        <button id="micButton-@chat.ChatId" class="micButton" onclick="window.chatsComponent.startVoiceRecording('@chat.ChatId')">🔊</button>
+        
+        @if (!chat.Messages.Any())
+        {
+            <button onclick="window.chatsComponent.closeChat('@chat.ChatId')">Close Chat</button>
+        }
+    </div>
+}
