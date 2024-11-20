@@ -14,13 +14,13 @@ public class UserDataStorage(IHttpContextAccessor httpContextAccessor, GoogleSto
         var user = httpContextAccessor.HttpContext?.User;
         if (user == null)
         {
-            throw new ReauthenticationRequiredException("No user is currently logged in.");
+            throw new ReauthenticationNeededException("No user is currently logged in.");
         }
 
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null)
         {
-            throw new ReauthenticationRequiredException("User ID not found.");
+            throw new ReauthenticationNeededException("User ID not found.");
         }
 
         return userId;

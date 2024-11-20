@@ -64,6 +64,10 @@ public class GoogleStorage(ILogger<GoogleStorage> logger, IGoogleAuthService goo
         {
             throw new InsufficientScopesException();
         }
+        catch (GoogleApiException e) when (e.HttpStatusCode == HttpStatusCode.Unauthorized)
+        {
+            throw new ReauthenticationNeededException("Trying to access the google storage to retrieve the data.");
+        }
     }
 
     private async Task<DriveService> CreateDriveService()
@@ -98,6 +102,10 @@ public class GoogleStorage(ILogger<GoogleStorage> logger, IGoogleAuthService goo
         catch (GoogleApiException e) when (e.HttpStatusCode == HttpStatusCode.Forbidden)
         {
             throw new InsufficientScopesException();
+        }
+        catch (GoogleApiException e) when (e.HttpStatusCode == HttpStatusCode.Unauthorized)
+        {
+            throw new ReauthenticationNeededException("Trying to access the google storage to retrieve the data.");
         }
     }
 

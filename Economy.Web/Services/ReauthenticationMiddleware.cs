@@ -13,7 +13,7 @@ public class ReauthenticationMiddleware(RequestDelegate next)
         {
             await next(context);
         }
-        catch (ReauthenticationRequiredException)
+        catch (ReauthenticationNeededException)
         {
             await context.ChallengeAsync(GoogleDefaults.AuthenticationScheme);
         }

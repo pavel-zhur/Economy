@@ -1,4 +1,5 @@
 using Economy.AiInterface.Scope;
+using Economy.UserStorage;
 using Economy.Web.Hubs.Models;
 using Economy.Web.Tools;
 using Microsoft.AspNetCore.SignalR;
@@ -68,7 +69,7 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, IUserDa
         {
             await action(GetUserId());
         }
-        catch (ReauthenticationRequiredException)
+        catch (ReauthenticationNeededException)
         {
             try
             {
@@ -114,10 +115,10 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, IUserDa
     {
         if (Context.User?.Identity?.IsAuthenticated != true)
         {
-            throw new ReauthenticationRequiredException("Authentication check failed.");
+            throw new ReauthenticationNeededException("Authentication check failed.");
         }
 
-        return Context.UserIdentifier ?? throw new ReauthenticationRequiredException("Authentication check 2 failed.");
+        return Context.UserIdentifier ?? throw new ReauthenticationNeededException("Authentication check 2 failed.");
     }
 
     private async Task RespondAuthenticationNeeded()
