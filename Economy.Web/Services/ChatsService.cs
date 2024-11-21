@@ -159,31 +159,24 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
 
             await SendUpdate(context);
 
-            await Task.Delay(1000, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            lock (context.UserData.ChatsLock)
+            var chatHistory = context.UserData.GetChatHistory(chatIndex);
+            if (!chatHistory.Any())
             {
-                chat.Messages[^1] = chat.Messages[^1] with
-                {
-                    Status = UserMessageStatus.Applying,
-                };
+                context.ChatInitializer.Init(chatHistory, context.UserData.State);
             }
 
-            await SendUpdate(context);
-
-            await Task.Delay(1000, CancellationToken.None);
+            var response = await context.AiCompletion.Execute(chatHistory, chat.Messages[^1].Text!);
 
             lock (context.UserData.ChatsLock)
             {
-                if (chat.Messages[^1].Text == "error")
-                    throw new("Test error requested.");
-
                 chat.Messages[^1] = chat.Messages[^1] with
                 {
                     Status = UserMessageStatus.Done,
                 };
 
-                chat.Messages.Add(new(DateTime.UtcNow, MessageType.ServerText, null, "Success.",
+                chat.Messages.Add(new(DateTime.UtcNow, MessageType.ServerText, null, response, 
                     null, SystemMessageSeverity.Success));
 
                 context.UserData.UpdateChat(chatIndex, chat => chat with { Status = ChatStatus.Success, });

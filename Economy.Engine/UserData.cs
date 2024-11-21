@@ -23,6 +23,14 @@ public class UserData<TState>(TState state)
         }
     }
 
+    public ChatHistory GetChatHistory(int chatIndex)
+    {
+        lock (ChatsLock)
+        {
+            return _chats[chatIndex].chatHistory;
+        }
+    }
+
     public ChatModel? GetChatOrDefault(Guid chatId, out int chatIndex)
     {
         lock (ChatsLock)

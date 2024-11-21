@@ -36,7 +36,7 @@
                         <span>Unknown message type</span>
                     }
 
-                    @if (message.Type is MessageType.UserText or MessageType.UserVoice && message.Status == UserMessageStatus.Thinking)
+                    @if (message.Type is MessageType.UserText or MessageType.UserVoice && message.Status is UserMessageStatus.Thinking or UserMessageStatus.Transcribing)
                     {
                         <button onclick="window.chatsComponent.tryCancelMessage('@chat.ChatId', '@message.MessageId')">Cancel</button>
                     }
