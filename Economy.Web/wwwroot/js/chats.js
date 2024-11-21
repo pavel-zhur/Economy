@@ -1,62 +1,216 @@
 ﻿document.addEventListener('DOMContentLoaded', function () {
-    const secondaryButton = document.querySelector('.btn-secondary.chat-button');
-    let offcanvasCount = 0;
+    const connectionStatusText = document.getElementById('statusText');
+    const chatsContainer = document.getElementById('chatsContainer');
+    let connection;
 
-    secondaryButton.addEventListener('click', function () {
-        offcanvasCount++;
+    const initializeConnection = () => {
+        try {
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("/chathub")
+                .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
+                .withAutomaticReconnect({
+                    nextRetryDelayInMilliseconds: retryContext => {
+                        if (retryContext.elapsedMilliseconds < 60000) {
+                            return Math.random() * 3000;
+                        } else {
+                            return null;
+                        }
+                    }
+                })
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
 
-        // Create new primary button
-        const newButton = document.createElement('button');
-        newButton.className = 'btn btn-primary chat-button';
-        newButton.type = 'button';
-        newButton.innerHTML = `<i class="fas fa-microphone"></i>`;
-        newButton.id = `toggleChatOffcanvas${offcanvasCount}`;
+            // Event handlers
+            connection.onclose(error => {
+                handleConnectionClose(error);
+            });
 
-        // Create new offcanvas
-        const newOffcanvas = document.createElement('div');
-        newOffcanvas.className = window.innerWidth >= 768 ? 'offcanvas offcanvas-chat offcanvas-end' : 'offcanvas offcanvas-chat offcanvas-bottom';
-        newOffcanvas.tabIndex = -1;
-        newOffcanvas.id = `chatOffcanvas${offcanvasCount}`;
-        newOffcanvas.setAttribute('aria-labelledby', `chatOffcanvasLabel${offcanvasCount}`);
-        newOffcanvas.setAttribute('data-bs-scroll', 'true');
-        newOffcanvas.setAttribute('data-bs-backdrop', 'false');
-        newOffcanvas.innerHTML = `
-                    <div class="offcanvas-header">
-                        <h5 class="offcanvas-title" id="chatOffcanvasLabel${offcanvasCount}">Ассистент</h5>
-                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
-                    </div>
-                    <div class="offcanvas-body">
-                        <div id="chatHistory${offcanvasCount}" class="chat-history"></div>
-                        <div class="input-group">
-                            <input type="text" id="userInput${offcanvasCount}" class="form-control" placeholder="Введите ваше сообщение...">
-                            <button class="btn btn-secondary" id="voiceInputBtn${offcanvasCount}">
-                                <i class="fas fa-microphone"></i>
-                            </button>
-                            <button class="btn btn-primary" id="sendBtn${offcanvasCount}">Отправить</button>
-                        </div>
-                    </div>
-                `;
+            connection.onreconnecting(error => {
+                handleConnectionReconnecting(error);
+            });
 
-        // Append new button and offcanvas to the DOM
-        document.querySelector('.chat-buttons-container').appendChild(newButton);
-        document.body.appendChild(newOffcanvas);
+            connection.onreconnected(connectionId => {
+                handleConnectionReconnected(connectionId);
+            });
 
-        // Create offcanvas instance and add event listener to the new button
-        const bsOffcanvas = new bootstrap.Offcanvas(newOffcanvas);
-        newButton.addEventListener('click', function () {
-            // Hide all other offcanvas instances
-            document.querySelectorAll('.offcanvas.show').forEach(offcanvas => {
-                const instance = bootstrap.Offcanvas.getInstance(offcanvas);
-                if (instance && instance != bsOffcanvas) {
-                    instance.hide();
+            connection.on('HelloResponse', (state, renderedChats) => {
+                handleHelloResponse(state, renderedChats);
+            });
+
+            connection.on('Authenticate', () => {
+                try {
+                    location.reload();
+                } catch (err) {
+                    console.error('Error in Authenticate handler:', err);
                 }
             });
-            // Toggle the new offcanvas
-            bsOffcanvas.toggle();
-        });
-    });
 
-    function updateOffcanvasPlacement() {
+            updateConnectionStatus('Reconnecting');
+            connection.start()
+                .then(() => {
+                    updateConnectionStatus('Connected');
+                    console.info('SignalR connection established.');
+                    sendHello();
+                })
+                .catch(err => {
+                    console.error('Connection error:', err.toString());
+                });
+        } catch (err) {
+            console.error('Error initializing SignalR connection:', err);
+        }
+    };
+
+    const handleConnectionClose = (error) => {
+        updateConnectionStatus('Disconnected');
+        disableInputs();
+        logError('Connection closed', error);
+    };
+
+    const handleConnectionReconnecting = (error) => {
+        updateConnectionStatus('Reconnecting');
+        disableInputs();
+        logError('Connection reconnecting', error);
+    };
+
+    const handleConnectionReconnected = (connectionId) => {
+        updateConnectionStatus('Connected');
+        sendHello();
+        logInfo('Reconnected with connectionId:', connectionId);
+    };
+
+    const handleHelloResponse = (state, renderedChats) => {
+        // Handle versioning or other properties if needed in the future
+        // Initial render can be handled here if necessary
+        if (renderedChats) {
+            renderChatView(renderedChats);
+        }
+    };
+
+    const renderChatView = (renderedView) => {
+        try {
+            // Store current input values, focused element, and offcanvas state
+            const inputValues = {};
+            const inputs = chatsContainer.querySelectorAll('input[type="text"]:not([disabled])');
+            let focusedElementId = document.activeElement.id;
+            let activeOffcanvasId = null;
+
+            const activeOffcanvas = document.querySelector('.offcanvas.offcanvas-chat.show');
+            if (activeOffcanvas) {
+                activeOffcanvasId = activeOffcanvas.id;
+            }
+
+            inputs.forEach(input => {
+                inputValues[input.id] = input.value;
+            });
+
+            // Update the chat container
+            chatsContainer.innerHTML = renderedView;
+
+            updateOffcanvasPlacement();
+
+            // Restore input values
+            Object.keys(inputValues).forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.value = inputValues[id];
+                }
+            });
+
+            // Restore focus
+            if (focusedElementId) {
+                const focusedElement = document.getElementById(focusedElementId);
+                if (focusedElement) {
+                    focusedElement.focus();
+                }
+            }
+
+            // Restore offcanvas state
+            if (activeOffcanvasId) {
+                const offcanvas = document.getElementById(activeOffcanvasId);
+                if (offcanvas) {
+                    new bootstrap.Offcanvas(offcanvas).show();
+                }
+            }
+        } catch (err) {
+            console.error('Error rendering chat view:', err);
+            chatsContainer.innerHTML = '';
+        }
+    };
+
+    const updateConnectionStatus = (status) => {
+        connectionStatusText.textContent = status;
+        const statusClass = status.toLowerCase();
+        connectionStatusText.className = '';
+        connectionStatusText.classList.add(statusClass);
+    };
+
+    const sendHello = () => {
+        connection.invoke('Hello')
+            .catch(err => {
+                console.error('Error sending Hello:', err.toString());
+                handleHelloResponse(null, null);
+            });
+    };
+
+    const disableInputs = () => {
+        const sendButtons = document.querySelectorAll('.sendButton.server-enabled');
+        sendButtons.forEach(button => button.disabled = true);
+    };
+
+    const generateRandomId = () => {
+        // Simple function to generate a random ID
+        return 'id-' + Math.random().toString(36).substr(2, 9);
+    };
+
+    const tryCancelMessage = (chatId, messageId) => {
+        connection.invoke('TryCancel', chatId, messageId)
+            .catch(err => {
+                console.error('TryCancel error:', err.toString());
+            });
+    };
+
+    const sendMessage = (chatId) => {
+        const messageInput = document.getElementById('messageInput-' + chatId);
+        const sendButton = document.getElementById('sendButton-' + chatId);
+        messageInput.disabled = true;
+        sendButton.disabled = true;
+
+        connection.invoke('SendMessage', chatId, generateRandomId(), messageInput.value)
+            .catch(err => {
+                console.error('Error sending message:', err.toString());
+            });
+    };
+
+    const sendAudio = async (byteArray) => {
+        let chatId = document.getElementById('default-chat-id').value;
+        await connection.invoke('SendAudio', chatId, generateRandomId(), byteArray);
+    };
+
+    const closeChat = (chatId) => {
+        const chat = document.getElementById('chat-' + chatId);
+        chat.remove();
+        connection.invoke('CloseChat', chatId)
+            .catch(err => {
+                console.error('Error closing chat:', err.toString());
+            });
+    };
+
+    window.chatsComponent = {
+        tryCancelMessage: tryCancelMessage,
+        sendMessage: sendMessage,
+        closeChat: closeChat,
+        sendAudio: sendAudio
+    };
+
+    const logError = (message, error) => {
+        console.error(message, error);
+    };
+
+    const logInfo = (message, info) => {
+        console.info(message, info);
+    };
+
+    const updateOffcanvasPlacement = () => {
         document.querySelectorAll('.offcanvas-chat').forEach(offcanvasElement => {
             if (window.innerWidth >= 768) {
                 offcanvasElement.classList.remove('offcanvas-bottom');
@@ -68,6 +222,12 @@
         });
     }
 
+    // Initialize the connection
+    initializeConnection();
+
+    // Update offcanvas placement on window resize
     window.addEventListener('resize', updateOffcanvasPlacement);
-    updateOffcanvasPlacement(); // Initial call to set the correct placement
+
+    // Initial call to set the correct placement
+    updateOffcanvasPlacement();
 });

@@ -4,58 +4,72 @@
 <input type="hidden" id="default-chat-id" value="@Model.SingleOrDefault(x => !x.Messages.Any())?.ChatId" />
 @foreach (var chat in Model)
 {
-    <div id="chat-@chat.ChatId" class="chat">
-        <h3>Chat @chat.ChatId</h3>
-        <h4>Chat @chat.Status</h4>
-        <ul id="messagesList-@chat.ChatId">
-            @foreach (var message in chat.Messages)
-            {
-                <li id="message-@message.MessageId">
-                    @if (message.Type == MessageType.UserText)
-                    {
-                        <span><strong>You:</strong> @message.Text - <em>@message.Status</em></span>
-                    }
-                    else if (message.Type == MessageType.UserVoice)
-                    {
-                        <span><strong>You (Audio):</strong> Transcription - @message.Text - <em>@message.Status</em></span>
-                    }
-                    else if (message.Type == MessageType.ServerText)
-                    {
-                        <span><strong>Server:</strong> @message.Text</span>
-                    }
-                    else if (message.Type == MessageType.SystemText)
-                    {
-                        <span class="system-message">[@message.SystemMessageSeverity] @message.Text</span>
-                    }
-                    else if (message.Type == MessageType.ActionLog)
-                    {
-                        @message.Text
-                    }
-                    else
-                    {
-                        <span>Unknown message type</span>
-                    }
-
-                    @if (message.Type is MessageType.UserText or MessageType.UserVoice && message.Status is UserMessageStatus.Thinking or UserMessageStatus.Transcribing)
-                    {
-                        <button onclick="window.chatsComponent.tryCancelMessage('@chat.ChatId', '@message.MessageId')">Cancel</button>
-                    }
-                </li>
-            }
-        </ul>
-
-        @{
-            var enabled = chat.Status is ChatStatus.Ready or ChatStatus.Success or ChatStatus.Error;
-        }
-
-        <form onsubmit="window.chatsComponent.sendMessage('@chat.ChatId'); return false;">
-            <input type="text" id="messageInput-@chat.ChatId" class="messageInput" disabled="@(!enabled)" placeholder="Type a message..." />
-            <button type="submit" id="sendButton-@chat.ChatId" class="sendButton" disabled="@(!enabled)">Send</button>
-        </form>
+    <div id="chat-@chat.ChatId">
+        <button class="btn btn-primary chat-button" type="button" id="toggleChatOffcanvas-@chat.ChatId" data-bs-toggle="offcanvas" data-bs-target="#chatOffcanvas-@chat.ChatId">
+            <i class="fas fa-microphone"></i>
+        </button>
+        <div class="offcanvas offcanvas-chat offcanvas-end" tabindex="-1" id="chatOffcanvas-@chat.ChatId" aria-labelledby="chatOffcanvasLabel-@chat.ChatId" data-bs-scroll="true" data-bs-backdrop="false" aria-modal="true" role="dialog">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="chatOffcanvasLabel-@chat.ChatId">
+                    Assistant @chat.Status
         
-        @if (chat.Messages.Any())
-        {
-            <button onclick="window.chatsComponent.closeChat('@chat.ChatId')">Close Chat</button>
-        }
+                    @if (chat.Messages.Any())
+                    {
+                        <button onclick="window.chatsComponent.closeChat('@chat.ChatId')">Close Chat</button>
+                    }
+                </h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div id="chatHistory-@chat.ChatId" class="chat-history">
+
+                    <ul id="messagesList-@chat.ChatId">
+                        @foreach (var message in chat.Messages)
+                        {
+                            <li id="message-@message.MessageId">
+                                @if (message.Type == MessageType.UserText)
+                                {
+                                    <span><strong>You:</strong> @message.Text - <em>@message.Status</em></span>
+                                }
+                                else if (message.Type == MessageType.UserVoice)
+                                {
+                                    <span><strong>You (Audio):</strong> Transcription - @message.Text - <em>@message.Status</em></span>
+                                }
+                                else if (message.Type == MessageType.ServerText)
+                                {
+                                    <span><strong>Server:</strong> @message.Text</span>
+                                }
+                                else if (message.Type == MessageType.SystemText)
+                                {
+                                    <span class="system-message">[@message.SystemMessageSeverity] @message.Text</span>
+                                }
+                                else if (message.Type == MessageType.ActionLog)
+                                {
+                                    @message.Text
+                                }
+                                else
+                                {
+                                    <span>Unknown message type</span>
+                                }
+
+                                @if (message.Type is MessageType.UserText or MessageType.UserVoice && message.Status is UserMessageStatus.Thinking or UserMessageStatus.Transcribing)
+                                {
+                                    <button onclick="window.chatsComponent.tryCancelMessage('@chat.ChatId', '@message.MessageId')">Cancel</button>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="input-group">
+                    @{
+                        var enabled = chat.Status is ChatStatus.Ready or ChatStatus.Success or ChatStatus.Error;
+                    }
+                    <form onsubmit="window.chatsComponent.sendMessage('@chat.ChatId'); return false;">
+                        <input type="text" id="messageInput-@chat.ChatId" class="form-control messageInput" disabled="@(!enabled)" placeholder="Type a message..." />
+                        <button type="submit" id="sendButton-@chat.ChatId" class="sendButton btn btn-primary" disabled="@(!enabled)">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 }
