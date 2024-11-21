@@ -29,7 +29,7 @@
                     <ul id="messagesList-@chat.ChatId">
                         @foreach (var message in chat.Messages)
                         {
-                            <li id="message-@message.MessageId">
+                            <li id="message-@message.MessageId" class="message-type-@message.Type">
                                 @if (message.Type == MessageType.UserText)
                                 {
                                     <span><strong>You:</strong> @message.Text - <em>@message.Status</em></span>
@@ -38,13 +38,13 @@
                                 {
                                     <span><strong>You (Audio):</strong> Transcription - @message.Text - <em>@message.Status</em></span>
                                 }
-                                else if (message.Type == MessageType.ServerText)
+                                else if (message.Type == MessageType.AssistantText)
                                 {
                                     <span><strong>Server:</strong> @message.Text</span>
                                 }
                                 else if (message.Type == MessageType.SystemText)
                                 {
-                                    <span class="system-message">[@message.SystemMessageSeverity] @message.Text</span>
+                                    <span>[@message.SystemMessageSeverity] @message.Text</span>
                                 }
                                 else if (message.Type == MessageType.ActionLog)
                                 {
@@ -63,12 +63,12 @@
                         }
                     </ul>
                 </div>
-                <div class="input-group">
+                <div class="input-group fixed-bottom-input">
                     @{
                         var enabled = chat.Status is ChatStatus.Ready or ChatStatus.Success or ChatStatus.Error;
                     }
-                    <form onsubmit="window.chatsComponent.sendMessage('@chat.ChatId'); return false;">
-                        <input type="text" id="messageInput-@chat.ChatId" class="form-control messageInput" disabled="@(!enabled)" placeholder="Type a message..." />
+                    <form class="d-flex w-100" onsubmit="window.chatsComponent.sendMessage('@chat.ChatId'); return false;">
+                        <input type="text" id="messageInput-@chat.ChatId" class="form-control messageInput flex-grow-1 me-2" disabled="@(!enabled)" placeholder="Type a message..." />
                         <button type="submit" id="sendButton-@chat.ChatId" class="sendButton btn btn-primary" disabled="@(!enabled)">Send</button>
                     </form>
                 </div>

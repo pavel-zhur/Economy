@@ -7,8 +7,7 @@ public enum MessageType
 {
     UserText,
     UserVoice,
-    ServerText,
+    AssistantText,
     SystemText,
     ActionLog,
-    ChatClosed,
 }

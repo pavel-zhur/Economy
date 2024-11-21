@@ -105,7 +105,7 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
                     [
                         new(
                             DateTime.UtcNow,
-                            MessageType.ServerText,
+                            MessageType.AssistantText,
                             null,
                             "A server error occurred. A page refresh could help.",
                             null,
@@ -176,7 +176,7 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
                     Status = UserMessageStatus.Done,
                 };
 
-                chat.Messages.Add(new(DateTime.UtcNow, MessageType.ServerText, null, response, 
+                chat.Messages.Add(new(DateTime.UtcNow, MessageType.AssistantText, null, response, 
                     null, SystemMessageSeverity.Success));
 
                 context.UserData.UpdateChat(chatIndex, chat => chat with { Status = ChatStatus.Success, });

@@ -1,5 +1,6 @@
 ﻿::deep .offcanvas-chat {
     --bs-offcanvas-height: 40vh;
+    bottom: calc(var(--footer-height) + 1px);
 }
 
 .chat-buttons-container {
@@ -8,7 +9,7 @@
     right: 15px;
     display: flex;
     gap: 10px; /* Adjust the gap between buttons as needed */
-    z-index: 1046;
+    z-index: 1060;
 }
 
     .chat-buttons-container ::deep .chat-button {
@@ -20,7 +21,7 @@
         align-items: center;
         justify-content: center;
         position: relative;
-        z-index: 1046;
+        z-index: 1060;
     }
 
 ::deep .special-close-button {
@@ -29,14 +30,37 @@
     position: relative;
 }
 
-.messageInput {
+::deep .messageInput {
     width: 70%;
     padding: 5px;
 }
 
-.sendButton {
+::deep .sendButton {
     margin-left: 5px;
     padding: 5px 10px;
+}
+
+/* Fixed input group at the bottom of the offcanvas */
+::deep .fixed-bottom-input {
+    position: sticky;
+    bottom: 0;
+    background-color: inherit; /* Ensures the background matches the offcanvas */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    z-index: 10; /* Keeps the input group above other elements */
+}
+
+/* Ensure the offcanvas body uses Flexbox to accommodate the fixed input */
+::deep .offcanvas-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Chat history should expand and allow scrolling without overlapping the input group */
+::deep .chat-history {
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
 #connectionStatus {
@@ -56,11 +80,14 @@
             color: orange;
         }
 
-.system-message {
+::deep .message-type-AssistantText {
+}
+
+::deep .message-type-SystemText {
     color: gray;
     font-style: italic;
 }
 
-.own-message {
+::deep .message-type-UserText, ::deep .message-type-UserVoice {
     color: blue;
 }
