@@ -91,10 +91,9 @@
             // Store current input values, focused element, and offcanvas state
             const inputValues = {};
             const inputs = chatsContainer.querySelectorAll('input[type="text"]:not([disabled])');
-            let focusedElementId = document.activeElement.id;
             let activeOffcanvasId = null;
 
-            const activeOffcanvas = document.querySelector('.offcanvas.offcanvas-chat.show');
+            const activeOffcanvas = document.querySelector('.offcanvas.offcanvas-chat.show:not(.hiding), .offcanvas.offcanvas-chat.showing');
             if (activeOffcanvas) {
                 activeOffcanvasId = activeOffcanvas.id;
             }
@@ -103,10 +102,80 @@
                 inputValues[input.id] = input.value;
             });
 
+
+            const oldOffcanvasElements = document.querySelectorAll('.offcanvas-chat');
+            oldOffcanvasElements.forEach(offcanvasElement => {
+                const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasElement);
+                if (offcanvasInstance) {
+                    offcanvasInstance.dispose();
+                }
+            });
+
             // Update the chat container
             chatsContainer.innerHTML = renderedView;
 
             updateOffcanvasPlacement();
+
+            // Reinitialize offcanvas elements and rstore offcanvas state
+            const offcanvasElements = document.querySelectorAll('.offcanvas-chat');
+            offcanvasElements.forEach(offcanvasElement => {
+                const chatId = offcanvasElement.id.replace('chatOffcanvas-', '');
+                const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasElement);
+                if (offcanvasInstance) {
+                    offcanvasInstance.dispose();
+                }
+
+                // Subscribe to the 'shown.bs.offcanvas' event to focus the textbox
+                offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
+                    const textbox = offcanvasElement.querySelector('input[type="text"]');
+                    if (textbox) {
+                        textbox.focus();
+                    }
+
+                    const chatButtons = document.querySelectorAll('.toggle-chat-button');
+                    chatButtons.forEach(function (button) {
+                        var buttonChatId = button.id.replace('toggleChatOffcanvas-', '');
+                        var icon = button.querySelector('i');
+
+                        if (buttonChatId === chatId) {
+                            icon.classList.remove('fa-regular');
+                            icon.classList.add('fa-solid');
+                        } else {
+                            icon.classList.remove('fa-solid');
+                            icon.classList.add('fa-regular');
+                        }
+                    });
+                });
+
+                offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
+                    const chatButton = document.querySelector('#toggleChatOffcanvas-' + chatId);
+                    var icon = chatButton.querySelector('i');
+
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid');
+                });
+
+                offcanvasElement.addEventListener('hide.bs.offcanvas', () => {
+                    const chatButton = document.querySelector('#toggleChatOffcanvas-' + chatId);
+                    var icon = chatButton.querySelector('i');
+
+                    icon.classList.add('fa-regular');
+                    icon.classList.remove('fa-solid');
+                });
+
+                const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
+
+                if (activeOffcanvasId === offcanvasElement.id) {
+                    // Temporarily disable transitions
+                    offcanvasElement.style.transition = 'none';
+                    offcanvasElement.classList.add('show');
+                    bsOffcanvas.show();
+                    // Force reflow to apply the 'show' class without animation
+                    void offcanvasElement.offsetWidth;
+                    // Re-enable transitions
+                    offcanvasElement.style.transition = '';
+                }
+            });
 
             // Restore input values
             Object.keys(inputValues).forEach(id => {
@@ -115,22 +184,6 @@
                     input.value = inputValues[id];
                 }
             });
-
-            // Restore focus
-            if (focusedElementId) {
-                const focusedElement = document.getElementById(focusedElementId);
-                if (focusedElement) {
-                    focusedElement.focus();
-                }
-            }
-
-            // Restore offcanvas state
-            if (activeOffcanvasId) {
-                const offcanvas = document.getElementById(activeOffcanvasId);
-                if (offcanvas) {
-                    new bootstrap.Offcanvas(offcanvas).show();
-                }
-            }
         } catch (err) {
             console.error('Error rendering chat view:', err);
             chatsContainer.innerHTML = '';

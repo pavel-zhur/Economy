@@ -5,20 +5,23 @@
 @foreach (var chat in Model)
 {
     <div id="chat-@chat.ChatId">
-        <button class="btn btn-primary chat-button" type="button" id="toggleChatOffcanvas-@chat.ChatId" data-bs-toggle="offcanvas" data-bs-target="#chatOffcanvas-@chat.ChatId">
-            <i class="fas fa-microphone"></i>
+        <button class="btn btn-primary chat-button toggle-chat-button" type="button" id="toggleChatOffcanvas-@chat.ChatId" data-bs-toggle="offcanvas" data-bs-target="#chatOffcanvas-@chat.ChatId">
+            <i class="fa-regular fa-comment"></i>
         </button>
         <div class="offcanvas offcanvas-chat offcanvas-end" tabindex="-1" id="chatOffcanvas-@chat.ChatId" aria-labelledby="chatOffcanvasLabel-@chat.ChatId" data-bs-scroll="true" data-bs-backdrop="false" aria-modal="true" role="dialog">
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title" id="chatOffcanvasLabel-@chat.ChatId">
                     Assistant @chat.Status
-        
+                </h5>
+                <div class="ms-auto">
                     @if (chat.Messages.Any())
                     {
-                        <button onclick="window.chatsComponent.closeChat('@chat.ChatId')">Close Chat</button>
+                        <button onclick="window.chatsComponent.closeChat('@chat.ChatId')" class="special-close-button btn-close text-reset" aria-label="Close">
+                            <i class="fas fa-trash-can fa-lg"></i>
+                        </button>
                     }
-                </h5>
-                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
             </div>
             <div class="offcanvas-body">
                 <div id="chatHistory-@chat.ChatId" class="chat-history">

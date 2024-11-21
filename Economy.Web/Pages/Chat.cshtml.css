@@ -23,6 +23,12 @@
         z-index: 1046;
     }
 
+::deep .special-close-button {
+    background: none;
+    top: -2px;
+    position: relative;
+}
+
 .messageInput {
     width: 70%;
     padding: 5px;
