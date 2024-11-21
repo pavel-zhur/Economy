@@ -13,6 +13,8 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRe
 {
     public async Task SendMessage(Guid chatId, string messageId, string message)
     {
+        await Task.Delay(1000);
+
         await ProcessSafe(Context.ConnectionId, async (userId, state) =>
         {
             await chatsService.GotMessage(state, userId, chatId, messageId, message);
@@ -80,7 +82,7 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRe
 
             var (state, _) = await factoriesMemory.GetOrCreate(userDataStorage);
             
-            action(userId, state).ContinueWith(async t =>
+            Task.Delay(1000).ContinueWith(async _ => await action(userId, state)).Unwrap().ContinueWith(async t =>
             {
                 logger.LogError(t.Exception, "Exception processing the incoming chat hub message.");
 

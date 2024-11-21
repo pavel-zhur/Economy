@@ -10,26 +10,12 @@
 
 <div id="chatsContainer"></div>
 
-<div id="newChatContainer">
-    <button id="newChatButton">Start New Chat</button>
-</div>
-
 @section Scripts {
     <script>
         (() => {
             const connectionStatusText = document.getElementById('statusText');
             const chatsContainer = document.getElementById('chatsContainer');
-            const newChatButton = document.getElementById('newChatButton');
             let connection;
-
-            // Global error handlers
-            window.onerror = function(message, source, lineno, colno, error) {
-                console.error(`Global Error: ${message} at ${source}:${lineno}:${colno}`, error);
-            };
-
-            window.onunhandledrejection = function(event) {
-                console.error('Unhandled Promise Rejection:', event.reason);
-            };
 
             const initializeConnection = () => {
                 try {
@@ -77,7 +63,6 @@
                     connection.start()
                         .then(() => {
                             updateConnectionStatus('Connected');
-                            disableInputs(false);
                             console.info('SignalR connection established.');
                             sendHello();
                         })
@@ -91,19 +76,18 @@
 
             const handleConnectionClose = (error) => {
                 updateConnectionStatus('Disconnected');
-                disableInputs(true);
+                disableInputs();
                 logError('Connection closed', error);
             };
 
             const handleConnectionReconnecting = (error) => {
                 updateConnectionStatus('Reconnecting');
-                disableInputs(true);
+                disableInputs();
                 logError('Connection reconnecting', error);
             };
 
             const handleConnectionReconnected = (connectionId) => {
                 updateConnectionStatus('Connected');
-                disableInputs(false);
                 sendHello();
                 logInfo('Reconnected with connectionId:', connectionId);
             };
@@ -111,14 +95,41 @@
             const handleHelloResponse = (state) => {
                 // Handle versioning or other properties if needed in the future
                 // Initial render can be handled here if necessary
-                renderChatView(state.renderedChats);
+                renderChatView(state?.renderedChats);
             };
 
             const renderChatView = (renderedView) => {
                 try {
+                    // Store current input values and focused element
+                    const inputValues = {};
+                    const inputs = chatsContainer.querySelectorAll('input[type="text"]:not([disabled])');
+                    let focusedElementId = document.activeElement.id;
+
+                    inputs.forEach(input => {
+                        inputValues[input.id] = input.value;
+                    });
+
+                    // Update the chat container
                     chatsContainer.innerHTML = renderedView;
+
+                    // Restore input values
+                    Object.keys(inputValues).forEach(id => {
+                        const input = document.getElementById(id);
+                        if (input) {
+                            input.value = inputValues[id];
+                        }
+                    });
+
+                    // Restore focus
+                    if (focusedElementId) {
+                        const focusedElement = document.getElementById(focusedElementId);
+                        if (focusedElement) {
+                            focusedElement.focus();
+                        }
+                    }
                 } catch (err) {
                     console.error('Error rendering chat view:', err);
+                    chatsContainer.innerHTML = '';
                 }
             };
 
@@ -133,39 +144,14 @@
                 connection.invoke('Hello')
                     .catch(err => {
                         console.error('Error sending Hello:', err.toString());
+                        handleHelloResponse(null);
                     });
             };
 
-            const disableInputs = (disabled) => {
-                const sendButtons = document.querySelectorAll('.sendButton');
-                const micButtons = document.querySelectorAll('.micButton');
-                sendButtons.forEach(button => button.disabled = disabled);
-                micButtons.forEach(button => button.disabled = disabled);
+            const disableInputs = () => {
+                const sendButtons = document.querySelectorAll('.sendButton.server-enabled');
+                sendButtons.forEach(button => button.disabled = true);
             };
-
-            const newChatButtonHandler = () => {
-                try {
-                    connection.invoke('CreateNewChat')
-                        .catch(err => {
-                            console.error('Error creating new chat:', err.toString());
-                        });
-                } catch (err) {
-                    console.error('Error starting a new chat:', err);
-                }
-            };
-
-            newChatButton.addEventListener('click', newChatButtonHandler);
-
-            const logError = (message, error) => {
-                console.error(message, error);
-            };
-
-            const logInfo = (message, info) => {
-                console.info(message, info);
-            };
-
-            // Initialize the connection
-            initializeConnection();
 
             const generateRandomId = () => {
                 // Simple function to generate a random ID
@@ -180,21 +166,20 @@
             };
 
             const sendMessage = (chatId) => {
-                connection.invoke(
-                    'SendMessage', 
-                    chatId, 
-                    generateRandomId(),
-                    document.getElementById('messageInput-' + chatId).value)
+                const messageInput = document.getElementById('messageInput-' + chatId);
+                const sendButton = document.getElementById('sendButton-' + chatId);
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+
+                connection.invoke('SendMessage', chatId, generateRandomId(), messageInput.value)
                     .catch(err => {
                         console.error('Error sending message:', err.toString());
                     });
             };
 
-            const startVoiceRecording = (chatId) => {
-                // Implement voice recording logic
-            };
-
             const closeChat = (chatId) => {
+                const chat = document.getElementById('chat-' + chatId);
+                chat.remove();
                 connection.invoke('CloseChat', chatId)
                     .catch(err => {
                         console.error('Error closing chat:', err.toString());
@@ -204,10 +189,19 @@
             window.chatsComponent = {
                 tryCancelMessage: tryCancelMessage,
                 sendMessage: sendMessage,
-                startVoiceRecording: startVoiceRecording,
                 closeChat: closeChat
             };
 
+            const logError = (message, error) => {
+                console.error(message, error);
+            };
+
+            const logInfo = (message, info) => {
+                console.info(message, info);
+            };
+
+            // Initialize the connection
+            initializeConnection();
         })();
     </script>
 }
@@ -228,7 +222,7 @@
         padding: 5px;
     }
 
-    .sendButton, .micButton {
+    .sendButton {
         margin-left: 5px;
         padding: 5px 10px;
     }
@@ -249,10 +243,6 @@
             #connectionStatus span.reconnecting {
                 color: orange;
             }
-
-    #newChatContainer {
-        margin-bottom: 20px;
-    }
 
     .system-message {
         color: gray;

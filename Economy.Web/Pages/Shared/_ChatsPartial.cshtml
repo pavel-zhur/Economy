@@ -42,11 +42,17 @@
                 </li>
             }
         </ul>
-        <input type="text" id="messageInput-@chat.ChatId" class="messageInput" placeholder="Type a message..."/>
-        <button id="sendButton-@chat.ChatId" class="sendButton" onclick="window.chatsComponent.sendMessage('@chat.ChatId')">Send</button>
-        <button id="micButton-@chat.ChatId" class="micButton" onclick="window.chatsComponent.startVoiceRecording('@chat.ChatId')">🔊</button>
+
+        @{
+            var enabled = chat.Status is ChatStatus.Ready or ChatStatus.Success or ChatStatus.Error;
+        }
+
+        <form onsubmit="window.chatsComponent.sendMessage('@chat.ChatId'); return false;">
+            <input type="text" id="messageInput-@chat.ChatId" class="messageInput" disabled="@(!enabled)" placeholder="Type a message..." />
+            <button type="submit" id="sendButton-@chat.ChatId" class="sendButton" disabled="@(!enabled)">Send</button>
+        </form>
         
-        @if (!chat.Messages.Any())
+        @if (chat.Messages.Any())
         {
             <button onclick="window.chatsComponent.closeChat('@chat.ChatId')">Close Chat</button>
         }
