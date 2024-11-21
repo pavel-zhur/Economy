@@ -1,10 +1,11 @@
-﻿@using Economy.Web.Tools
-@using Economy.AiInterface.Scope
+﻿@using Economy.Engine
+@using Economy.Memory.Containers.State
+@using Economy.Web.Tools
 @model Report1Model.MatchBase
-@inject StateFactory StateFactory
+@inject StateFactory<State> StateFactory
 
 @{
-    var state = await StateFactory.Get();
+    var state = await StateFactory.GetState();
 }
 
 @switch (Model)

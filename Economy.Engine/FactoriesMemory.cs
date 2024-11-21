@@ -1,13 +1,13 @@
-﻿using Economy.Memory.Containers.State;
-using Microsoft.SemanticKernel.ChatCompletion;
+﻿using Economy.Common;
 
-namespace Economy.AiInterface.Scope;
+namespace Economy.Engine;
 
-public class FactoriesMemory
+public class FactoriesMemory<TState>
+    where TState : class, IState, new()
 {
     private readonly Dictionary<string, UserSession> _memory = new();
 
-    public async Task<(State state, ChatHistory chatHistory)> GetOrCreate(IUserDataStorage storage)
+    public async Task<UserData<TState>> GetOrCreate(IUserDataStorage storage)
     {
         var userKey = storage.GetUserKey();
 
@@ -19,7 +19,7 @@ public class FactoriesMemory
 
         await session.InitializeAsync(storage);
 
-        return (session.State, session.ChatHistory);
+        return session.UserData;
     }
 
     public async Task Save(IUserDataStorage storage)
@@ -31,7 +31,7 @@ public class FactoriesMemory
             userSession = _memory[storage.GetUserKey()];
         }
         
-        await storage.SaveUserData(userSession.State.SaveToBinary());
+        await storage.SaveUserData(userSession.UserData.State.SaveToBinary());
     }
 
     private class UserSession
@@ -39,8 +39,7 @@ public class FactoriesMemory
         private readonly SemaphoreSlim _initializationLock = new(1, 1);
         private bool _initialized;
 
-        public State State { get; } = new();
-        public ChatHistory ChatHistory { get; } = new();
+        public UserData<TState> UserData { get; } = new(new());
 
         public async Task InitializeAsync(IUserDataStorage storage)
         {
@@ -67,7 +66,7 @@ public class FactoriesMemory
             var userData = await storage.GetUserData();
 
             if (userData != null)
-                State.LoadFromBinary(userData);
+                UserData.State.LoadFromBinary(userData);
         }
     }
 }

@@ -1,10 +1,11 @@
 ﻿@page
 @model Economy.Web.Pages.PlansModel
-@using Economy.AiInterface.Scope
-@inject StateFactory StateFactory
+@using Economy.Engine
+@using Economy.Memory.Containers.State
+@inject StateFactory<State> StateFactory
 
 @{
-    var state = await StateFactory.Get();
+    var state = await StateFactory.GetState();
     var planTree = state.Repositories.Plans.GetPlanTree();
 }
 

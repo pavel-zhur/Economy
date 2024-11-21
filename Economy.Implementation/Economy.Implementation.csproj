@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OneShelf.Common" Version="1.1.23-prerelease" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Economy.Common\Economy.Common.csproj" />
+    <ProjectReference Include="..\Economy.Engine\Economy.Engine.csproj" />
+    <ProjectReference Include="..\Economy.Memory\Economy.Memory.csproj" />
   </ItemGroup>
 
 </Project>

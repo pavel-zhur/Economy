@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -13,8 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Economy.AiInterface\Economy.AiInterface.csproj" />
-    <ProjectReference Include="..\Economy.Memory\Economy.Memory.csproj" />
+    <ProjectReference Include="..\Economy.Implementation\Economy.Implementation.csproj" />
     <ProjectReference Include="..\Economy.UserStorage\Economy.UserStorage.csproj" />
   </ItemGroup>
 

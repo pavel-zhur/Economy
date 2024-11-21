@@ -1,21 +1,21 @@
 using System.ComponentModel;
-using Economy.AiInterface.Scope;
+using Economy.Engine;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.EventSourcing;
 using Economy.Memory.Models.State;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
-namespace Economy.AiInterface.StateManagement;
+namespace Economy.Implementation;
 
-internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory stateFactory)
+public class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory<State> stateFactory)
 {
     [KernelFunction("create_or_update_currency")]
     [Description("Creates a new currency (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated currency.")]
     public async Task<Currency> UpsertCurrency(Currency currency)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref currency, out var verb));
         logger.LogInformation("{verb} currency {Currency}", verb, currency.ToDetails(state.Repositories));
         return currency;
@@ -26,7 +26,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     [return: Description("The created (with id assigned) or updated wallet")]
     public async Task<Wallet> UpsertWallet(Wallet wallet)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref wallet, out var verb));
         logger.LogInformation("{verb} wallet {Wallet}", verb, wallet.ToDetails(state.Repositories));
         return wallet;
@@ -37,7 +37,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     [return: Description("The created (with id assigned) or updated event")]
     public async Task<Event> UpsertEvent(Event @event)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref @event, out var verb));
         logger.LogInformation("{verb} event {Event}", verb, @event.ToDetails(state.Repositories));
         return @event;
@@ -48,7 +48,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     [return: Description("The created (with id assigned) or updated category")]
     public async Task<Category> UpsertCategory(Category category)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref category, out var verb));
         logger.LogInformation("{verb} category {Category}", verb, category.ToDetails(state.Repositories));
         return category;
@@ -59,7 +59,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     [return: Description("The created (with id assigned) or updated wallet audit")]
     public async Task<WalletAudit> UpsertWalletAudit(WalletAudit walletAudit)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref walletAudit, out var verb));
         logger.LogInformation("{verb} wallet audit {WalletAudit}", verb, walletAudit.ToDetails(state.Repositories));
         return walletAudit;
@@ -70,7 +70,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     [return: Description("The created (with id assigned) or updated plan")]
     public async Task<Plan> UpsertPlan(Plan plan)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref plan, out var verb));
         logger.LogInformation("{verb} plan {Plan}", verb, plan.ToDetails(state.Repositories));
         return plan;
@@ -81,7 +81,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     [return: Description("The created (with id assigned) or updated transaction")]
     public async Task<Transaction> UpsertTransaction(Transaction transaction)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref transaction, out var verb));
         logger.LogInformation("{verb} transaction {Transaction}", verb, transaction.ToDetails(state.Repositories));
         return transaction;
@@ -92,7 +92,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     [return: Description("The created (with id assigned) or updated conversion")]
     public async Task<Conversion> UpsertConversion(Conversion conversion)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref conversion, out var verb));
         logger.LogInformation("{verb} conversion {Conversion}", verb, conversion.ToDetails(state.Repositories));
         return conversion;
@@ -103,7 +103,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     [return: Description("The created (with id assigned) or updated transfer")]
     public async Task<Transfer> UpsertTransfer(Transfer transfer)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref transfer, out var verb));
         logger.LogInformation("{verb} transfer {Transfer}", verb, transfer.ToDetails(state.Repositories));
         return transfer;
@@ -113,7 +113,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     [Description("Deletes entity of a given type by id")]
     public async Task DeleteEntities(EntityType entityType, int id)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         if (state.Repositories.GetRepository(entityType).TryGetById(id) == null)
         {
             throw new InvalidOperationException($"{entityType}with id {id} is not found.");
@@ -126,7 +126,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     [Description("Gets all entities of the specified type")]
     public async Task<List<EntityBase>> GetEntities(EntityType entityType)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         // todo: may return too many entries
         return state.Repositories.GetRepository(entityType).GetAll().ToList();
     }
@@ -135,7 +135,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory sta
     [Description("Gets an entity by its id")]
     public async Task<EntityBase> GetEntityById(EntityType entityType, int id)
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
         return state.Repositories.GetRepository(entityType).TryGetById(id) ?? throw new InvalidOperationException($"Entity not found: {id}.");
     }
 

@@ -1,4 +1,4 @@
-using Economy.AiInterface.Scope;
+using Economy.Engine;
 using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models;
@@ -10,7 +10,7 @@ using OneShelf.Common;
 
 namespace Economy.Web.Pages;
 
-public class Report1Model(StateFactory stateFactory) : PageModel
+public class Report1Model(StateFactory<State> stateFactory) : PageModel
 {
     [BindProperty(SupportsGet = true)]
     public DateTime? From { get; set; }
@@ -32,7 +32,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
 
     public async Task OnGet()
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
 
         // todo: remove hard-coded values
         WeekStart ??= DayOfWeek.Saturday;

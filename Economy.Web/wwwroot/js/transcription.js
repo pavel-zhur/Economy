@@ -159,21 +159,19 @@ async function startRecording(withSilenceDetection) {
         statusBar.innerText = 'Transcribing...';
         statusBar.style.color = 'gray';
 
-        // Send audio data to the server
+        // Convert audio blob to byte array
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        const formData = new FormData();
-        formData.append('audio', audioBlob);
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        const byteArray = new Uint8Array(arrayBuffer);
 
         try {
-            const response = await fetch('/api/Transcription/transcribe', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-            document.getElementById('transcriptionResult').innerText = result.transcription;
+            // Invoke SignalR method to send audio
+            await window.chatsComponent.sendAudio(byteArray);
+            console.log('Audio sent successfully');
+            statusBar.innerText = 'Audio sent successfully';
         } catch (error) {
-            document.getElementById('transcriptionResult').innerText = 'Error occurred.';
+            console.error('Error sending audio:', error);
+            statusBar.innerText = 'Error occurred.';
         }
 
         // Reset status bar

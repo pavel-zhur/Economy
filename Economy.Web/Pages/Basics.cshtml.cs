@@ -1,11 +1,12 @@
-using Economy.AiInterface.Scope;
+using Economy.Engine;
 using Economy.Memory.Models.State;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Economy.Memory.Containers.State;
 
 namespace Economy.Web.Pages;
 
-public class BasicsModel(StateFactory stateFactory) : PageModel
+public class BasicsModel(StateFactory<State> stateFactory) : PageModel
 {
     public Amounts Total { get; set; } = null!;
 
@@ -13,7 +14,7 @@ public class BasicsModel(StateFactory stateFactory) : PageModel
 
     public async Task OnGet()
     {
-        var state = await stateFactory.Get();
+        var state = await stateFactory.GetState();
 
         Wallets = state.Repositories.Wallets.GetAll()
             .OrderBy(x => x.Id)

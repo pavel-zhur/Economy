@@ -1,11 +1,12 @@
-﻿using Economy.AiInterface.Scope;
+﻿using Economy.Engine;
+using Economy.Memory.Containers.State;
 using Economy.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class PrivacyModel(ILogger<PrivacyModel> logger, StateFactory stateFactory, UserDataStorage userDataStorage, IHostEnvironment hostEnvironment) : PageModel
+public class PrivacyModel(ILogger<PrivacyModel> logger, StateFactory<State> stateFactory, UserDataStorage userDataStorage, IHostEnvironment hostEnvironment) : PageModel
 {
     public void OnGet()
     {

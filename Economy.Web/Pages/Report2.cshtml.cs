@@ -1,4 +1,4 @@
-using Economy.AiInterface.Scope;
+using Economy.Engine;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models;
 using Economy.Memory.Models.State;
@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages
 {
-    public class Report2Model(StateFactory stateFactory) : PageModel
+    public class Report2Model(StateFactory<State> stateFactory) : PageModel
     {
         public State State { get; set; } = null!;
         public Amounts TotalIncomes { get; set; } = null!;
@@ -21,7 +21,7 @@ namespace Economy.Web.Pages
         
         public async Task OnGet()
         {
-            State = await stateFactory.Get();
+            State = await stateFactory.GetState();
 
             TotalIncomes = CreateTotal(TransactionType.Income);
             TotalExpenses = CreateTotal(TransactionType.Expense);

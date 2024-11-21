@@ -1,6 +1,6 @@
 ﻿using Microsoft.SemanticKernel;
 
-namespace Economy.AiInterface.StateManagement;
+namespace Economy.AiInterface.Filters;
 
 [Obsolete("Debugging")] // todo: think
 public class ChatDebuggingFilter : IAutoFunctionInvocationFilter

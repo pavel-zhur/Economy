@@ -1,4 +1,4 @@
-﻿namespace Economy.AiInterface.Scope;
+﻿namespace Economy.Common;
 
 public interface IUserDataStorage
 {

@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Economy.AiInterface.Scope;
+using Economy.Common;
 using Economy.UserStorage;
 
 namespace Economy.Web.Services;

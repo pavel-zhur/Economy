@@ -1,6 +1,6 @@
 using MessagePack;
 
-namespace Economy.Web.Hubs.Models;
+namespace Economy.Engine.Models;
 
 [MessagePackObject]
 public record MessageModel(

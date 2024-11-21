@@ -1,6 +1,7 @@
-﻿@using Economy.Web.Hubs.Models
-@model IReadOnlyList<Economy.Web.Hubs.Models.ChatModel>
+﻿@using Economy.Engine.Models
+@model IReadOnlyList<Economy.Engine.Models.ChatModel>
 
+<input type="hidden" id="default-chat-id" value="@Model.SingleOrDefault(x => !x.Messages.Any())?.ChatId" />
 @foreach (var chat in Model)
 {
     <div id="chat-@chat.ChatId" class="chat">

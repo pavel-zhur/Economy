@@ -6,11 +6,19 @@
 
 <h2>Chat Application</h2>
 
+<div>
+    <button>Txt (opens available empty chat)</button>
+    <button>Mic (records into open or empty)</button>
+    <button id="transcribeButton">Mic auto (records into open or empty, auto-stop)</button>
+    <div id="statusBar">Ready</div>
+</div>
+
 <div id="connectionStatus">Status: <span id="statusText" class="disconnected">Disconnected</span></div>
 
 <div id="chatsContainer"></div>
 
 @section Scripts {
+    <script src="~/js/transcription.js"></script>
     <script>
         (() => {
             const connectionStatusText = document.getElementById('statusText');
@@ -47,8 +55,8 @@
                         handleConnectionReconnected(connectionId);
                     });
 
-                    connection.on('HelloResponse', state => {
-                        handleHelloResponse(state);
+                    connection.on('HelloResponse', (state, renderedChats) => {
+                        handleHelloResponse(state, renderedChats);
                     });
 
                     connection.on('Authenticate', () => {
@@ -92,10 +100,12 @@
                 logInfo('Reconnected with connectionId:', connectionId);
             };
 
-            const handleHelloResponse = (state) => {
+            const handleHelloResponse = (state, renderedChats) => {
                 // Handle versioning or other properties if needed in the future
                 // Initial render can be handled here if necessary
-                renderChatView(state?.renderedChats);
+                if (renderedChats) {
+                    renderChatView(renderedChats);
+                }
             };
 
             const renderChatView = (renderedView) => {
@@ -144,7 +154,7 @@
                 connection.invoke('Hello')
                     .catch(err => {
                         console.error('Error sending Hello:', err.toString());
-                        handleHelloResponse(null);
+                        handleHelloResponse(null, null);
                     });
             };
 
@@ -177,6 +187,11 @@
                     });
             };
 
+            const sendAudio = async (byteArray) => {
+                let chatId = document.getElementById('default-chat-id').value;
+                await connection.invoke('SendAudio', chatId, generateRandomId(), byteArray);
+            };
+
             const closeChat = (chatId) => {
                 const chat = document.getElementById('chat-' + chatId);
                 chat.remove();
@@ -189,7 +204,8 @@
             window.chatsComponent = {
                 tryCancelMessage: tryCancelMessage,
                 sendMessage: sendMessage,
-                closeChat: closeChat
+                closeChat: closeChat,
+                sendAudio: sendAudio
             };
 
             const logError = (message, error) => {

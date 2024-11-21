@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Economy.Common;
 using Economy.Memory.Models.EventSourcing;
 using Economy.Memory.Models.State;
 
@@ -8,7 +9,7 @@ using Serialization;
 using Repositories;
 using System.Text.Json;
 
-public class State
+public class State : IState
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {

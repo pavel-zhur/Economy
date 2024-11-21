@@ -1,4 +1,4 @@
-using Economy.Web.Hubs.Models;
+using Economy.Engine.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;

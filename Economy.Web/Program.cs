@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
+using Economy.Implementation;
 using Economy.UserStorage;
 using Economy.Web.Hubs;
 using Economy.Web.Tools;
@@ -15,13 +16,11 @@ builder.Services
 
 builder.Services
     .AddAudioTranscriptionService(builder.Configuration)
-    .AddFinancialKernel<UserDataStorage>(builder.Configuration)
+    .AddImplementation<UserDataStorage, FinancialPlugin>(builder.Configuration)
     .AddHttpContextAccessor()
     .AddUserStorage<GoogleAuthService>(builder.Configuration)
     .AddSingleton<ChatsService>()
     .AddSingleton<ChatsRenderer>();
-
-builder.Services.AddControllers();
 
 builder.Services.AddAuthentication(options =>
 {

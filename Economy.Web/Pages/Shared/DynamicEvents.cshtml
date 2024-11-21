@@ -1,10 +1,11 @@
 ﻿@page
 @model Economy.Web.Pages.EventsModel
-@using Economy.AiInterface.Scope
-@inject StateFactory StateFactory
+@using Economy.Engine
+@using Economy.Memory.Containers.State
+@inject StateFactory<State> StateFactory
 
 @{
-    var state = await StateFactory.Get();
+    var state = await StateFactory.GetState();
 }
 
 @foreach (var @event in state.Events.AsEnumerable().Reverse())

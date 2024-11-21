@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
 using OpenAI.Audio;
 
-namespace Economy.AiInterface.Transcription;
+namespace Economy.AiInterface.Services;
 
-public class TranscriptionService(IOptions<AiInterfaceOptions> aiInterfaceOptions)
+public class AiTranscription(IOptions<AiInterfaceOptions> aiInterfaceOptions)
 {
     public async Task<string> Transcribe(Stream stream)
     {

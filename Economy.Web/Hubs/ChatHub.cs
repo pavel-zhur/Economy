@@ -1,57 +1,56 @@
-using Economy.AiInterface.Scope;
+using Economy.Engine;
+using Economy.Engine.Models;
+using Economy.Implementation;
 using Economy.Memory.Containers.State;
 using Economy.UserStorage;
-using Economy.Web.Hubs.Models;
 using Economy.Web.Services;
-using Economy.Web.Tools;
 using Microsoft.AspNetCore.SignalR;
-using Exception = System.Exception;
 
 namespace Economy.Web.Hubs;
 
-public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRenderer chatsRenderer, IUserDataStorage userDataStorage, IHubContext<ChatHub> hubContext, FactoriesMemory factoriesMemory) : Hub
+public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRenderer chatsRenderer, IHubContext<ChatHub> hubContext, StateFactory<State> stateFactory, IServiceScopeFactory serviceScopeFactory) : Hub
 {
     public async Task SendMessage(Guid chatId, string messageId, string message)
     {
         await Task.Delay(1000);
 
-        await ProcessSafe(Context.ConnectionId, async (userId, state) =>
+        await ProcessSafe(Context.ConnectionId, async context =>
         {
-            await chatsService.GotMessage(state, userId, chatId, messageId, message);
+            await chatsService.GotMessage(context, chatId, messageId, message);
         });
     }
 
     public async Task SendAudio(Guid chatId, string messageId, byte[] audioData)
     {
-        await ProcessSafe(Context.ConnectionId, async (userId, state) =>
+        await ProcessSafe(Context.ConnectionId, async context =>
         {
-            await chatsService.GotAudio(state, userId, chatId, messageId, audioData);
+            await chatsService.GotAudio(context, chatId, messageId, audioData);
         });
     }
 
     public async Task Hello()
     {
         var connectionId = Context.ConnectionId;
-        await ProcessSafe(connectionId, async (userId, state) =>
+        await ProcessSafe(connectionId, async context =>
         {
-            var stateModel = await chatsService.GetState(state, userId);
-            await RespondSafe(connectionId, ChatHubClientMethods.HelloResponse, stateModel);
+            var stateModel = chatsService.GetState(context);
+            await RespondHello(connectionId, stateModel);
         });
     }
 
     public async Task TryCancel(Guid chatId, string messageId)
     {
-        await ProcessSafe(Context.ConnectionId, async (userId, _) =>
+        await ProcessSafe(Context.ConnectionId, async context =>
         {
-            await chatsService.TryCancel(userId, chatId, messageId);
+            await chatsService.TryCancel(context, chatId, messageId);
         });
     }
 
     public async Task CloseChat(Guid chatId)
     {
-        await ProcessSafe(Context.ConnectionId, async (userId, state) =>
+        await ProcessSafe(Context.ConnectionId, async context =>
         {
-            await chatsService.CloseChat(state, userId, chatId);
+            await chatsService.CloseChat(context, chatId);
         });
     }
 
@@ -60,7 +59,7 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRe
         await base.OnConnectedAsync();
         logger.LogInformation($"User {Context.UserIdentifier} connected");
 
-        await ProcessSafe(Context.ConnectionId, (_, _) => Task.CompletedTask);
+        await ProcessSafe(Context.ConnectionId, _ => Task.CompletedTask);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -69,7 +68,50 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRe
         logger.LogInformation($"User {Context.UserIdentifier} disconnected");
     }
 
-    private async Task ProcessSafe(string connectionId, Func<string, State, Task> action)
+    private async void ProcessDetached(string connectionId, string userId, Func<ChatsServiceContext<State, ChatInitializer>, Task> action)
+    {
+        try
+        {
+            using var scope = serviceScopeFactory.CreateScope();
+            var userData = await stateFactory.GetUserData();
+            var scopeStateFactory = scope.ServiceProvider.GetRequiredService<StateFactory<State>>();
+            scopeStateFactory.InitializeDetached(userData);
+            var chatsServiceContext = new ChatsServiceContext<State, ChatInitializer>
+            {
+                ChatInitializer = scope.ServiceProvider.GetRequiredService<ChatInitializer>(),
+                UserData = userData,
+                UserId = userId,
+                SendUpdate = async state => await RespondHello(hubContext.Clients.User(userId), state),
+            };
+
+            try
+            {
+                await action(chatsServiceContext);
+            }
+            catch (Exception e) when (e is not ReauthenticationNeededException)
+            {
+                logger.LogError(e, "Exception processing the incoming chat hub message.");
+
+                try
+                {
+                    var stateModel = chatsService.GetState(chatsServiceContext);
+                    await RespondHello(
+                        connectionId, 
+                        stateModel);
+                }
+                catch (Exception e2)
+                {
+                    logger.LogError(e2, "Exception sending the hello response after an error.");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Global error in the detached scope.");
+        }
+    }
+
+    private async Task ProcessSafe(string connectionId, Func<ChatsServiceContext<State, ChatInitializer>, Task> action)
     {
         try
         {
@@ -79,23 +121,8 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRe
             }
 
             var userId = Context.UserIdentifier ?? throw new ReauthenticationNeededException("Authentication check 2 failed.");
-
-            var (state, _) = await factoriesMemory.GetOrCreate(userDataStorage);
             
-            Task.Delay(1000).ContinueWith(async _ => await action(userId, state)).Unwrap().ContinueWith(async t =>
-            {
-                logger.LogError(t.Exception, "Exception processing the incoming chat hub message.");
-
-                try
-                {
-                    var stateModel = await chatsService.GetState(state, userId);
-                    await RespondSafe(connectionId, ChatHubClientMethods.HelloResponse, stateModel);
-                }
-                catch (Exception e)
-                {
-                    logger.LogError(e, "Exception sending the hello response after an error.");
-                }
-            }, TaskContinuationOptions.OnlyOnFaulted);
+            ProcessDetached(connectionId, userId, action);
         }
         catch (ReauthenticationNeededException)
         {
@@ -107,41 +134,16 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRe
             {
                 logger.LogError(e, "Exception sending the reauthentication response.");
             }
-            finally
-            {
-                Context.Abort();
-            }
         }
         catch (Exception e)
         {
             logger.LogError(e, "Fatal exception processing the incoming chat hub message.");
-            await RespondSafe(connectionId, ChatHubClientMethods.HelloResponse, await GetFatalErrorHelloResponse(), "fatal error");
-            Context.Abort();
+            var fatalErrorHelloResponse = chatsService.GetFatalErrorHelloResponse();
+            await RespondHello(
+                connectionId, 
+                fatalErrorHelloResponse,
+                "fatal error");
         }
-    }
-
-    private async Task<StateModel> GetFatalErrorHelloResponse()
-    {
-        IReadOnlyList<ChatModel> chats = [
-            new(
-                Guid.NewGuid(),
-                [
-                    new(
-                        DateTime.UtcNow,
-                        MessageType.ServerText,
-                        null,
-                        "A server error occurred. A page refresh could help.",
-                        null,
-                        SystemMessageSeverity.Error)
-                ],
-                ChatStatus.FatalError
-            )
-        ];
-
-        return new(
-            0,
-            chats,
-            await chatsRenderer.RenderChatsToHtmlAsync(chats));
     }
 
     private async Task RespondAuthenticationNeeded(string connectionId)
@@ -149,11 +151,28 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRe
         await RespondSafe(connectionId, ChatHubClientMethods.Authenticate);
     }
 
-    private async Task RespondSafe(string connectionId, string method, object? arg1 = null, string? useCase = "default")
+    private async Task RespondHello(IClientProxy clientProxy, StateModel stateModel, string? useCase = "default")
     {
         try
         {
-            await hubContext.Clients.Client(connectionId).SendAsync(method, arg1);
+            await clientProxy.SendAsync(ChatHubClientMethods.HelloResponse, stateModel, await chatsRenderer.RenderChatsToHtmlAsync(stateModel.Chats));
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Exception sending the {method} response, use case {useCase}.", ChatHubClientMethods.HelloResponse, useCase);
+        }
+    }
+
+    private async Task RespondHello(string connectionId, StateModel stateModel, string? useCase = "default")
+    {
+        await RespondHello(hubContext.Clients.Client(connectionId), stateModel, useCase);
+    }
+
+    private async Task RespondSafe(string connectionId, string method, object? arg1 = null, object? arg2 = null, string? useCase = "default")
+    {
+        try
+        {
+            await hubContext.Clients.Client(connectionId).SendAsync(method, arg1, arg2);
         }
         catch (Exception e)
         {

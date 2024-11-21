@@ -1,11 +1,12 @@
 ﻿@page
-@inject StateFactory StateFactory
-@using Economy.AiInterface.Scope
+@inject StateFactory<State> StateFactory
+@using Economy.Engine
+@using Economy.Memory.Containers.State
 @using Economy.Memory.Tools
 @model Economy.Web.Pages.BasicsModel
 @{
     ViewData["Title"] = "Basics";
-    var state = await StateFactory.Get();
+    var state = await StateFactory.GetState();
 }
 
 <h3>Wallets</h3>
