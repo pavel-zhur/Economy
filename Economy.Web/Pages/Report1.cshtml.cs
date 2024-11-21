@@ -38,11 +38,7 @@ public class Report1Model(StateFactory stateFactory) : PageModel
         WeekStart ??= DayOfWeek.Saturday;
         From ??= new(2024, 10, 31);
         To ??= new(2025, 3, 31);
-
-        if (FundsPlanIds == null)
-        {
-            FundsPlanIds = "2";
-        }
+        FundsPlanIds ??= "2";
         
         FundsPlanIdsParsed = FundsPlanIds.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Select(x => int.TryParse(x, out var y) ? y : (int?)null)
