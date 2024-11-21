@@ -1,3 +1,4 @@
+using Economy.AiInterface.Services;
 using Economy.Engine;
 using Economy.Engine.Models;
 using Economy.Implementation;
@@ -82,6 +83,8 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRe
                 UserData = userData,
                 UserId = userId,
                 SendUpdate = async state => await RespondHello(hubContext.Clients.User(userId), state),
+                AiCompletion = scope.ServiceProvider.GetRequiredService<AiCompletion>(),
+                AiTranscription = scope.ServiceProvider.GetRequiredService<AiTranscription>(),
             };
 
             try

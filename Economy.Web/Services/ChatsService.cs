@@ -33,7 +33,13 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
     public async Task GotAudio(ChatsServiceContext<State, ChatInitializer> context, Guid chatId, string messageId, byte[] audioData)
     {
         CancellationTokenSource cancellationTokenSource = new();
-        var messageModel = new MessageModel(DateTime.UtcNow, MessageType.UserVoice, messageId, $"({audioData.Length / 1024:N1} KB)", UserMessageStatus.Thinking, null);
+        var messageModel = new MessageModel(
+            DateTime.UtcNow,
+            MessageType.UserVoice,
+            messageId,
+            null,
+            UserMessageStatus.Transcribing,
+            null);
 
         AddUserMessage(context, chatId, messageModel, chatStatus =>
         {
@@ -131,6 +137,25 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
         try
         {
             var chat = context.UserData.GetChat(chatId, out chatIndex);
+
+            if (new[]
+                {
+                    chat.Messages[^1].Type == MessageType.UserVoice,
+                    audioData != null
+                }.Distinct().Single())
+            {
+                using var audioStream = new MemoryStream(audioData!);
+                var text = await context.AiTranscription.Transcribe(audioStream);
+
+                lock (context.UserData.ChatsLock)
+                {
+                    chat.Messages[^1] = chat.Messages[^1] with
+                    {
+                        Text = text,
+                        Status = UserMessageStatus.Thinking,
+                    };
+                }
+            }
 
             await SendUpdate(context);
 
