@@ -132,7 +132,6 @@
                         // Prevent the keyboard from showing by making the textbox readonly
                         textbox.setAttribute('readonly', true);
                         textbox.focus();
-                        console.log('focused.');
                         // Remove the readonly attribute to allow user input
                         textbox.removeAttribute('readonly');
                     }
