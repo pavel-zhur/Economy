@@ -68,17 +68,17 @@
     margin-bottom: 10px;
 }
 
-    #connectionStatus span {
+    #connectionStatus span.disconnected {
         color: red;
     }
 
-        #connectionStatus span.connected {
-            color: green;
-        }
+    #connectionStatus span.connected {
+        color: green;
+    }
 
-        #connectionStatus span.reconnecting {
-            color: orange;
-        }
+    #connectionStatus span.connecting {
+        color: orange;
+    }
 
 ::deep .message-type-AssistantText {
 }

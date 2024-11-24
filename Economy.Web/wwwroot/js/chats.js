@@ -1,6 +1,7 @@
 ﻿document.addEventListener('DOMContentLoaded', function () {
     const connectionStatusText = document.getElementById('statusText');
     const chatsContainer = document.getElementById('chatsContainer');
+    const connectButton = document.getElementById('connectButton');
     let connection;
 
     const initializeConnection = () => {
@@ -22,15 +23,21 @@
 
             // Event handlers
             connection.onclose(error => {
-                handleConnectionClose(error);
+                updateConnectionStatus('Disconnected');
+                hideAll();
+                logError('Connection closed', error);
             });
 
             connection.onreconnecting(error => {
-                handleConnectionReconnecting(error);
+                updateConnectionStatus('Connecting');
+                hideAll();
+                logError('Connection reconnecting', error);
             });
 
             connection.onreconnected(connectionId => {
-                handleConnectionReconnected(connectionId);
+                updateConnectionStatus('Connected');
+                sendHello();
+                logInfo('Reconnected with connectionId:', connectionId);
             });
 
             connection.on('HelloResponse', (state, renderedChats) => {
@@ -45,7 +52,16 @@
                 }
             });
 
-            updateConnectionStatus('Reconnecting');
+            connect();
+        } catch (err) {
+            console.error('Error initializing SignalR connection:', err);
+        }
+    };
+
+    const connect = () => {
+        // if disconnected
+        if (connection.state === signalR.HubConnectionState.Disconnected) {
+            updateConnectionStatus('Connecting');
             connection.start()
                 .then(() => {
                     updateConnectionStatus('Connected');
@@ -54,29 +70,16 @@
                 })
                 .catch(err => {
                     console.error('Connection error:', err.toString());
+                    updateConnectionStatus('Disconnected');
                 });
-        } catch (err) {
-            console.error('Error initializing SignalR connection:', err);
+        } else {
+            console.info('SignalR connection already established, connect button click ignored.');
         }
     };
 
-    const handleConnectionClose = (error) => {
-        updateConnectionStatus('Disconnected');
-        disableInputs();
-        logError('Connection closed', error);
-    };
-
-    const handleConnectionReconnecting = (error) => {
-        updateConnectionStatus('Reconnecting');
-        disableInputs();
-        logError('Connection reconnecting', error);
-    };
-
-    const handleConnectionReconnected = (connectionId) => {
-        updateConnectionStatus('Connected');
-        sendHello();
-        logInfo('Reconnected with connectionId:', connectionId);
-    };
+    const hideAll = () => {
+        renderChatView(null);
+    }
 
     const handleHelloResponse = (state, renderedChats) => {
         // Handle versioning or other properties if needed in the future
@@ -205,13 +208,8 @@
         connection.invoke('Hello')
             .catch(err => {
                 console.error('Error sending Hello:', err.toString());
-                handleHelloResponse(null, null);
+                hideAll();
             });
-    };
-
-    const disableInputs = () => {
-        const sendButtons = document.querySelectorAll('.sendButton.server-enabled');
-        sendButtons.forEach(button => button.disabled = true);
     };
 
     const generateRandomId = () => {
@@ -287,4 +285,9 @@
 
     // Initial call to set the correct placement
     updateOffcanvasPlacement();
+
+    // Bind the connect button
+    connectButton.addEventListener('click', () => {
+        connect();
+    });
 });
