@@ -116,7 +116,7 @@
 
             updateOffcanvasPlacement();
 
-            // Reinitialize offcanvas elements and rstore offcanvas state
+            // Reinitialize offcanvas elements and restore offcanvas state
             const offcanvasElements = document.querySelectorAll('.offcanvas-chat');
             offcanvasElements.forEach(offcanvasElement => {
                 const chatId = offcanvasElement.id.replace('chatOffcanvas-', '');
@@ -129,7 +129,12 @@
                 offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
                     const textbox = offcanvasElement.querySelector('input[type="text"]');
                     if (textbox) {
+                        // Prevent the keyboard from showing by making the textbox readonly
+                        textbox.setAttribute('readonly', true);
                         textbox.focus();
+                        console.log('focused.');
+                        // Remove the readonly attribute to allow user input
+                        textbox.removeAttribute('readonly');
                     }
 
                     const chatButtons = document.querySelectorAll('.toggle-chat-button');
