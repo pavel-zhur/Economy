@@ -78,6 +78,17 @@
         if (renderedChats) {
             renderChatView(renderedChats);
         }
+
+        try {
+            if (state.chats.some(chat => chat.status === 'Processing')) {
+                window.speedUpAnimation();
+            } else {
+                window.slowDownAnimation();
+            }
+        }
+        catch (err) {
+            console.error('Error managing animation: ' + error);
+        }
     };
 
     const renderChatView = (renderedView) => {
