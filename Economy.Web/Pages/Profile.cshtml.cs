@@ -20,14 +20,14 @@ public class ProfileModel : PageModel
     {
     }
 
-    public IActionResult OnPostLogin()
+    public IActionResult OnGetLogin()
     {
         var redirectUrl = Url.Page("/Index");
         var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
         return Challenge(properties, GoogleDefaults.AuthenticationScheme);
     }
 
-    public async Task<IActionResult> OnPostLogout()
+    public async Task<IActionResult> OnGetLogout()
     {
         await _googleAuthService.RevokeTokensAsync();
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
