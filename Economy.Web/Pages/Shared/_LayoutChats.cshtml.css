@@ -149,10 +149,10 @@
     animation: rotate-segment 8s linear infinite;
 }
 
-    .circular-animation .mic-button {
-        position: relative;
-        z-index: 1;
-    }
+.circular-animation .mic-button {
+    position: relative;
+    z-index: 1;
+}
 
 @keyframes rotate-segment {
     from {
@@ -202,23 +202,6 @@
     flex-grow: 1;
     overflow-y: auto;
 }
-
-#connectionStatus {
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-    #connectionStatus span.disconnected {
-        color: red;
-    }
-
-    #connectionStatus span.connected {
-        color: green;
-    }
-
-    #connectionStatus span.connecting {
-        color: orange;
-    }
 
 ::deep .message-type-AssistantText {
 }

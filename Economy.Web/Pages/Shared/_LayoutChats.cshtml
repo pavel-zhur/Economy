@@ -1,0 +1,20 @@
+﻿<div class="all-buttons-container">
+    <div class="mic-buttons-container mic-buttons-container-idle" id="micButtonsContainer">
+        <div class="circular-animation">
+            <button class="btn mic-button" type="button" id="micStartButton">
+                <i class="fas fa-microphone"></i>
+                <i class="fas fa-microphone-lines"></i>
+                <i class="fas fa-microphone-slash"></i>
+            </button>
+        </div>
+        <button class="btn mic-button" type="button" id="micCancelButton">
+            <i class="fas fa-ban"></i>
+        </button>
+        <div class="circular-progress circular-progress-show" style="--progress: 75;" id="silenceProgress">
+            <button class="btn btn-success mic-button" type="button" id="micSubmitButton">
+                <i class="fas fa-check"></i>
+            </button>
+        </div>
+    </div>
+    <div id="chatsContainer" class="chat-buttons-container"></div>
+</div>

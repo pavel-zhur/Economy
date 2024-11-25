@@ -51,6 +51,7 @@
         micButtonsContainer.classList.remove('mic-buttons-container-recording');
         micButtonsContainer.classList.remove('mic-buttons-container-locked');
         micButtonsContainer.classList.remove('mic-buttons-container-idle');
+        micButtonsContainer.classList.remove('mic-buttons-container-denied');
         micButtonsContainer.classList.remove('mic-buttons-container-initializing');
         micButtonsContainer.classList.add(`mic-buttons-container-${status}`);
     };

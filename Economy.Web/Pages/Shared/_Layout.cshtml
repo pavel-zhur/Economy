@@ -22,7 +22,7 @@
                     <a class="navbar-brand" asp-area="" asp-page="/Index">
                         Economy → @title
                     </a>
-                    <button id="connectionIndicator" class="btn btn-connection-indicator connecting" onclick="alert('clicked')"></button>
+                    <partial name="_LayoutConnectionIndicator" />
                 </div>
                 <button class="navbar-toggler bg-black" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -58,11 +58,15 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/smooth_animation_control.js"></script>
+    <script src="~/js/smooth_animation_control.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr-protocol-msgpack@8.0.7/dist/browser/signalr-protocol-msgpack.min.js"></script>
+    <script src="~/js/transcription.js" asp-append-version="true"></script>
+    <script src="~/js/chats.js" asp-append-version="true"></script>
     
     @await RenderSectionAsync("BodyEnd", required: false)
     @await RenderSectionAsync("Scripts", required: false)
+    
+    <partial name="_LayoutChats" />
 </body>
 </html>

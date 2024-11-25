@@ -1,7 +1,6 @@
 ﻿document.addEventListener('DOMContentLoaded', function () {
-    const connectionStatusText = document.getElementById('statusText');
+    const connectionIndicator = document.getElementById('connectionIndicator');
     const chatsContainer = document.getElementById('chatsContainer');
-    const connectButton = document.getElementById('connectButton');
     let connection;
 
     const initializeConnection = () => {
@@ -23,19 +22,19 @@
 
             // Event handlers
             connection.onclose(error => {
-                updateConnectionStatus('Disconnected');
+                updateConnectionStatus('disconnected');
                 hideAll();
                 logError('Connection closed', error);
             });
 
             connection.onreconnecting(error => {
-                updateConnectionStatus('Connecting');
+                updateConnectionStatus('connecting');
                 hideAll();
                 logError('Connection reconnecting', error);
             });
 
             connection.onreconnected(connectionId => {
-                updateConnectionStatus('Connected');
+                updateConnectionStatus('connected');
                 sendHello();
                 logInfo('Reconnected with connectionId:', connectionId);
             });
@@ -61,16 +60,16 @@
     const connect = () => {
         // if disconnected
         if (connection.state === signalR.HubConnectionState.Disconnected) {
-            updateConnectionStatus('Connecting');
+            updateConnectionStatus('connecting');
             connection.start()
                 .then(() => {
-                    updateConnectionStatus('Connected');
+                    updateConnectionStatus('connected');
                     console.info('SignalR connection established.');
                     sendHello();
                 })
                 .catch(err => {
                     console.error('Connection error:', err.toString());
-                    updateConnectionStatus('Disconnected');
+                    updateConnectionStatus('disconnected');
                 });
         } else {
             console.info('SignalR connection already established, connect button click ignored.');
@@ -198,10 +197,8 @@
     };
 
     const updateConnectionStatus = (status) => {
-        connectionStatusText.textContent = status;
-        const statusClass = status.toLowerCase();
-        connectionStatusText.className = '';
-        connectionStatusText.classList.add(statusClass);
+        connectionIndicator.classList.remove('connected', 'connecting', 'disconnected');
+        connectionIndicator.classList.add(status);
     };
 
     const sendHello = () => {
@@ -287,7 +284,7 @@
     updateOffcanvasPlacement();
 
     // Bind the connect button
-    connectButton.addEventListener('click', () => {
+    connectionIndicator.addEventListener('click', () => {
         connect();
     });
 });
