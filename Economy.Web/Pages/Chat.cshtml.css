@@ -54,17 +54,25 @@
     box-shadow: none;
 }
 
+.mic-buttons-container-denied #micStartButton {
+    background-color: #dababa;
+}
+
 .mic-buttons-container.mic-buttons-container-initializing #micStartButton {
     animation: colorChange 0.7s ease-in-out infinite alternate;
 }
 
-.mic-buttons-container:not(.mic-buttons-container-locked) #micStartButton .fa-microphone,
-.mic-buttons-container.mic-buttons-container-locked #micStartButton .fa-microphone-lines {
+.mic-buttons-container:not(.mic-buttons-container-locked):not(.mic-buttons-container-denied) #micStartButton .fa-microphone,
+.mic-buttons-container.mic-buttons-container-locked #micStartButton .fa-microphone-lines,
+.mic-buttons-container.mic-buttons-container-denied #micStartButton .fa-microphone-slash {
     display: block;
 }
 
+
+.mic-buttons-container.mic-buttons-container-locked #micStartButton .fa-microphone,
+.mic-buttons-container.mic-buttons-container-denied #micStartButton .fa-microphone,
 .mic-buttons-container:not(.mic-buttons-container-locked) #micStartButton .fa-microphone-lines,
-.mic-buttons-container.mic-buttons-container-locked #micStartButton .fa-microphone {
+.mic-buttons-container:not(.mic-buttons-container-denied) #micStartButton .fa-microphone-slash {
     display: none;
 }
 

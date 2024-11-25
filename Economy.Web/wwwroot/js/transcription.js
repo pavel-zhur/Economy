@@ -7,6 +7,7 @@
     let silenceTimer;
     let silenceDetection = true;
     let isRecording = false;
+    let shouldSend = false;
 
     const micStartButton = document.getElementById('micStartButton');
     const micCancelButton = document.getElementById('micCancelButton');
@@ -23,6 +24,7 @@
             console.log('Starting recording');
             isRecording = true;
             silenceDetection = true;
+            shouldSend = true;
             startRecording();
         }
     });
@@ -31,6 +33,7 @@
         if (isRecording) {
             console.log('Cancelling recording');
             isRecording = false;
+            shouldSend = false;
             mediaRecorder.stop();
         }
     });
@@ -39,6 +42,7 @@
         if (isRecording) {
             console.log('Stopping recording');
             isRecording = false;
+            shouldSend = true;
             mediaRecorder.stop();
         }
     });
@@ -59,7 +63,14 @@
         // Clear any existing silence timer
         clearTimeout(silenceTimer);
 
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).catch(error => {
+            console.error('Error accessing microphone:', error);
+            setRecordingStatus('denied');
+            isRecording = false;
+            return;
+        });
+        if (!stream) return;
+
         mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
         const audioChunks = [];
 
@@ -151,6 +162,12 @@
             }
         };
 
+        mediaRecorder.onerror = event => {
+            console.error('MediaRecorder error:', event.error);
+            setRecordingStatus('idle');
+            isRecording = false;
+        };
+
         mediaRecorder.ondataavailable = event => {
             console.log('ondataavailable');
             audioChunks.push(event.data);
@@ -161,10 +178,16 @@
 
             // Stop all tracks of the media stream
             stream.getTracks().forEach(track => track.stop());
+            audioContext.close();
 
             // Reset UI immediately
             setSilenceProgress(0);
             setRecordingStatus('idle');
+
+            if (!shouldSend) {
+                console.log('Recording was cancelled. Data will not be sent.');
+                return; // Exit if recording was cancelled
+            }
 
             // Convert audio blob to byte array
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
@@ -180,7 +203,6 @@
             }
 
             // Reset status bar
-            setRecordingStatus('idle');
             micStartButton.style.backgroundColor = '';
         };
 
