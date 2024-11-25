@@ -54,6 +54,7 @@
         micButtonsContainer.classList.remove('mic-buttons-container-denied');
         micButtonsContainer.classList.remove('mic-buttons-container-initializing');
         micButtonsContainer.classList.add(`mic-buttons-container-${status}`);
+        micStartButton.style.backgroundColor = '';
     };
 
     async function startRecording() {
@@ -184,6 +185,7 @@
             // Reset UI immediately
             setSilenceProgress(0);
             setRecordingStatus('idle');
+            isRecording = false;
 
             if (!shouldSend) {
                 console.log('Recording was cancelled. Data will not be sent.');
