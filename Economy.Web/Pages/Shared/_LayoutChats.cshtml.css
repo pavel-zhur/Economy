@@ -190,7 +190,7 @@
     bottom: 0;
     background-color: inherit; /* Ensures the background matches the offcanvas */
     padding-top: 10px;
-    /*padding-bottom: 10px;*/
+    padding-bottom: 10px;
     z-index: 10; /* Keeps the input group above other elements */
 }
 

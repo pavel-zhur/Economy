@@ -93,7 +93,7 @@
 
     const renderChatView = (renderedView) => {
         try {
-            // Store current input values, focused element, and offcanvas state
+            // Store current input values, focused element, and active offcanvas
             const inputValues = {};
             const inputs = chatsContainer.querySelectorAll('input[type="text"]:not([disabled])');
             let activeOffcanvasId = null;
@@ -107,6 +107,14 @@
                 inputValues[input.id] = input.value;
             });
 
+            // Preserve scroll positions of chat-history elements
+            const scrollPositions = {};
+            const chatHistories = chatsContainer.querySelectorAll('.chat-history');
+            chatHistories.forEach(history => {
+                const chatId = history.id.replace('chatHistory-', '');
+                const isScrolledToBottom = Math.abs(history.scrollHeight - history.clientHeight - history.scrollTop) < 10;
+                scrollPositions[chatId] = isScrolledToBottom ? 'bottom' : history.scrollTop;
+            });
 
             const oldOffcanvasElements = document.querySelectorAll('.offcanvas-chat');
             oldOffcanvasElements.forEach(offcanvasElement => {
@@ -121,13 +129,24 @@
 
             updateOffcanvasPlacement();
 
-            // Reinitialize offcanvas elements and restore offcanvas state
+            // Reinitialize offcanvas elements and restore their state
             const offcanvasElements = document.querySelectorAll('.offcanvas-chat');
             offcanvasElements.forEach(offcanvasElement => {
                 const chatId = offcanvasElement.id.replace('chatOffcanvas-', '');
                 const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasElement);
                 if (offcanvasInstance) {
                     offcanvasInstance.dispose();
+                }
+
+                // Restore scroll position for chat-history
+                const chatHistory = offcanvasElement.querySelector('.chat-history');
+                if (chatHistory) {
+                    const scrollPosition = scrollPositions[chatId];
+                    if (scrollPosition === 'bottom') {
+                        chatHistory.scrollTop = chatHistory.scrollHeight;
+                    } else if (typeof scrollPosition === 'number') {
+                        chatHistory.scrollTop = scrollPosition;
+                    }
                 }
 
                 // Subscribe to the 'shown.bs.offcanvas' event to focus the textbox
