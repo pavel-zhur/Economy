@@ -5,70 +5,35 @@ const SILENCE_TIMEOUT = 1300; // 1.3 seconds
 const HOLD_THRESHOLD = 300; // 300ms
 
 let mediaRecorder;
-let holdTimeout;
-let isHolding = false;
 let silenceTimer;
 let idleProgress = 0;
+let silenceDetection = true;
 
-const button = document.getElementById('transcribeButton');
+const transcribeButton = document.getElementById('transcribeButton');
+const micLockButton = document.getElementById('micLock');
 const statusBar = document.getElementById('statusBar');
+const mic1Button = document.getElementById('micStartButton');
+const silenceProgress = document.getElementById('silenceProgress');
 
-const startHoldTimeout = () => {
-    console.log('startHoldTimeout');
-    holdTimeout = setTimeout(() => {
-        isHolding = true;
-        console.log('Hold threshold reached, starting recording');
-        startRecording(false);
-    }, HOLD_THRESHOLD);
-};
+micLockButton.addEventListener('click', () => {
+    silenceDetection = false;
+});
 
-const clearHoldTimeout = () => {
-    console.log('clearHoldTimeout');
-    clearTimeout(holdTimeout);
-    if (isHolding) {
+transcribeButton.addEventListener('click', () => {
+    if (transcribeButton.innerText === BUTTON_TEXT_STOP) {
         if (mediaRecorder && mediaRecorder.state === 'recording') {
             console.log('Stopping recording');
             mediaRecorder.stop();
         }
-        isHolding = false;
-    }
-};
-
-button.addEventListener('mousedown', () => {
-    console.log('mousedown');
-    startHoldTimeout();
-});
-button.addEventListener('mouseup', () => {
-    console.log('mouseup');
-    clearHoldTimeout();
-});
-
-button.addEventListener('touchstart', () => {
-    console.log('touchstart');
-    startHoldTimeout();
-});
-button.addEventListener('touchend', () => {
-    console.log('touchend');
-    clearHoldTimeout();
-});
-
-button.addEventListener('click', () => {
-    console.log('click');
-    if (!isHolding) {
-        if (button.innerText === BUTTON_TEXT_STOP) {
-            if (mediaRecorder && mediaRecorder.state === 'recording') {
-                console.log('Stopping recording from click');
-                mediaRecorder.stop();
-            }
-        } else {
-            console.log('Starting recording from click');
-            startRecording(true);
-        }
+    } else {
+        console.log('Starting recording');
+        silenceDetection = true;
+        startRecording();
     }
 });
 
-async function startRecording(withSilenceDetection) {
-    if (button.innerText === BUTTON_TEXT_STOP) {
+async function startRecording() {
+    if (transcribeButton.innerText === BUTTON_TEXT_STOP) {
         return;
     }
 
@@ -93,15 +58,43 @@ async function startRecording(withSilenceDetection) {
 
     let silenceStartTime;
 
+    const hexToRgb = hex => {
+        // Remove the hash at the start if it's there
+        hex = hex.replace(/^#/, '');
+
+        // Parse the r, g, b values
+        let bigint = parseInt(hex, 16);
+        let r = (bigint >> 16) & 255;
+        let g = (bigint >> 8) & 255;
+        let b = bigint & 255;
+
+        return { r, g, b };
+    }
+
+    const setVolumeColor = colorIntensity => {
+        const startColor = hexToRgb('#ffb0c8');
+        const endColor = hexToRgb('#9c002f');
+
+        const r = Math.round(startColor.r + colorIntensity * (endColor.r - startColor.r));
+        const g = Math.round(startColor.g + colorIntensity * (endColor.g - startColor.g));
+        const b = Math.round(startColor.b + colorIntensity * (endColor.b - startColor.b));
+
+        mic1Button.style.backgroundColor = `rgb(${r}, ${g}, ${b})`; // Gradient from #ffb0c8 to #c4023d
+    }
+
+    const setSilenceProgress = progress => {
+        silenceProgress.style.setProperty('--progress', progress);
+    }
+
     const detectSilence = () => {
         analyser.getByteTimeDomainData(dataArray);
         const isSilent = dataArray.every(value => Math.abs(value - 128) < SILENCE_THRESHOLD * 128);
 
-        if (!isHolding && isSilent) {
+        if (silenceDetection && isSilent) {
             if (!silenceTimer) {
                 silenceStartTime = Date.now();
                 silenceTimer = setTimeout(() => {
-                    if (withSilenceDetection && mediaRecorder.state === 'recording') {
+                    if (mediaRecorder.state === 'recording') {
                         console.log('Silence detected, stopping recording');
                         mediaRecorder.stop();
                     }
@@ -113,8 +106,11 @@ async function startRecording(withSilenceDetection) {
                 const progress = Math.min(100, (elapsed / SILENCE_TIMEOUT) * 100);
                 if (progress > 10) {
                     statusBar.innerText = `Listening, Idle ${Math.floor(progress / 10) * 10}%...`;
+                    setSilenceProgress(progress);
                 } else {
-                    statusBar.innerText = 'Listening...';
+                    statusBar.innerText = 'Listening1...';
+                    setSilenceProgress(0);
+                    setVolumeColor(0);
                 }
             }
         } else {
@@ -122,18 +118,20 @@ async function startRecording(withSilenceDetection) {
             silenceTimer = null;
             idleProgress = 0;
 
-            // Reset status bar immediately when sound is detected
-            statusBar.innerText = 'Listening...';
-
-            // Calculate the average volume
-            const sum = dataArray.reduce((a, b) => a + Math.abs(b - 128), 0);
-            const average = sum / dataArray.length;
-            const intensity = Math.min(1, average / 128); // Normalize intensity to range [0, 1]
-
             if (mediaRecorder.state === 'recording') {
+                // Reset status bar immediately when sound is detected
+                statusBar.innerText = 'Listening2...';
+                setSilenceProgress(0);
+
+                // Calculate the average volume
+                const sum = dataArray.reduce((a, b) => a + Math.abs(b - 128), 0);
+                const average = sum / dataArray.length;
+                const intensity = Math.min(1, average / 128); // Normalize intensity to range [0, 1]
+
                 // Change background color based on intensity
-                const colorIntensity = Math.floor(Math.pow(intensity, 0.3) * 190);
-                button.style.backgroundColor = `rgb(255, ${255 - colorIntensity}, ${255 - colorIntensity})`; // Gradient from green to red
+                const colorIntensity = Math.min(1, Math.pow(intensity, 0.2) / .7); // Ensure colorIntensity does not exceed 1
+
+                setVolumeColor(colorIntensity);
             }
         }
 
@@ -154,9 +152,9 @@ async function startRecording(withSilenceDetection) {
         stream.getTracks().forEach(track => track.stop());
 
         // Reset UI immediately
-        button.innerText = BUTTON_TEXT_START;
-        button.style.backgroundColor = 'lightyellow';
+        transcribeButton.innerText = BUTTON_TEXT_START;
         statusBar.innerText = 'Transcribing...';
+        setSilenceProgress(0);
         statusBar.style.color = 'gray';
 
         // Convert audio blob to byte array
@@ -176,16 +174,16 @@ async function startRecording(withSilenceDetection) {
 
         // Reset status bar
         statusBar.innerText = 'Ready';
-        button.style.backgroundColor = '';
+        mic1Button.style.backgroundColor = '';
     };
 
     mediaRecorder.start();
 
     detectSilence();
 
-    // Change button text to "Recording... Stop"
-    button.innerText = BUTTON_TEXT_STOP;
+    // Change transcribeButton text to "Recording... Stop"
+    transcribeButton.innerText = BUTTON_TEXT_STOP;
     statusBar.innerText = 'Listening...';
     statusBar.style.color = 'green';
-    button.style.backgroundColor = ''; // Reset background color when starting a new recording
+    transcribeButton.style.backgroundColor = ''; // Reset background color when starting a new recording
 }

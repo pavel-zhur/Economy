@@ -3,26 +3,113 @@
     bottom: calc(var(--footer-height) + 1px);
 }
 
-.chat-buttons-container {
+.all-buttons-container {
     position: fixed;
-    bottom: 15px;
-    right: 15px;
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
     display: flex;
-    gap: 10px; /* Adjust the gap between buttons as needed */
+    gap: 10px;
+    z-index: 1060;
+    justify-content: space-between;
+}
+
+.mic-buttons-container {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: nowrap;
+    gap: 10px;
+}
+
+.chat-buttons-container {
+    display: flex;
+    gap: 10px;
+    flex-direction: row-reverse;
+    flex-wrap: wrap-reverse;
+    justify-content: flex-start;
+}
+
+.all-buttons-container ::deep .chat-button,
+.all-buttons-container ::deep .mic-button {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     z-index: 1060;
 }
 
-    .chat-buttons-container ::deep .chat-button {
+#micStartButton {
+    background-color: #ff3e79;
+    color: white;
+}
+
+#micCancelButton {
+    background-color: #ff8b4f;
+    color: white;
+}
+
+.circular-progress {
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+    .circular-progress.circular-progress-show::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: -4px -4px -4px -4px;
         border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        font-size: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        z-index: 1060;
+        background: conic-gradient(#ff8b4f calc(var(--progress) * 1%), transparent 0);
+        z-index: 0;
     }
+
+    .circular-progress .mic-button {
+        position: relative;
+        z-index: 1;
+    }
+
+.circular-animation {
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+    .circular-animation.circular-animation-show::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: -4px -4px -4px -4px;
+        border-radius: 50%;
+        background: conic-gradient(#9c002f 10%, transparent 0);
+        z-index: 0;
+        animation: rotate-segment 2.8s cubic-bezier(0.47, 0.11, 0.66, 0.95) infinite;
+    }
+
+    .circular-animation .mic-button {
+        position: relative;
+        z-index: 1;
+    }
+
+@keyframes rotate-segment {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 ::deep .special-close-button {
     background: none;

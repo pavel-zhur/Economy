@@ -8,7 +8,7 @@
 
 <div>
     <button>Txt (opens available empty chat)</button>
-    <button>Mic (records into open or empty)</button>
+    <button id="micLock">Mic Lock</button>
     <button id="transcribeButton">Mic auto (records into open or empty, auto-stop)</button>
     <div id="statusBar">Ready</div>
     <button id="connectButton">Connect</button>
@@ -22,5 +22,22 @@
 }
 
 @section BodyEnd {
-    <div id="chatsContainer" class="chat-buttons-container"></div>
+    <div class="all-buttons-container">
+        <div class="mic-buttons-container">
+            <div class="circular-animation circular-animation-show">
+                <button class="btn mic-button" type="button" id="micStartButton">
+                    <i class="fas fa-microphone"></i>
+                </button>
+            </div>
+            <button class="btn mic-button" type="button" id="micCancelButton">
+                <i class="fas fa-ban"></i>
+            </button>
+            <div class="circular-progress circular-progress-show" style="--progress: 75;" id="silenceProgress">
+                <button class="btn btn-success mic-button" type="button" id="micSubmitButton">
+                    <i class="fas fa-check"></i>
+                </button>
+            </div>
+        </div>
+        <div id="chatsContainer" class="chat-buttons-container"></div>
+    </div>
 }

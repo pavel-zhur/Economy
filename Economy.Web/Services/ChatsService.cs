@@ -189,7 +189,7 @@ public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hub
                 logger.LogInformation("The cancellation had been requested for {chatId}, but it was too late.", chatId);
             }
         }
-        catch (TaskCanceledException)
+        catch (Exception e) when (e is TaskCanceledException or OperationCanceledException)
         {
             logger.LogInformation("The cancellation is successful for {chatId}.", chatId);
 
