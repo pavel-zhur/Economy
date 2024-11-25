@@ -8,6 +8,8 @@
     var state = await StateFactory.GetState();
 }
 
+<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+
 @foreach (var @event in state.Events.AsEnumerable().Reverse())
 {
     <p>

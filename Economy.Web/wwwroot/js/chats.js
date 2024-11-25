@@ -80,6 +80,13 @@
         }
 
         try {
+            window.dispatchDataUpdatedEvent(state.latestRevision);
+        }
+        catch (err) {
+            console.error('Error dispatching dataUpdated event:', err);
+        }
+
+        try {
             if (state.chats.some(chat => chat.status === 'Processing')) {
                 window.speedUpAnimation();
             } else {

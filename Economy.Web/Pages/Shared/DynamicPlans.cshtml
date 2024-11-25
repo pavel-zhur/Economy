@@ -9,6 +9,8 @@
     var planTree = state.Repositories.Plans.GetPlanTree();
 }
 
+<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+
 <div class="table-fixed-header">
     <table class="table table-sm">
         <thead>

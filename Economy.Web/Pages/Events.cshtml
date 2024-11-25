@@ -10,45 +10,6 @@
     <button id="reload-button" class="btn btn-primary">Reload Events</button>
 </div>
 
-<div id="events-container" class="mt-4">
+<div id="dynamic-container" class="mt-4">
     <partial name="DynamicEvents" />
 </div>
-
-@section Scripts {
-    <script>
-        document.getElementById('reload-button').addEventListener('click', function() {
-            const reloadButton = document.getElementById('reload-button');
-            const eventsContainer = document.getElementById('events-container');
-
-            // Change button text and disable it
-            reloadButton.textContent = 'Reloading...';
-            reloadButton.disabled = true;
-
-            // Add reloading class to the container
-            eventsContainer.classList.add('reloading');
-
-            fetch('/Events?handler=Reload')
-                .then(response => response.text())
-                .then(html => {
-                    // Update the container with new content
-                    eventsContainer.innerHTML = html;
-
-                    // Reset button text and enable it
-                    reloadButton.textContent = 'Reload Events';
-                    reloadButton.disabled = false;
-
-                    // Remove reloading class
-                    eventsContainer.classList.remove('reloading');
-                })
-                .catch(error => {
-                    // Handle error: clear container and set button text to "Error"
-                    eventsContainer.innerHTML = '';
-                    reloadButton.textContent = 'Error';
-                    reloadButton.disabled = false;
-
-                    // Remove reloading class
-                    eventsContainer.classList.remove('reloading');
-                });
-        });
-    </script>
-}
