@@ -21,6 +21,11 @@
     gap: 10px;
 }
 
+    .mic-buttons-container:not(.mic-buttons-container-recording):not(.mic-buttons-container-locked) ::deep #micCancelButton,
+    .mic-buttons-container:not(.mic-buttons-container-recording):not(.mic-buttons-container-locked) ::deep .circular-progress {
+        display: none;
+    }
+
 .chat-buttons-container {
     display: flex;
     gap: 10px;
@@ -45,6 +50,32 @@
 #micStartButton {
     background-color: #ff3e79;
     color: white;
+    outline: none;
+    box-shadow: none;
+}
+
+.mic-buttons-container.mic-buttons-container-initializing #micStartButton {
+    animation: colorChange 0.7s ease-in-out infinite alternate;
+}
+
+.mic-buttons-container:not(.mic-buttons-container-locked) #micStartButton .fa-microphone,
+.mic-buttons-container.mic-buttons-container-locked #micStartButton .fa-microphone-lines {
+    display: block;
+}
+
+.mic-buttons-container:not(.mic-buttons-container-locked) #micStartButton .fa-microphone-lines,
+.mic-buttons-container.mic-buttons-container-locked #micStartButton .fa-microphone {
+    display: none;
+}
+
+@keyframes colorChange {
+    0% {
+        background-color: #f4a836;
+    }
+
+    100% {
+        background-color: #f6d39f;
+    }
 }
 
 #micCancelButton {
@@ -82,19 +113,33 @@
     height: 40px;
 }
 
-    .circular-animation.circular-animation-show::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        margin: -4px -4px -4px -4px;
-        border-radius: 50%;
-        background: conic-gradient(#9c002f 10%, transparent 0);
-        z-index: 0;
-        animation: rotate-segment 2.8s cubic-bezier(0.47, 0.11, 0.66, 0.95) infinite;
-    }
+.mic-buttons-container.mic-buttons-container-recording .circular-animation::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: -4px -4px -4px -4px;
+    border-radius: 50%;
+    background: conic-gradient(#9c002f 10%, transparent 0);
+    z-index: 0;
+    animation: rotate-segment 2.8s cubic-bezier(0.47, 0.11, 0.66, 0.95) infinite;
+}
+
+.mic-buttons-container.mic-buttons-container-locked .circular-animation::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: -4px -4px -4px -4px;
+    border-radius: 50%;
+    background: conic-gradient(#198754 50%, transparent 0);
+    z-index: 0;
+    animation: rotate-segment 8s linear infinite;
+}
 
     .circular-animation .mic-button {
         position: relative;

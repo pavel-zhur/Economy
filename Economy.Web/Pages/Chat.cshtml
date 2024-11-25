@@ -8,9 +8,6 @@
 
 <div>
     <button>Txt (opens available empty chat)</button>
-    <button id="micLock">Mic Lock</button>
-    <button id="transcribeButton">Mic auto (records into open or empty, auto-stop)</button>
-    <div id="statusBar">Ready</div>
     <button id="connectButton">Connect</button>
 </div>
 
@@ -23,10 +20,11 @@
 
 @section BodyEnd {
     <div class="all-buttons-container">
-        <div class="mic-buttons-container">
-            <div class="circular-animation circular-animation-show">
+        <div class="mic-buttons-container mic-buttons-container-idle" id="micButtonsContainer">
+            <div class="circular-animation">
                 <button class="btn mic-button" type="button" id="micStartButton">
                     <i class="fas fa-microphone"></i>
+                    <i class="fas fa-microphone-lines"></i>
                 </button>
             </div>
             <button class="btn mic-button" type="button" id="micCancelButton">
