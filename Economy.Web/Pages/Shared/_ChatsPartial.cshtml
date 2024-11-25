@@ -1,12 +1,13 @@
 ﻿@using Economy.Engine.Models
+@using OneShelf.Common
 @model IReadOnlyList<Economy.Engine.Models.ChatModel>
 
-<input type="hidden" id="default-chat-id" value="@Model.SingleOrDefault(x => !x.Messages.Any())?.ChatId" />
+<input type="hidden" id="default-chat-id" value="@Model.Where(x => x.Status is ChatStatus.Error or ChatStatus.Ready or ChatStatus.Success).WithIndices().OrderByDescending(x => x.x.Messages.Any()).ThenByDescending(x => x.i).AsNullable().FirstOrDefault()?.x.ChatId" />
 @foreach (var chat in Model)
 {
     <div id="chat-@chat.ChatId">
-        <button class="btn btn-primary chat-button toggle-chat-button" type="button" id="toggleChatOffcanvas-@chat.ChatId" data-bs-toggle="offcanvas" data-bs-target="#chatOffcanvas-@chat.ChatId">
-            <i class="fa-regular fa-comment"></i>
+        <button class="btn @(chat.Status switch { ChatStatus.Ready => "btn-primary", ChatStatus.Success => "btn-success", ChatStatus.Processing => "btn-warning", ChatStatus.Error => "btn-danger", ChatStatus.FatalError => "btn-danger", ChatStatus.Closed => "btn-success", _ => throw new ArgumentOutOfRangeException() }) chat-button toggle-chat-button" type="button" id="toggleChatOffcanvas-@chat.ChatId" data-bs-toggle="offcanvas" data-bs-target="#chatOffcanvas-@chat.ChatId">
+            <i class="fa-regular @(chat.Messages.Any() ? "fa-comment" : "fas fa-comment-medical")"></i>
         </button>
         <div class="offcanvas offcanvas-chat offcanvas-end" tabindex="-1" id="chatOffcanvas-@chat.ChatId" aria-labelledby="chatOffcanvasLabel-@chat.ChatId" data-bs-scroll="true" data-bs-backdrop="false" aria-modal="true" role="dialog">
             <div class="offcanvas-header">
