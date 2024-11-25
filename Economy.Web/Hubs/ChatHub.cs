@@ -131,11 +131,11 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRe
         {
             try
             {
-                await RespondAuthenticationNeeded(connectionId);
+                Context.Abort();
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception sending the reauthentication response.");
+                logger.LogError(e, "Error aborting the connection.");
             }
         }
         catch (Exception e)
@@ -147,11 +147,6 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRe
                 fatalErrorHelloResponse,
                 "fatal error");
         }
-    }
-
-    private async Task RespondAuthenticationNeeded(string connectionId)
-    {
-        await RespondSafe(connectionId, ChatHubClientMethods.Authenticate);
     }
 
     private async Task RespondHello(IClientProxy clientProxy, StateModel stateModel, string? useCase = "default")

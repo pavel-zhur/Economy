@@ -43,14 +43,6 @@
                 handleHelloResponse(state, renderedChats);
             });
 
-            connection.on('Authenticate', () => {
-                try {
-                    location.reload();
-                } catch (err) {
-                    console.error('Error in Authenticate handler:', err);
-                }
-            });
-
             connect();
         } catch (err) {
             console.error('Error initializing SignalR connection:', err);

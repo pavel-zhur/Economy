@@ -1,1 +1,7 @@
-﻿<button id="connectionIndicator" class="btn btn-connection-indicator connecting"></button>
+﻿@using Economy.Web.Services
+@inject SessionAvailability SessionAvailability
+
+@if (SessionAvailability.IsSessionAvailable())
+{
+    <button id="connectionIndicator" class="btn btn-connection-indicator connecting"></button>
+}

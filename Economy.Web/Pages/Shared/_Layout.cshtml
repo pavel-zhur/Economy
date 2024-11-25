@@ -1,4 +1,7 @@
-﻿@{
+﻿@using Economy.Web.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject SessionAvailability SessionAvailability
+@{
     var title = string.IsNullOrWhiteSpace((string?)ViewData["Title"]) ? "Untitled page" : ViewData["Title"]!.ToString();
 }
 
@@ -60,10 +63,14 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/smooth_animation_control.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr-protocol-msgpack@8.0.7/dist/browser/signalr-protocol-msgpack.min.js"></script>
-    <script src="~/js/transcription.js" asp-append-version="true"></script>
-    <script src="~/js/chats.js" asp-append-version="true"></script>
-    
+<script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr-protocol-msgpack@8.0.7/dist/browser/signalr-protocol-msgpack.min.js"></script>
+
+    @if (SessionAvailability.IsSessionAvailable())
+    {
+        <script src="~/js/transcription.js" asp-append-version="true"></script>
+        <script src="~/js/chats.js" asp-append-version="true"></script>
+    }
+
     @await RenderSectionAsync("BodyEnd", required: false)
     @await RenderSectionAsync("Scripts", required: false)
     

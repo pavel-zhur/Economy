@@ -2,12 +2,10 @@ using Economy.Engine;
 using Economy.Engine.Models;
 using Economy.Implementation;
 using Economy.Memory.Containers.State;
-using Economy.Web.Hubs;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Economy.Web.Services;
 
-public class ChatsService(ILogger<ChatsService> logger, IHubContext<ChatHub> hubContext)
+public class ChatsService(ILogger<ChatsService> logger)
 {
     private readonly Dictionary<(string userId, Guid chatId, string messageId), CancellationTokenSource> _cancellations = new();
     private readonly object _lock = new();

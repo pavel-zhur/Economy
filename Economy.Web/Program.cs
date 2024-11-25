@@ -20,7 +20,8 @@ builder.Services
     .AddHttpContextAccessor()
     .AddUserStorage<GoogleAuthService>(builder.Configuration)
     .AddSingleton<ChatsService>()
-    .AddSingleton<ChatsRenderer>();
+    .AddSingleton<ChatsRenderer>()
+    .AddScoped<SessionAvailability>();
 
 builder.Services.AddAuthentication(options =>
 {
