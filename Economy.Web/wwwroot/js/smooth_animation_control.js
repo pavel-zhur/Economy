@@ -26,24 +26,33 @@ document.addEventListener("DOMContentLoaded", () => {
             return 1 - Math.pow(1 - t, 3);
         }
 
+        let adjustPlaybackRateRequestID = null;
+
         function adjustPlaybackRate(targetRate, easingFunction, adjustmentDuration) {
             const currentRate = animation.playbackRate;
             const rateDifference = targetRate - currentRate;
             let startTime = null;
 
+            if (adjustPlaybackRateRequestID !== null) {
+                cancelAnimationFrame(adjustPlaybackRateRequestID);
+                adjustPlaybackRateRequestID = null;
+            }
+
             function updatePlaybackRate(timestamp) {
                 if (!startTime) startTime = timestamp;
                 const elapsed = timestamp - startTime;
                 const progress = Math.min(elapsed / adjustmentDuration, 1);
-                const easedProgress = easingFunction(progress); // Apply easing curve
+                const easedProgress = easingFunction(progress);
                 animation.playbackRate = currentRate + rateDifference * easedProgress;
 
                 if (progress < 1) {
-                    requestAnimationFrame(updatePlaybackRate);
+                    adjustPlaybackRateRequestID = requestAnimationFrame(updatePlaybackRate);
+                } else {
+                    adjustPlaybackRateRequestID = null;
                 }
             }
 
-            requestAnimationFrame(updatePlaybackRate);
+            adjustPlaybackRateRequestID = requestAnimationFrame(updatePlaybackRate);
         }
 
         window.speedUpAnimation = () => adjustPlaybackRate(250, easeInOutCubicBezier, 500);
