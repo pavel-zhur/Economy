@@ -2,17 +2,24 @@
 @using OneShelf.Common
 @model IReadOnlyList<Economy.Engine.Models.ChatModel>
 
+@functions {
+    private static string GetChatButtonClass(ChatModel chat)
+    {
+        return chat.Status switch { ChatStatus.Ready => "btn-primary", ChatStatus.Success => "btn-success", ChatStatus.Processing => "btn-warning", ChatStatus.Error => "btn-danger", ChatStatus.FatalError => "btn-danger", ChatStatus.Closed => "btn-success", _ => throw new ArgumentOutOfRangeException() };
+    }
+}
+
 <input type="hidden" id="default-chat-id" value="@Model.Where(x => x.Status is ChatStatus.Error or ChatStatus.Ready or ChatStatus.Success).WithIndices().OrderByDescending(x => x.x.Messages.Any()).ThenByDescending(x => x.i).AsNullable().FirstOrDefault()?.x.ChatId" />
 @foreach (var chat in Model)
 {
     <div id="chat-@chat.ChatId">
-        <button class="btn @(chat.Status switch { ChatStatus.Ready => "btn-primary", ChatStatus.Success => "btn-success", ChatStatus.Processing => "btn-warning", ChatStatus.Error => "btn-danger", ChatStatus.FatalError => "btn-danger", ChatStatus.Closed => "btn-success", _ => throw new ArgumentOutOfRangeException() }) chat-button toggle-chat-button" type="button" id="toggleChatOffcanvas-@chat.ChatId" data-bs-toggle="offcanvas" data-bs-target="#chatOffcanvas-@chat.ChatId">
+        <button class="btn @GetChatButtonClass(chat) chat-button toggle-chat-button" type="button" id="toggleChatOffcanvas-@chat.ChatId" data-bs-toggle="offcanvas" data-bs-target="#chatOffcanvas-@chat.ChatId">
             <i class="fa-regular @(chat.Messages.Any() ? "fa-comment" : "fas fa-comment-medical")"></i>
         </button>
         <div class="offcanvas offcanvas-chat offcanvas-end" tabindex="-1" id="chatOffcanvas-@chat.ChatId" aria-labelledby="chatOffcanvasLabel-@chat.ChatId" data-bs-scroll="true" data-bs-backdrop="false" aria-modal="true" role="dialog">
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title" id="chatOffcanvasLabel-@chat.ChatId">
-                    Assistant @chat.Status
+                    Assistant: @chat.Status
                 </h5>
                 <div class="ms-auto">
                     @if (chat.Messages.Any())
@@ -27,42 +34,38 @@
             <div class="offcanvas-body">
                 <div id="chatHistory-@chat.ChatId" class="chat-history">
 
-                    <ul id="messagesList-@chat.ChatId">
+                    <div id="messagesList-@chat.ChatId">
                         @foreach (var message in chat.Messages)
                         {
-                            <li id="message-@message.MessageId" class="message-type-@message.Type">
-                                @if (message.Type == MessageType.UserText)
+                            <div id="message-@message.MessageId" class="message-type-@message.Type message-item">
+                                @switch (message.Type)
                                 {
-                                    <span><strong>You:</strong> @message.Text - <em>@message.Status</em></span>
-                                }
-                                else if (message.Type == MessageType.UserVoice)
-                                {
-                                    <span><strong>You (Audio):</strong> Transcription - @message.Text - <em>@message.Status</em></span>
-                                }
-                                else if (message.Type == MessageType.AssistantText)
-                                {
-                                    <span><strong>Server:</strong> @message.Text</span>
-                                }
-                                else if (message.Type == MessageType.SystemText)
-                                {
-                                    <span>[@message.SystemMessageSeverity] @message.Text</span>
-                                }
-                                else if (message.Type == MessageType.ActionLog)
-                                {
-                                    @message.Text
-                                }
-                                else
-                                {
-                                    <span>Unknown message type</span>
+                                    case MessageType.UserText:
+                                        <span>&mdash; @message.Text <strong class="message-status-@message.Status?.ToString().ToLowerInvariant()">[@message.Status]</strong></span>
+                                        break;
+                                    case MessageType.UserVoice:
+                                        <span>&mdash; @message.Text <strong class="message-status-@message.Status?.ToString().ToLowerInvariant()">[@message.Status]</strong></span>
+                                        break;
+                                    case MessageType.AssistantText:
+                                        <span>&mdash; @message.Text</span>
+                                        break;
+                                    case MessageType.SystemText:
+                                        <span>&mdash; <strong>[@message.SystemMessageSeverity]</strong> @message.Text</span>
+                                        break;
+                                    case MessageType.ActionLog:
+                                        @message.Text
+                                        break;
+                                    default:
+                                        throw new ArgumentOutOfRangeException(nameof(message.Type), message.Type, "Unexpected message type.");
                                 }
 
                                 @if (message.Type is MessageType.UserText or MessageType.UserVoice && message.Status is UserMessageStatus.Thinking or UserMessageStatus.Transcribing)
                                 {
                                     <button onclick="window.chatsComponent.tryCancelMessage('@chat.ChatId', '@message.MessageId')">Cancel</button>
                                 }
-                            </li>
+                            </div>
                         }
-                    </ul>
+                    </div>
                 </div>
                 <div class="input-group fixed-bottom-input">
                     @{

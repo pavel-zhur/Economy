@@ -3,11 +3,15 @@
     bottom: calc(var(--footer-height) + 1px);
 }
 
+::deep .offcanvas-chat .offcanvas-body {
+    --bs-offcanvas-padding-y: 0;
+}
+
 .all-buttons-container {
     position: fixed;
-    bottom: 10px;
-    right: 10px;
-    left: 10px;
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
     display: flex;
     gap: 10px;
     z-index: 1060;
@@ -186,7 +190,7 @@
     bottom: 0;
     background-color: inherit; /* Ensures the background matches the offcanvas */
     padding-top: 10px;
-    padding-bottom: 10px;
+    /*padding-bottom: 10px;*/
     z-index: 10; /* Keeps the input group above other elements */
 }
 
@@ -206,11 +210,48 @@
 ::deep .message-type-AssistantText {
 }
 
+    ::deep .message-type-AssistantText span {
+        white-space: pre-wrap;
+    }
+
 ::deep .message-type-SystemText {
     color: gray;
     font-style: italic;
 }
 
 ::deep .message-type-UserText, ::deep .message-type-UserVoice {
-    color: blue;
+    color: #ff3e79;
 }
+
+::deep .chat-history .message-item {
+    margin-top: 0.5rem;
+}
+
+    ::deep .chat-history .message-item .message-status-transcribing {
+        color: #00dada;
+    }
+
+    ::deep .chat-history .message-item .message-status-thinking {
+        color: #d2e400;
+    }
+
+    ::deep .chat-history .message-item .message-status-applying {
+        color: #daa300;
+    }
+
+    ::deep .chat-history .message-item .message-status-done {
+        color: #11b905;
+    }
+
+    ::deep .chat-history .message-item .message-status-canceled {
+        color: #afafaf;
+    }
+
+    ::deep .chat-history .message-item .message-status-failed {
+        color: #ff0000;
+    }
+
+    ::deep .chat-history .message-item:has(.message-status-canceled) {
+        color: #afafaf;
+        text-decoration: line-through;
+    }
