@@ -263,7 +263,16 @@
     };
 
     const sendAudio = async (byteArray) => {
-        let chatId = document.getElementById('default-chat-id').value;
+        let defaultChatId = document.getElementById('default-chat-id').value;
+
+        // use default chat id if none of the chats are open
+        // otherwise use the id of the open chat
+        let chatId = defaultChatId;
+        let activeOffcanvas = document.querySelector('.offcanvas-chat.show');
+        if (activeOffcanvas) {
+            chatId = activeOffcanvas.id.replace('chatOffcanvas-', '');
+        }
+
         await connection.invoke('SendAudio', chatId, generateRandomId(), byteArray);
     };
 
