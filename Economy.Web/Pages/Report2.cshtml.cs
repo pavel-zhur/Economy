@@ -42,9 +42,9 @@ namespace Economy.Web.Pages
         private Amounts CreateTotal(TransactionType transactionType)
         {
             var result = new Amounts();
-            foreach (var transaction in State.Repositories.Transactions.GetAll().Where(x => x.Type == transactionType && x.Actual != null))
+            foreach (var transaction in State.Repositories.Transactions.GetAll().Where(x => x.Type == transactionType))
             {
-                result.Add(transaction.Actual!.Amounts);
+                result.Add(transaction.Amounts);
             }
 
             return result;

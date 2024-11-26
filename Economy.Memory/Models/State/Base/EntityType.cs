@@ -5,10 +5,9 @@ public enum EntityType
     Currency,
     Wallet,
     WalletAudit,
-    Plan,
+    PlanningNode,
     Transaction,
     Event,
     Category,
     Conversion,
-    Transfer,
 }

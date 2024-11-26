@@ -18,10 +18,9 @@ internal class EntityBaseConverter : JsonConverter<EntityBase>
         { nameof(Event), typeof(Event) },
         { nameof(Category), typeof(Category) },
         { nameof(WalletAudit), typeof(WalletAudit) },
-        { nameof(Plan), typeof(Plan) },
+        { nameof(PlanningNode), typeof(PlanningNode) },
         { nameof(Transaction), typeof(Transaction) },
         { nameof(Conversion), typeof(Conversion) },
-        { nameof(Transfer), typeof(Transfer) }
         // Add other entity types here
     };
 

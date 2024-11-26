@@ -9,7 +9,7 @@ public record PlanSchedule(Date StartDate, Date FinishDate, Schedule Schedule, A
         StartDate.Validate();
         FinishDate.Validate();
 
-        if (StartDate > FinishDate)
+        if (StartDate >= FinishDate)
         {
             throw new ArgumentException("Plan schedule start date must be before finish date.");
         }

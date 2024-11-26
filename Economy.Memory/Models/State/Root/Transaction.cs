@@ -4,7 +4,6 @@ using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Enums;
 using Economy.Memory.Models.State.Sub;
-using Economy.Memory.Tools;
 
 namespace Economy.Memory.Models.State.Root;
 
@@ -12,23 +11,21 @@ namespace Economy.Memory.Models.State.Root;
 [method: JsonConstructor]
 public record Transaction(
     int Id,
+    string Name,
     string? SpecialNotes,
-    int PlanId,
     TransactionType Type,
-    TransactionPlannedAmount? Planned,
-    TransactionActualAmount? Actual)
+    DateTime DateAndTime,
+    Amounts Amounts)
     : EntityBase(Id)
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
-        (Planned?.GetForeignKeysDirty() ?? Enumerable.Empty<EntityFullId?>())
-        .Concat(Actual?.GetForeignKeysDirty() ?? Enumerable.Empty<EntityFullId?>())
-        .Append(PlanId.ToEntityFullId(EntityType.Plan));
+        Amounts.GetForeignKeysDirty();
 
     internal override void Validate(Repositories repositories)
     {
-        if (Planned == null && Actual == null)
+        if (string.IsNullOrWhiteSpace(Name))
         {
-            throw new ArgumentException("Transaction must have either planned or actual amounts.");
+            throw new ArgumentException("Transaction name must be not empty.");
         }
 
         if (SpecialNotes != null && string.IsNullOrWhiteSpace(SpecialNotes))
@@ -36,16 +33,15 @@ public record Transaction(
             throw new ArgumentException("Transaction special notes must be null or not empty.");
         }
 
-        Planned?.Validate();
-        Actual?.Validate();
+        Amounts?.Validate(false, false, true, false);
     }
 
     public override string ToReferenceTitle()
         => $"[T-{Id}]";
 
     public string ToDetailsNoAmountsOrType(Repositories repositories)
-        => $"{Id} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)}";
+        => $"{Id} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Type} {Planned?.ToDetails(repositories)} {Actual?.ToDetails(repositories)}";
+        => $"{Id} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {Type} {Amounts.ToDetails(repositories)}";
 }

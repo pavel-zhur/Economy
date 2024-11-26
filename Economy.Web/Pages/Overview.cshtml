@@ -26,8 +26,8 @@
     </p>
 }
 
-<h3>Plans</h3>
-@foreach (var entity in state.Repositories.Plans.GetAll().OrderBy(x => x.Id))
+<h3>Planning Nodes</h3>
+@foreach (var entity in state.Repositories.PlanningNodes.GetAll().OrderBy(x => x.Id))
 {
     <p>
         @entity.ToDetails(state.Repositories)
@@ -44,14 +44,6 @@
 
 <h3>Conversions</h3>
 @foreach (var entity in state.Repositories.Conversions.GetAll().OrderBy(x => x.Id))
-{
-    <p>
-        @entity.ToDetails(state.Repositories)
-    </p>
-}
-
-<h3>Transfers</h3>
-@foreach (var entity in state.Repositories.Transfers.GetAll().OrderBy(x => x.Id))
 {
     <p>
         @entity.ToDetails(state.Repositories)

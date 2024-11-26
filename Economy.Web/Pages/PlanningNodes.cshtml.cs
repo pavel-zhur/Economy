@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class PlansModel : PageModel
+public class PlanningNodesModel : PageModel
 {
     public void OnGet()
     {
@@ -11,6 +11,6 @@ public class PlansModel : PageModel
 
     public IActionResult OnGetReload()
     {
-        return Partial("DynamicPlans");
+        return Partial("DynamicPlanningNodes");
     }
 }

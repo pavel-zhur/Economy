@@ -10,9 +10,9 @@ namespace Economy.Memory.Models.State.Root;
 
 [EntityType(EntityType.Event)]
 [method: JsonConstructor]
-public record Event(int Id, string Name, string? SpecialNotes, int? PlanId, Date Date) : EntityBase(Id)
+public record Event(int Id, string Name, string? SpecialNotes, int? PlanningNodeId, Date Date) : EntityBase(Id)
 {
-    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => PlanId.ToEntityFullId(EntityType.Plan).Once();
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => PlanningNodeId.ToEntityFullId(EntityType.PlanningNode).Once();
 
     internal override void Validate(Repositories repositories)
     {
@@ -36,5 +36,5 @@ public record Event(int Id, string Name, string? SpecialNotes, int? PlanId, Date
         => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Date}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
+        => $"{Id} {Name} {repositories.GetReferenceTitle(PlanningNodeId, EntityType.PlanningNode)} {Date}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
 }
