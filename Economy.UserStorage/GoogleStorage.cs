@@ -12,7 +12,7 @@ namespace Economy.UserStorage;
 public class GoogleStorage(ILogger<GoogleStorage> logger, IGoogleAuthService googleAuthService, IOptions<GoogleStorageOptions> options)
 {
     private const string Folder = "appDataFolder";
-    private const string FileName = "user_data.bin";
+    private const string FileNameFormat = "user_data{0}.bin";
 
     public static readonly string Scope = DriveService.Scope.DriveAppdata;
 
@@ -29,7 +29,7 @@ public class GoogleStorage(ILogger<GoogleStorage> logger, IGoogleAuthService goo
             {
                 var fileMetadata = new Google.Apis.Drive.v3.Data.File
                 {
-                    Name = FileName,
+                    Name = GetFileName(),
                     MimeType = "application/octet-stream",
                     Parents =
                     [
@@ -68,6 +68,11 @@ public class GoogleStorage(ILogger<GoogleStorage> logger, IGoogleAuthService goo
         {
             throw new ReauthenticationNeededException("Trying to access the google storage to retrieve the data.");
         }
+    }
+
+    private string GetFileName()
+    {
+        return string.Format(FileNameFormat, options.Value.TenantName);
     }
 
     private async Task<DriveService> CreateDriveService()
@@ -109,9 +114,10 @@ public class GoogleStorage(ILogger<GoogleStorage> logger, IGoogleAuthService goo
         }
     }
 
-    private static async Task<string?> GetExistingFileId(DriveService driveService)
+    private async Task<string?> GetExistingFileId(DriveService driveService)
     {
         var request = driveService.Files.List();
+        request.Q = $"name = '{GetFileName()}'";
         request.Spaces = Folder;
         request.Fields = "files(id)";
         var files = await request.ExecuteAsync();
