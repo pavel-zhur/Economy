@@ -2,6 +2,7 @@
 using Economy.Common;
 using Economy.Memory.Models.EventSourcing;
 using Economy.Memory.Models.State;
+using Economy.Memory.Models.State.Base;
 
 namespace Economy.Memory.Containers.State;
 

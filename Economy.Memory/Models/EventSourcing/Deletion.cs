@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Models.State;
+using Economy.Memory.Models.State.Base;
 
 namespace Economy.Memory.Models.EventSourcing;
 

@@ -1,6 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Economy.Memory.Models.State;
+using Economy.Memory.Models.State.Base;
+using Economy.Memory.Models.State.Root;
 
 namespace Economy.Memory.Containers.State.Serialization;
 

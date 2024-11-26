@@ -3,6 +3,8 @@ using Economy.Engine;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.EventSourcing;
 using Economy.Memory.Models.State;
+using Economy.Memory.Models.State.Base;
+using Economy.Memory.Models.State.Root;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 

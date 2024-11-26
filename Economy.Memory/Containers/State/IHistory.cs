@@ -1,5 +1,7 @@
 ﻿using Economy.Memory.Models.State;
 using System.Diagnostics.CodeAnalysis;
+using Economy.Memory.Models.State.Base;
+using Economy.Memory.Models.State.Enums;
 
 namespace Economy.Memory.Containers.State;
 

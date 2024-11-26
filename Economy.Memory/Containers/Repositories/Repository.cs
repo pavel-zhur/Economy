@@ -1,6 +1,7 @@
 using Economy.Memory.Models;
 using Economy.Memory.Models.State;
 using System.Reflection;
+using Economy.Memory.Models.State.Base;
 using Economy.Memory.Tools;
 
 namespace Economy.Memory.Containers.Repositories;

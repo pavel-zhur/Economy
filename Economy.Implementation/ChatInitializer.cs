@@ -2,6 +2,7 @@ using Economy.AiInterface.Services;
 using Economy.Engine;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State;
+using Economy.Memory.Models.State.Sub;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Economy.Implementation;
