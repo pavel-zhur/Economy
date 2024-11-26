@@ -1,0 +1,38 @@
+﻿@model Economy.Web.Pages.WalletsModel
+@using Economy.Engine
+@using Economy.Memory.Containers.State
+@using Economy.Memory.Tools
+@inject StateFactory<State> StateFactory
+
+@{
+    var state = await StateFactory.GetState();
+}
+
+<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+
+<div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Wallet</th>
+            <th>Latest Inventory</th>
+            <th>Equivalent</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var (wallet, audit) in Model.Wallets)
+        {
+            <tr>
+                <td>@wallet.ToDetails(state.Repositories)</td>
+                <td class="data-record">@(audit?.Amounts.ToDetails(state.Repositories))</td>
+                <td class="data-record">@(audit?.Amounts.ToEquivalentAmount(state.Repositories).ToDetails())</td>
+            </tr>
+        }
+        <tr>
+            <td><strong>Total</strong></td>
+            <td class="data-record">@Model.Total.ToDetails(state.Repositories)</td>
+            <td class="data-record">@Model.Total.ToEquivalentAmount(state.Repositories).ToDetails()</td>
+        </tr>
+        </tbody>
+    </table>
+</div>

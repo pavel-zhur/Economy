@@ -1,0 +1,15 @@
+﻿@page
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Economy.Web.Pages.CategoriesModel
+
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div>
+    <button id="reload-button" class="btn btn-primary">Reload Categories</button>
+</div>
+
+<div id="dynamic-container" class="mt-4">
+    <partial name="DynamicCategories" />
+</div>

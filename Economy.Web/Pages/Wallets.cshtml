@@ -1,0 +1,15 @@
+﻿@page
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Economy.Web.Pages.WalletsModel
+
+@{
+    ViewData["Title"] = "Wallets";
+}
+
+<div>
+    <button id="reload-button" class="btn btn-primary">Reload Wallets</button>
+</div>
+
+<div id="dynamic-container" class="mt-4">
+    <partial name="DynamicWallets" />
+</div>

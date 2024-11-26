@@ -1,24 +1,33 @@
 ﻿<ul class="nav flex-column">
     <li class="nav-item">
-        <a class="nav-link active" aria-current="page" asp-area="" asp-page="/Index">Home</a>
+        <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Basics">Basics</a>
+        <a class="nav-link" asp-area="" asp-page="/Transactions">Transactions</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" asp-area="" asp-page="/PlanningNodes">Planning Nodes</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Overview">Overview</a>
-    </li>
-    <li class="nav-item">
         <a class="nav-link" asp-area="" asp-page="/Events">Events</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
+        <a class="nav-link" asp-area="" asp-page="/Currencies">Currencies</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Report2">Report 2 - Transactions</a>
+        <a class="nav-link" asp-area="" asp-page="/Wallets">Wallets</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/WalletAudits">Wallet Audits</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/Categories">Categories</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/Conversions">Conversions</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
     </li>
     @if (User.Identity?.IsAuthenticated == true)
     {

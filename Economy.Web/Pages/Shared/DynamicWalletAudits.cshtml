@@ -1,4 +1,4 @@
-﻿@model Economy.Web.Pages.EventsModel
+﻿@model Economy.Web.Pages.WalletAuditsModel
 @using Economy.Engine
 @using Economy.Memory.Containers.State
 @inject StateFactory<State> StateFactory
@@ -9,9 +9,9 @@
 
 <input type="hidden" id="latestRevision" value="@state.Events.Count" />
 
-@foreach (var @event in state.Events.AsEnumerable().Reverse())
+@foreach (var entity in state.Repositories.WalletAudits.GetAll().OrderBy(x => x.Id))
 {
     <p>
-        @(@event.GetRevision()). @(@event.ToDetails(state))
+        @entity.ToDetails(state.Repositories)
     </p>
 }

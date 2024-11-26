@@ -1,12 +1,13 @@
 using Economy.Engine;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Root;
 using Economy.Memory.Models.State.Sub;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class BasicsModel(StateFactory<State> stateFactory) : PageModel
+public class WalletsModel(StateFactory<State> stateFactory) : PageModel
 {
     public Amounts Total { get; set; } = null!;
 
@@ -32,5 +33,11 @@ public class BasicsModel(StateFactory<State> stateFactory) : PageModel
         {
             Total.Add(audit!.Amounts);
         }
+    }
+
+    public async Task<IActionResult> OnGetReload()
+    {
+        await OnGet();
+        return Partial("DynamicWallets", this);
     }
 }

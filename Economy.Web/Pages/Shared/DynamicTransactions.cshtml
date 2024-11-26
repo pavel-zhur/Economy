@@ -1,17 +1,13 @@
-﻿@page
-@using Economy.Memory.Tools
-@using Economy.Memory.Models.State
+﻿@model Economy.Web.Pages.TransactionsModel
 @using Economy.Memory.Models
 @using Economy.Memory.Models.State.Enums
-@model Economy.Web.Pages.Report2Model
+@using Economy.Memory.Tools
+
 @{
-    ViewData["Title"] = "Report 2";
     var balance = new EquivalentAmount();
 }
 
-<form method="get">
-    <button type="submit" class="btn btn-primary mt-2">View</button>
-</form>
+<input type="hidden" id="latestRevision" value="@Model.State.Events.Count" />
 
 <div class="mt-4">
     <h4>Total Balance: <span class="data-record">@Model.TotalEquivalent.ToDetails()</span></h4>

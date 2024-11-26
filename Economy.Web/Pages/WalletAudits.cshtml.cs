@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class PlanningNodesModel : PageModel
+public class WalletAuditsModel : PageModel
 {
     public void OnGet()
     {
@@ -12,6 +12,6 @@ public class PlanningNodesModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicPlanningNodes", this);
+        return Partial("DynamicWalletAudits", this);
     }
 }
