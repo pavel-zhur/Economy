@@ -51,6 +51,7 @@ internal class MigratorV3
 
     private static Transaction Convert(State state, V3Transaction transaction) => new(
         transaction.Id, 
+        transaction.PlanId,
         (transaction.Actual != null, transaction.Planned != null) switch
         {
             (true, false) => "[converted] actual only. ok.",

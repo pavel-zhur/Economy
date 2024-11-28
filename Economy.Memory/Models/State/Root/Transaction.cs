@@ -4,6 +4,7 @@ using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Enums;
 using Economy.Memory.Models.State.Sub;
+using Economy.Memory.Tools;
 
 namespace Economy.Memory.Models.State.Root;
 
@@ -11,6 +12,7 @@ namespace Economy.Memory.Models.State.Root;
 [method: JsonConstructor]
 public record Transaction(
     int Id,
+    int? PlanId,
     string Name,
     string? SpecialNotes,
     TransactionType Type,
@@ -19,7 +21,7 @@ public record Transaction(
     : EntityBase(Id)
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
-        Amounts.GetForeignKeysDirty();
+        Amounts.GetForeignKeysDirty().Append(PlanId.ToEntityFullId(EntityType.Plan));
 
     internal override void Validate(Repositories repositories)
     {
@@ -40,8 +42,8 @@ public record Transaction(
         => $"[T-{Id}]";
 
     public string ToDetailsNoAmountsOrType(Repositories repositories)
-        => $"{Id} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
+        => $"{Id} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)}";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {Type} {Amounts.ToDetails(repositories)}";
+        => $"{Id} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Type} {Amounts.ToDetails(repositories)}";
 }
