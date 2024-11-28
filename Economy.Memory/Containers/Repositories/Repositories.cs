@@ -20,7 +20,7 @@ public class Repositories : IHistory
         Currencies = new Repository<Currency>(this);
         Wallets = new Repository<Wallet>(this);
         WalletAudits = new Repository<WalletAudit>(this);
-        PlanningNodes = new PlanningNodesRepository(this);
+        Plans = new PlansRepository(this);
         Transactions = new Repository<Transaction>(this);
         Events = new Repository<Event>(this);
         Categories = new Repository<Category>(this);
@@ -32,7 +32,7 @@ public class Repositories : IHistory
             Currencies,
             Wallets,
             WalletAudits,
-            PlanningNodes,
+            Plans,
             Transactions,
             Events,
             Categories,
@@ -45,7 +45,7 @@ public class Repositories : IHistory
     public Repository<Currency> Currencies { get; }
     public Repository<Wallet> Wallets { get; }
     public Repository<WalletAudit> WalletAudits { get; }
-    public PlanningNodesRepository PlanningNodes { get; }
+    public PlansRepository Plans { get; }
     public Repository<Transaction> Transactions { get; }
     public Repository<Event> Events { get; }
     public Repository<Category> Categories { get; }

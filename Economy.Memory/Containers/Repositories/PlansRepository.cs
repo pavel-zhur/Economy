@@ -3,10 +3,10 @@ using Economy.Memory.Models.State.Root;
 
 namespace Economy.Memory.Containers.Repositories;
 
-public class PlanningNodesRepository(Repositories repositories)
-    : Repository<PlanningNode>(repositories)
+public class PlansRepository(Repositories repositories)
+    : Repository<Plan>(repositories)
 {
-    protected override void ValidateUpdate(PlanningNode oldEntity, PlanningNode newEntity)
+    protected override void ValidateUpdate(Plan oldEntity, Plan newEntity)
     {
         // newEntity.ParentPlanId may create a loop. Plans are a tree.
         if (newEntity.ParentId != null)
@@ -19,12 +19,12 @@ public class PlanningNodesRepository(Repositories repositories)
         }
     }
 
-    public IEnumerable<PlanningNode> GetParents(PlanningNode planningNode)
+    public IEnumerable<Plan> GetParents(Plan plan)
     {
-        if (planningNode.ParentId == null) 
+        if (plan.ParentId == null) 
             yield break;
 
-        var parent = this[planningNode.ParentId.Value];
+        var parent = this[plan.ParentId.Value];
         yield return parent;
 
         foreach (var other in GetParents(parent))
@@ -33,12 +33,12 @@ public class PlanningNodesRepository(Repositories repositories)
         }
     }
 
-    public IEnumerable<(PlanningNode plan, int depth)> GetPlanningNodeTree(int? parentId = null, int depth = 0)
+    public IEnumerable<(Plan plan, int depth)> GetPlanTree(int? parentId = null, int depth = 0)
     {
         foreach (var childPlan in GetAll().Where(b => b.ParentId == parentId).OrderBy(x => x.Id).ToList())
         {
             yield return (childPlan, depth);
-            foreach (var grandChildPlan in GetPlanningNodeTree(childPlan.Id, depth + 1))
+            foreach (var grandChildPlan in GetPlanTree(childPlan.Id, depth + 1))
             {
                 yield return grandChildPlan;
             }

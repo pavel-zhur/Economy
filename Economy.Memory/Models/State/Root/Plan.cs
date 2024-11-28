@@ -8,9 +8,9 @@ using OneShelf.Common;
 
 namespace Economy.Memory.Models.State.Root;
 
-[EntityType(EntityType.PlanningNode)]
+[EntityType(EntityType.Plan)]
 [method: JsonConstructor]
-public record PlanningNode(
+public record Plan(
     int Id,
     string Name,
     string? SpecialNotes,
@@ -18,7 +18,7 @@ public record PlanningNode(
     PlanSchedule? Schedule)
     : EntityBase(Id)
 {
-    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => ParentId.ToEntityFullId(EntityType.PlanningNode).Once();
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => ParentId.ToEntityFullId(EntityType.Plan).Once();
 
     internal override void Validate(Repositories repositories)
     {
@@ -34,7 +34,7 @@ public record PlanningNode(
 
         Schedule?.Validate();
 
-        if (repositories.PlanningNodes.GetParents(this).Any(x => x.Schedule != null))
+        if (repositories.Plans.GetParents(this).Any(x => x.Schedule != null))
         {
             throw new ArgumentException("Plans with schedules may not have children.");
         }
@@ -44,5 +44,5 @@ public record PlanningNode(
         => $"[{Id} {Name}]";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentId, EntityType.PlanningNode)} {Schedule?.ToDetails()}";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentId, EntityType.Plan)} {Schedule?.ToDetails()}";
 }

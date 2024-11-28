@@ -23,8 +23,8 @@ public record Transfer(
         new List<EntityFullId?>
         {
             Amount.CurrencyId.ToEntityFullId(EntityType.Currency),
-            FromPlanId.ToEntityFullId(EntityType.PlanningNode),
-            ToPlanId.ToEntityFullId(EntityType.PlanningNode),
+            FromPlanId.ToEntityFullId(EntityType.Plan),
+            ToPlanId.ToEntityFullId(EntityType.Plan),
         };
 
     internal override void Validate(Repositories repositories)
@@ -43,8 +43,8 @@ public record Transfer(
         => $"[{Id}]";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.PlanningNode)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.PlanningNode)} {Amount.ToDetails(repositories)} {Date} {Type}";
+        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {Amount.ToDetails(repositories)} {Date} {Type}";
 
     public string ToDetailsNoAmountOrDate(IHistory repositories)
-        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.PlanningNode)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.PlanningNode)} {Type}";
+        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {Type}";
 }

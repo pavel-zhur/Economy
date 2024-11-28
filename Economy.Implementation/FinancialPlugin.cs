@@ -67,15 +67,15 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory<State
         return walletAudit;
     }
 
-    [KernelFunction("create_or_update_planning_node")]
-    [Description("Creates a new planning node (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
-    [return: Description("The created (with id assigned) or updated planning node")]
-    public async Task<PlanningNode> UpsertPlanningNode(PlanningNode planningNode)
+    [KernelFunction("create_or_update_plan")]
+    [Description("Creates a new plan (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated plan")]
+    public async Task<Plan> UpsertPlan(Plan plan)
     {
         var state = await stateFactory.GetState();
-        state.Apply(PrepareForUpsert(state, ref planningNode, out var verb));
-        logger.LogInformation("{verb} planning node {PlanningNode}", verb, planningNode.ToDetails(state.Repositories));
-        return planningNode;
+        state.Apply(PrepareForUpsert(state, ref plan, out var verb));
+        logger.LogInformation("{verb} plan {Plan}", verb, plan.ToDetails(state.Repositories));
+        return plan;
     }
 
     [KernelFunction("create_or_update_transaction")]
