@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy.Common", "Economy.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy.Engine", "Economy.Engine\Economy.Engine.csproj", "{43DDBB53-221E-4A8D-A9EE-5F09A7E9BF6E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy.Memory.Migrations", "Economy.Memory.Migrations\Economy.Memory.Migrations.csproj", "{3599B765-852E-42C5-AB62-BEC14BBE1E5B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{43DDBB53-221E-4A8D-A9EE-5F09A7E9BF6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43DDBB53-221E-4A8D-A9EE-5F09A7E9BF6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43DDBB53-221E-4A8D-A9EE-5F09A7E9BF6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3599B765-852E-42C5-AB62-BEC14BBE1E5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3599B765-852E-42C5-AB62-BEC14BBE1E5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3599B765-852E-42C5-AB62-BEC14BBE1E5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3599B765-852E-42C5-AB62-BEC14BBE1E5B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
