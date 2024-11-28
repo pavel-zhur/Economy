@@ -2,9 +2,9 @@
 using System.Text.Json.Serialization;
 using Economy.Memory.Models.EventSourcing;
 
-namespace Economy.Memory.Migrations.Serialization;
+namespace Economy.Memory.Migrations.Serialization.Future;
 
-internal class EventBaseConverter : JsonConverter<EventBase>
+internal class FutureEventBaseConverter : JsonConverter<EventBase>
 {
     private const string TypePropertyName = "Type";
     private const string DataPropertyName = "Data";

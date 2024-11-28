@@ -3,9 +3,9 @@ using System.Text.Json.Serialization;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Root;
 
-namespace Economy.Memory.Migrations.Serialization;
+namespace Economy.Memory.Migrations.Serialization.Future;
 
-internal class EntityBaseConverter : JsonConverter<EntityBase>
+internal class FutureEntityBaseConverter : JsonConverter<EntityBase>
 {
     private const string TypePropertyName = "Type";
     private const string DataPropertyName = "Data";
