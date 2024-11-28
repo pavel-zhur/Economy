@@ -41,10 +41,6 @@ internal class ExEventBaseConverter : JsonConverter<ExEventBase>
 
     public override void Write(Utf8JsonWriter writer, ExEventBase value, JsonSerializerOptions options)
     {
-        writer.WriteStartObject();
-        writer.WriteString(TypePropertyName, value.GetType().Name);
-        writer.WritePropertyName(DataPropertyName);
-        JsonSerializer.Serialize(writer, value, value.GetType(), options);
-        writer.WriteEndObject();
+        throw new InvalidOperationException();
     }
 }

@@ -5,7 +5,6 @@ using Economy.Memory.Models.State.Enums;
 
 namespace Economy.Memory.Migrations.V3.Root;
 
-[ExEntityType(ExEntityType.V3Transaction)]
 [method: JsonConstructor]
 internal record V3Transaction(
     int Id,

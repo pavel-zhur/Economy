@@ -20,6 +20,7 @@ internal class FutureEntityBaseConverter : JsonConverter<EntityBase>
         { nameof(Plan), typeof(Plan) },
         { nameof(Transaction), typeof(Transaction) },
         { nameof(Conversion), typeof(Conversion) },
+        { nameof(Transfer), typeof(Transfer) },
         // Add other entity types here
     };
 

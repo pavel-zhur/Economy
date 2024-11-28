@@ -2,26 +2,29 @@
 using System.Text;
 using Economy.Common;
 using Economy.Memory.Containers.State;
-using Economy.Memory.Migrations.EventSourcing;
 using Economy.Memory.Migrations.Serialization.Ex;
-using Economy.Memory.Models.EventSourcing;
 using Economy.Memory.Migrations.Serialization.Future;
+using Economy.Memory.Migrations.Tools;
+using System.Text.Json.Serialization;
 
 namespace Economy.Memory.Migrations.Services;
 
-internal class Migrator : IMigrator<State>
+internal class Migrator(MigratorV3 migratorV3) : IMigrator<State>
 {
+    private readonly JsonSerializerOptions _futureJsonSerializerOptions = new()
+    {
+        Converters =
+        {
+            new FutureEventBaseConverter(),
+            new FutureEntityBaseConverter(),
+            new JsonStringEnumConverter(),
+        },
+        WriteIndented = true
+    };
+
     public byte[] SaveToBinary(State state)
     {
-        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new FutureSerializedEvents(3, state.Events), (JsonSerializerOptions)new()
-        {
-            Converters =
-            {
-                new FutureEventBaseConverter(),
-                new FutureEntityBaseConverter(),
-            },
-            WriteIndented = true
-        }));
+        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new FutureSerializedEvents(Constants.LatestVersion, state.Events), _futureJsonSerializerOptions));
     }
 
     public void LoadFromBinary(State state, byte[]? data)
@@ -31,24 +34,27 @@ internal class Migrator : IMigrator<State>
             Converters =
             {
                 new ExEventBaseConverter(),
-                new ExEntityBaseConverter(),
+                new JsonStringEnumConverter(),
             },
-            WriteIndented = true
         })!;
-        if (events.Version != 3)
-        {
-            throw new ArgumentOutOfRangeException(nameof(events.Version), events.Version, "Expected version 3");
-        }
 
-        foreach (var @event in events.Events)
+        switch (events.Version)
         {
-            state.Apply(@event switch
-            {
-                ExCreation exCreation => new Creation(exCreation.Entity, exCreation.CreatedOn),
-                ExDeletion exDeletion => new Deletion(exDeletion.EntityFullId, exDeletion.CreatedOn),
-                ExUpdate exUpdate => new Update(exUpdate.Entity, exUpdate.CreatedOn),
-                _ => throw new ArgumentOutOfRangeException(nameof(@event))
-            });
+            case Constants.LatestVersion:
+                var currentEvents =
+                    JsonSerializer.Deserialize<FutureSerializedEvents>(data, _futureJsonSerializerOptions)!;
+
+                foreach (var @event in currentEvents.Events)
+                {
+                    state.Apply(@event);
+                }
+
+                return;
+            case 3:
+                migratorV3.Apply(state, events.Events, _futureJsonSerializerOptions);
+                return;
+            default:
+                throw new NotSupportedException($"Unsupported version: {events.Version}");
         }
     }
 }
