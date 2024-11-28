@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Json.Serialization;
 using Economy.Common;
 using Economy.Memory.Models.EventSourcing;
 using Economy.Memory.Models.State;
@@ -17,6 +18,7 @@ public class State : IState
         {
             new EventBaseConverter(),
             new EntityBaseConverter(),
+            new JsonStringEnumConverter(),
         },
         WriteIndented = true
     };
