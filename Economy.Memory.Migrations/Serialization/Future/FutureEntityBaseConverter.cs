@@ -26,19 +26,19 @@ internal class FutureEntityBaseConverter : JsonConverter<EntityBase>
 
     public override EntityBase Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        using JsonDocument doc = JsonDocument.ParseValue(ref reader);
-        if (!doc.RootElement.TryGetProperty(TypePropertyName, out JsonElement typeElement))
+        using var doc = JsonDocument.ParseValue(ref reader);
+        if (!doc.RootElement.TryGetProperty(TypePropertyName, out var typeElement))
         {
             throw new JsonException($"Missing property '{TypePropertyName}'");
         }
 
         var typeName = typeElement.GetString();
-        if (typeName == null || !TypeMapping.TryGetValue(typeName, out Type type))
+        if (typeName == null || !TypeMapping.TryGetValue(typeName, out var type))
         {
             throw new JsonException($"Unknown type '{typeName}'");
         }
 
-        if (!doc.RootElement.TryGetProperty(DataPropertyName, out JsonElement dataElement))
+        if (!doc.RootElement.TryGetProperty(DataPropertyName, out var dataElement))
         {
             throw new JsonException($"Missing property '{DataPropertyName}'");
         }

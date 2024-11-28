@@ -54,11 +54,12 @@ internal class MigratorV3
         transaction.PlanId,
         (transaction.Actual != null, transaction.Planned != null) switch
         {
-            (true, false) => "[converted] actual only. ok.",
+            (true, false) => transaction.SpecialNotes ?? state.Repositories.Plans[transaction.PlanId].Name,
             (false, true) => "[converted] planned only. todo.",
             (true, true) => $"[converted] actual & planned. planned: {transaction.Planned!.Date} {transaction.Planned.Amounts.ToDetails(state.Repositories)}",
+            _ => throw new ArgumentOutOfRangeException(),
         },
-        transaction.SpecialNotes,
+        null,
         transaction.Type,
         transaction.Actual?.DateAndTime ?? transaction.Planned!.Date.ToDateTime(),
         transaction.Actual?.Amounts ?? transaction.Planned!.Amounts);
