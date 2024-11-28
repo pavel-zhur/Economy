@@ -1,27 +1,13 @@
-﻿using System.Text;
-using Economy.Common;
+﻿using Economy.Common;
 using Economy.Memory.Models.EventSourcing;
-using Economy.Memory.Models.State;
 using Economy.Memory.Models.State.Base;
 
 namespace Economy.Memory.Containers.State;
 
-using Serialization;
 using Repositories;
-using System.Text.Json;
 
 public class State : IState
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
-    {
-        Converters =
-        {
-            new EventBaseConverter(),
-            new EntityBaseConverter(),
-        },
-        WriteIndented = true
-    };
-
     private readonly Dictionary<EntityFullId, List<EventBase>> _eventsByEntityFullId = new();
 
     public List<EventBase> Events { get; } = new();
@@ -58,25 +44,6 @@ public class State : IState
 
         Events.Add(@event);
         @event.SetRevision(Events.Count);
-    }
-
-    public byte[] SaveToBinary()
-    {
-        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new SerializedEvents(3, Events), JsonSerializerOptions));
-    }
-
-    public void LoadFromBinary(byte[]? data)
-    {
-        var events = JsonSerializer.Deserialize<SerializedEvents>(data, JsonSerializerOptions)!;
-        if (events.Version != 3)
-        {
-            throw new ArgumentOutOfRangeException(nameof(events.Version), events.Version, "Expected version 3");
-        }
-
-        foreach (var @event in events.Events)
-        {
-            Apply(@event);
-        }
     }
 
     internal IHistory CreateHistorySnapshot(int revision) => new StateSnapshot(this, revision);

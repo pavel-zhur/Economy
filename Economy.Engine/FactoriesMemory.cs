@@ -2,7 +2,7 @@
 
 namespace Economy.Engine;
 
-public class FactoriesMemory<TState>
+public class FactoriesMemory<TState>(IMigrator<TState> migrator)
     where TState : class, IState, new()
 {
     private readonly Dictionary<string, UserSession> _memory = new();
@@ -17,7 +17,7 @@ public class FactoriesMemory<TState>
             session = _memory.TryGetValue(userKey, out var value) ? value : _memory[userKey] = new();
         }
 
-        await session.InitializeAsync(storage);
+        await session.InitializeAsync(migrator, storage);
 
         return session.UserData;
     }
@@ -31,7 +31,7 @@ public class FactoriesMemory<TState>
             userSession = _memory[storage.GetUserKey()];
         }
         
-        await storage.SaveUserData(userSession.UserData.State.SaveToBinary());
+        await storage.SaveUserData(migrator.SaveToBinary(userSession.UserData.State));
     }
 
     private class UserSession
@@ -41,7 +41,7 @@ public class FactoriesMemory<TState>
 
         public UserData<TState> UserData { get; } = new(new());
 
-        public async Task InitializeAsync(IUserDataStorage storage)
+        public async Task InitializeAsync(IMigrator<TState> migrator, IUserDataStorage storage)
         {
             if (_initialized)
                 return;
@@ -51,7 +51,7 @@ public class FactoriesMemory<TState>
             {
                 if (!_initialized)
                 {
-                    await LoadAsync(storage);
+                    await LoadAsync(migrator, storage);
                     _initialized = true;
                 }
             }
@@ -61,12 +61,12 @@ public class FactoriesMemory<TState>
             }
         }
 
-        private async Task LoadAsync(IUserDataStorage storage)
+        private async Task LoadAsync(IMigrator<TState> migrator, IUserDataStorage storage)
         {
             var userData = await storage.GetUserData();
 
             if (userData != null)
-                UserData.State.LoadFromBinary(userData);
+                migrator.LoadFromBinary(UserData.State, userData);
         }
     }
 }
