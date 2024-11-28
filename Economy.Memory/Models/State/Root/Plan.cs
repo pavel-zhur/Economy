@@ -14,11 +14,11 @@ public record Plan(
     int Id,
     string Name,
     string? SpecialNotes,
-    int? ParentId,
+    int? ParentPlanId,
     PlanSchedule? Schedule)
     : EntityBase(Id)
 {
-    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => ParentId.ToEntityFullId(EntityType.Plan).Once();
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => ParentPlanId.ToEntityFullId(EntityType.Plan).Once();
 
     internal override void Validate(Repositories repositories)
     {
@@ -44,5 +44,5 @@ public record Plan(
         => $"[{Id} {Name}]";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentId, EntityType.Plan)} {Schedule?.ToDetails()}";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} {Schedule?.ToDetails()}";
 }

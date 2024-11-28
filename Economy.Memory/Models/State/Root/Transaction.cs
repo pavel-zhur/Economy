@@ -40,8 +40,8 @@ public record Transaction(
         => $"[T-{Id}]";
 
     public string ToDetailsNoAmountsOrType(Repositories repositories)
-        => $"{Id} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
+        => $"{Id} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {Type} {Amounts.ToDetails(repositories)}";
+        => $"{Id} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {Type} {Amounts.ToDetails(repositories)}";
 }
