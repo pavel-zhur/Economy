@@ -23,6 +23,7 @@
     align-items: flex-end;
     flex-wrap: nowrap;
     gap: 10px;
+    flex-direction: row-reverse;
 }
 
     .mic-buttons-container:not(.mic-buttons-container-recording):not(.mic-buttons-container-locked) ::deep #micCancelButton,
