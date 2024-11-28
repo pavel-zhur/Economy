@@ -12,7 +12,7 @@ namespace Economy.UserStorage;
 public class GoogleStorage(ILogger<GoogleStorage> logger, IGoogleAuthService googleAuthService, IOptions<GoogleStorageOptions> options)
 {
     private const string Folder = "appDataFolder";
-    private const string FileNameFormat = "user_data{0}.bin";
+    private const string FileNameFormat = "user_data-{0}.bin";
 
     public static readonly string Scope = DriveService.Scope.DriveAppdata;
 
