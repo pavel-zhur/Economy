@@ -25,6 +25,7 @@ public class Repositories : IHistory
         Events = new Repository<Event>(this);
         Categories = new Repository<Category>(this);
         Conversions = new Repository<Conversion>(this);
+        Transfers = new Repository<Transfer>(this);
 
         AllByType = new IRepository[]
         {
@@ -36,6 +37,7 @@ public class Repositories : IHistory
             Events,
             Categories,
             Conversions,
+            Transfers,
         }.ToDictionary(r => r.GetEntityClrType());
         AllByEntityType = AllByType.ToDictionary(x => x.Key.GetCustomAttribute<EntityTypeAttribute>()!.EntityType, x => x.Value);
     }
@@ -48,6 +50,7 @@ public class Repositories : IHistory
     public Repository<Event> Events { get; }
     public Repository<Category> Categories { get; }
     public Repository<Conversion> Conversions { get; }
+    public Repository<Transfer> Transfers { get; }
 
     public IReadOnlyDictionary<Type, IRepository> AllByType { get; }
     public IReadOnlyDictionary<EntityType, IRepository> AllByEntityType { get; }

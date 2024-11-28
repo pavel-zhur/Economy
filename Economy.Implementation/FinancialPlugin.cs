@@ -100,6 +100,17 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory<State
         return conversion;
     }
 
+    [KernelFunction("create_or_update_transfer")]
+    [Description("Creates a new transfer (-1 id value expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [return: Description("The created (with id assigned) or updated transfer")]
+    public async Task<Transfer> UpsertTransfer(Transfer transfer)
+    {
+        var state = await stateFactory.GetState();
+        state.Apply(PrepareForUpsert(state, ref transfer, out var verb));
+        logger.LogInformation("{verb} transfer {Transfer}", verb, transfer.ToDetails(state.Repositories));
+        return transfer;
+    }
+
     [KernelFunction("delete_entity")]
     [Description("Deletes entity of a given type by id")]
     public async Task DeleteEntities(EntityType entityType, int id)

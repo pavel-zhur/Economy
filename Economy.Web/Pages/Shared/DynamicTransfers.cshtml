@@ -1,0 +1,17 @@
+﻿@model Economy.Web.Pages.TransfersModel
+@using Economy.Engine
+@using Economy.Memory.Containers.State
+@inject StateFactory<State> StateFactory
+
+@{
+    var state = await StateFactory.GetState();
+}
+
+<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+
+@foreach (var transfer in state.Repositories.Transfers.GetAll())
+{
+    <p>
+        @transfer.ToDetails(state.Repositories)
+    </p>
+}

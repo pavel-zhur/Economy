@@ -10,4 +10,5 @@ public enum EntityType
     Event,
     Category,
     Conversion,
+    Transfer,
 }
