@@ -42,8 +42,8 @@ public record Transaction(
         => $"[T-{Id}]";
 
     public string ToDetailsNoAmountsOrType(Repositories repositories)
-        => $"{Id} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)}";
+        => $"{Id} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Type} {Amounts.ToDetails(repositories)}";
+        => $"{Id} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {Type} {Amounts.ToDetails(repositories)}";
 }
