@@ -45,7 +45,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped(serviceProvider =>
         {
             var kernel = new Kernel(serviceProvider, serviceProvider.GetRequiredService<KernelPluginCollection>());
-            kernel.AutoFunctionInvocationFilters.Add(new ChatDebuggingFilter());
+            var chatDebuggingFilter = new ChatDebuggingFilter();
+            kernel.AutoFunctionInvocationFilters.Add(chatDebuggingFilter);
+            kernel.PromptRenderFilters.Add(chatDebuggingFilter);
             return kernel;
         });
 
