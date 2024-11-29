@@ -51,7 +51,6 @@ internal class MigratorV3
 
     private static Transaction Convert(State state, V3Transaction transaction) => new(
         transaction.Id, 
-        transaction.PlanId,
         (transaction.Actual != null, transaction.Planned != null) switch
         {
             (true, false) => transaction.SpecialNotes ?? state.Repositories.Plans[transaction.PlanId].Name,
@@ -62,5 +61,6 @@ internal class MigratorV3
         null,
         transaction.Type,
         transaction.Actual?.DateAndTime ?? transaction.Planned!.Date.ToDateTime(),
-        transaction.Actual?.Amounts ?? transaction.Planned!.Amounts);
+        transaction.Actual?.Amounts ?? transaction.Planned!.Amounts,
+        transaction.PlanId);
 }

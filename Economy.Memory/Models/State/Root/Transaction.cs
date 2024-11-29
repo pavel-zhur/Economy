@@ -12,12 +12,12 @@ namespace Economy.Memory.Models.State.Root;
 [method: JsonConstructor]
 public record Transaction(
     int Id,
-    int? PlanId,
     string Name,
     string? SpecialNotes,
     TransactionType Type,
     DateTime DateAndTime,
-    Amounts Amounts)
+    Amounts Amounts,
+    int? PlanId)
     : EntityBase(Id)
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
