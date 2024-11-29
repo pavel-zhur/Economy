@@ -17,7 +17,9 @@ public record Transaction(
     TransactionType Type,
     DateTime DateAndTime,
     Amounts Amounts,
-    int? PlanId)
+    int? PlanId,
+    Period? PlanReferencePeriod,
+    Date? PlanReferenceDate)
     : EntityBase(Id)
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
@@ -45,5 +47,5 @@ public record Transaction(
         => $"{Id} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {Type} {Amounts.ToDetails(repositories)}";
+        => $"{Id} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {Type} {Amounts.ToDetails(repositories)} r:[{PlanReferencePeriod?.ToDetails()}{PlanReferenceDate}]";
 }

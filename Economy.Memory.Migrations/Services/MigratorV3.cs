@@ -62,5 +62,7 @@ internal class MigratorV3
         transaction.Type,
         transaction.Actual?.DateAndTime ?? transaction.Planned!.Date.ToDateTime(),
         transaction.Actual?.Amounts ?? transaction.Planned!.Amounts,
-        transaction.PlanId);
+        transaction.PlanId,
+        null,
+        null);
 }

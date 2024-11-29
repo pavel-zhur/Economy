@@ -1,8 +1,14 @@
-﻿using Economy.Memory.Models.State.Enums;
+﻿using Economy.Memory.Containers.State;
+using Economy.Memory.Models.State.Enums;
 
 namespace Economy.Memory.Models.State.Sub;
 
-public record PlanSchedule(Date StartDate, Date FinishDate, Schedule Schedule, Amounts Amounts)
+public record PlanSchedule(
+    [property:Obsolete] // todo: replace with Period
+    Date StartDate, 
+    Date FinishDate, 
+    Schedule Schedule, 
+    Amounts Amounts)
 {
     public void Validate()
     {
@@ -17,5 +23,5 @@ public record PlanSchedule(Date StartDate, Date FinishDate, Schedule Schedule, A
         Amounts.Validate(false, false, true, false);
     }
 
-    public string ToDetails() => $"[{Schedule} {StartDate} - {FinishDate}]";
+    public string ToDetails(IHistory repositories) => $"[{Schedule} {StartDate} - {FinishDate} {Amounts.ToDetails(repositories)}]";
 }

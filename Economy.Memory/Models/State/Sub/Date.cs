@@ -4,7 +4,7 @@ using Economy.Memory.Tools;
 namespace Economy.Memory.Models.State.Sub;
 
 [method: JsonConstructor]
-public record struct Date(int Year, int Month, int Day) : IComparable<Date>
+public readonly record struct Date(int Year, int Month, int Day) : IComparable<Date>
 {
     public void Validate()
     {
