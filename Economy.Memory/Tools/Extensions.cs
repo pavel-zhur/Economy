@@ -32,6 +32,7 @@ public static class Extensions
                 "USD" => amount.Value,
                 "BYN" => Math.Round(amount.Value / 3.313m, 2),
                 "VND" => Math.Round(amount.Value / 23_821, 2),
+                "THB" => Math.Round(amount.Value / 32.27m, 2),
                 _ => throw new ArgumentOutOfRangeException(nameof(currency.Abbreviation), currency.Abbreviation,
                     "Couldn't convert to eUSD."),
             };
