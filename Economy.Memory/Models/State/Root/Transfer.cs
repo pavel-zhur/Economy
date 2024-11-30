@@ -15,8 +15,7 @@ public record Transfer(
     int FromPlanId,
     int ToPlanId,
     Amount Amount,
-    Date Date,
-    TransferType Type)
+    Date Date)
     : EntityBase(Id)
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
@@ -43,8 +42,5 @@ public record Transfer(
         => $"[{Id}]";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {Amount.ToDetails(repositories)} {Date} {Type}";
-
-    public string ToDetailsNoAmountOrDate(IHistory repositories)
-        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {Type}";
+        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {Amount.ToDetails(repositories)} {Date}";
 }

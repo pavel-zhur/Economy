@@ -32,9 +32,6 @@ public record Event(int Id, string Name, string? SpecialNotes, int? PlanId, Date
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
-    public string ToDetailsNoReferenceOrDate()
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
-
     public override string ToDetails(IHistory repositories)
         => $"{Id} {Name} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Date}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
 }
