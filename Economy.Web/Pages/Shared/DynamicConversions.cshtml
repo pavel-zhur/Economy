@@ -1,0 +1,17 @@
+﻿@model Economy.Web.Pages.ConversionsModel
+@using Economy.Engine
+@using Economy.Memory.Containers.State
+@inject StateFactory<State> StateFactory
+
+@{
+    var state = await StateFactory.GetState();
+}
+
+<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+
+@foreach (var entity in state.Repositories.Conversions.GetAll().OrderBy(x => x.Id))
+{
+    <p>
+        @entity.ToDetails(state.Repositories)
+    </p>
+}

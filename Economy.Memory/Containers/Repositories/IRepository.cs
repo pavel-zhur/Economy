@@ -1,4 +1,5 @@
 using Economy.Memory.Models.State;
+using Economy.Memory.Models.State.Base;
 
 namespace Economy.Memory.Containers.Repositories;
 

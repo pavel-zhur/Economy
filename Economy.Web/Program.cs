@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using Economy.Implementation;
+using Economy.Memory.Migrations;
 using Economy.UserStorage;
 using Economy.Web.Hubs;
 using Economy.Web.Tools;
@@ -21,7 +22,8 @@ builder.Services
     .AddUserStorage<GoogleAuthService>(builder.Configuration)
     .AddSingleton<ChatsService>()
     .AddSingleton<ChatsRenderer>()
-    .AddScoped<SessionAvailability>();
+    .AddScoped<SessionAvailability>()
+    .AddMigrator();
 
 builder.Services.AddAuthentication(options =>
 {

@@ -1,0 +1,15 @@
+﻿@page
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Economy.Web.Pages.ConversionsModel
+
+@{
+    ViewData["Title"] = "Conversions";
+}
+
+<div>
+    <button id="reload-button" class="btn btn-primary">Reload Conversions</button>
+</div>
+
+<div id="dynamic-container" class="mt-4">
+    <partial name="DynamicConversions" />
+</div>

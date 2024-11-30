@@ -1,0 +1,6 @@
+﻿using System.Text.Json.Serialization;
+
+namespace Economy.Memory.Migrations.EventSourcing;
+
+[method: JsonConstructor]
+public record ExDeletion(ExEntityFullId EntityFullId, DateTime CreatedOn) : ExEventBase(CreatedOn);

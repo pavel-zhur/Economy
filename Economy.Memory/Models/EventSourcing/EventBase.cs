@@ -2,7 +2,6 @@
 
 namespace Economy.Memory.Models.EventSourcing;
 
-// todo: extract to files
 public abstract record EventBase(DateTime CreatedOn)
 {
     private int _revision;

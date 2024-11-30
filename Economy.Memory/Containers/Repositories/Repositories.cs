@@ -3,6 +3,9 @@ using System.Reflection;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models;
 using Economy.Memory.Models.State;
+using Economy.Memory.Models.State.Base;
+using Economy.Memory.Models.State.Enums;
+using Economy.Memory.Models.State.Root;
 
 namespace Economy.Memory.Containers.Repositories;
 
@@ -34,7 +37,7 @@ public class Repositories : IHistory
             Events,
             Categories,
             Conversions,
-            Transfers
+            Transfers,
         }.ToDictionary(r => r.GetEntityClrType());
         AllByEntityType = AllByType.ToDictionary(x => x.Key.GetCustomAttribute<EntityTypeAttribute>()!.EntityType, x => x.Value);
     }

@@ -2,6 +2,7 @@ using Economy.AiInterface.Services;
 using Economy.Engine;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State;
+using Economy.Memory.Models.State.Sub;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Economy.Implementation;
@@ -27,7 +28,6 @@ public class ChatInitializer(AiCompletion aiCompletion)
                 CurrentDateAndTime = now,
                 Currencies = state.Repositories.Currencies.GetAll(),
                 Wallets = state.Repositories.Wallets.GetAll(),
-                ActivePlans = state.Repositories.Plans.GetAll(),
                 Categories = state.Repositories.Categories.GetAll(),
             });
     }

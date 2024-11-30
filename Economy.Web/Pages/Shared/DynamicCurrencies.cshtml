@@ -1,0 +1,19 @@
+﻿@model Economy.Web.Pages.CurrenciesModel
+@using Economy.Engine
+@using Economy.Memory.Containers.State
+@inject StateFactory<State> StateFactory
+
+@{
+    var state = await StateFactory.GetState();
+}
+
+<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+
+<ul>
+    @foreach (var entity in state.Repositories.Currencies.GetAll().OrderBy(x => x.Id))
+    {
+        <li>
+            @entity.ToDetails(state.Repositories)
+        </li>
+    }
+</ul>

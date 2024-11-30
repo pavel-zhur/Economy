@@ -1,4 +1,4 @@
-using Economy.Memory.Models.State;
+using Economy.Memory.Models.State.Root;
 
 namespace Economy.Memory.Containers.Repositories;
 
@@ -32,9 +32,9 @@ public class PlansRepository(Repositories repositories)
         }
     }
 
-    public IEnumerable<(Plan plan, int depth)> GetPlanTree(int? parentId = null, int depth = 0)
+    public IEnumerable<(Plan plan, int depth)> GetPlanTree(int? parentPlanId = null, int depth = 0)
     {
-        foreach (var childPlan in GetAll().Where(b => b.ParentPlanId == parentId).OrderBy(x => x.Id).ToList())
+        foreach (var childPlan in GetAll().Where(b => b.ParentPlanId == parentPlanId).OrderBy(x => x.Id).ToList())
         {
             yield return (childPlan, depth);
             foreach (var grandChildPlan in GetPlanTree(childPlan.Id, depth + 1))

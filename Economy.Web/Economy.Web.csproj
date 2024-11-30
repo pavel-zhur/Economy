@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Economy.Implementation\Economy.Implementation.csproj" />
+    <ProjectReference Include="..\Economy.Memory.Migrations\Economy.Memory.Migrations.csproj" />
     <ProjectReference Include="..\Economy.UserStorage\Economy.UserStorage.csproj" />
   </ItemGroup>
 

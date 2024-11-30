@@ -1,5 +1,4 @@
-﻿@page
-@model Economy.Web.Pages.PlansModel
+﻿@model Economy.Web.Pages.PlansModel
 @using Economy.Engine
 @using Economy.Memory.Containers.State
 @inject StateFactory<State> StateFactory
@@ -17,6 +16,7 @@
             <tr>
                 <th>Plan ID</th>
                 <th>Schedule</th>
+                <th>All</th>
             </tr>
         </thead>
         <tbody>
@@ -31,6 +31,7 @@
                         }
                     </td>
                     <td>@plan.Schedule?.ToDetails()</td>
+                    <td>@plan.ToExpectedDetails(state.Repositories)</td>
                 </tr>
             }
         </tbody>
