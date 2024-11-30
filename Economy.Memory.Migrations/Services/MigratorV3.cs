@@ -126,5 +126,5 @@ internal class MigratorV3
     private static PlanSchedule? Convert(V3PlanSchedule? planSchedule) 
         => planSchedule == null 
             ? null 
-            : new PlanSchedule(new(planSchedule.StartDate, planSchedule.FinishDate), planSchedule.Schedule == Schedule.Daily ? Schedule.Daily : throw new ArgumentOutOfRangeException(nameof(planSchedule), "Only daily conversion is supported."));
+            : new PlanSchedule(new(planSchedule.StartDate, planSchedule.FinishDate), planSchedule.Schedule == ScheduleType.Daily ? ScheduleType.Daily : throw new ArgumentOutOfRangeException(nameof(planSchedule), "Only daily conversion is supported."), ScheduleBehavior.Mix);
 }

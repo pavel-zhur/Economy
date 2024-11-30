@@ -1,6 +1,6 @@
 ﻿namespace Economy.Memory.Models.State.Enums;
 
-public enum Schedule
+public enum ScheduleType
 {
     Daily,
     Weekly,

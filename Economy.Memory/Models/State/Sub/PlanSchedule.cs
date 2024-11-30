@@ -4,12 +4,13 @@ namespace Economy.Memory.Models.State.Sub;
 
 public record PlanSchedule(
     Period Period, 
-    Schedule Schedule)
+    ScheduleType Type,
+    ScheduleBehavior Behavior)
 {
     public void Validate()
     {
         Period.Validate();
     }
 
-    public string ToDetails() => $"[{Schedule} {Period.ToDetails()}]";
+    public string ToDetails() => $"[{Type} {Behavior} {Period.ToDetails()}]";
 }
