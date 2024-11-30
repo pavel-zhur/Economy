@@ -1,17 +1,17 @@
 ﻿namespace Economy.Memory.Models.State.Sub;
 
-public readonly record struct Period(Date StartDate, Date FinishDate)
+public readonly record struct Period(Date StartDate, Date EndDate)
 {
     public void Validate()
     {
         StartDate.Validate();
-        FinishDate.Validate();
+        EndDate.Validate();
 
-        if (StartDate >= FinishDate)
+        if (StartDate >= EndDate)
         {
-            throw new ArgumentException("Period start date must be before finish date.");
+            throw new ArgumentException("Period start date must be before end date.");
         }
     }
 
-    public string ToDetails() => $"[{StartDate} - {FinishDate}]";
+    public string ToDetails() => $"[{StartDate} - {EndDate}]";
 }

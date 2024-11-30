@@ -1,27 +1,15 @@
-﻿using Economy.Memory.Containers.State;
-using Economy.Memory.Models.State.Enums;
+﻿using Economy.Memory.Models.State.Enums;
 
 namespace Economy.Memory.Models.State.Sub;
 
 public record PlanSchedule(
-    [property:Obsolete] // todo: replace with Period
-    Date StartDate, 
-    Date FinishDate, 
-    Schedule Schedule, 
-    Amounts Amounts)
+    Period Period, 
+    Schedule Schedule)
 {
     public void Validate()
     {
-        StartDate.Validate();
-        FinishDate.Validate();
-
-        if (StartDate >= FinishDate)
-        {
-            throw new ArgumentException("Plan schedule start date must be before finish date.");
-        }
-
-        Amounts.Validate(false, false, true, false);
+        Period.Validate();
     }
 
-    public string ToDetails(IHistory repositories) => $"[{Schedule} {StartDate} - {FinishDate} {Amounts.ToDetails(repositories)}]";
+    public string ToDetails() => $"[{Schedule} {Period.ToDetails()}]";
 }

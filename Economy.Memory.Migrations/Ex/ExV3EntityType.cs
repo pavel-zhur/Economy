@@ -3,4 +3,5 @@
 internal enum ExV3EntityType
 {
     Transaction,
+    Plan,
 }
