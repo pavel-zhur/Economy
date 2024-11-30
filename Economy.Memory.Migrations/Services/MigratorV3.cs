@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Economy.Memory.Containers.State;
@@ -76,10 +77,16 @@ internal class MigratorV3
                     transaction.SpecialNotes ?? "[converted]",
                     null,
                     transaction.PlanId,
-                    null,
-                    v3Transaction.Type == TransactionType.Income ? amounts : null,
-                    v3Transaction.Type == TransactionType.Expense ? amounts : null,
-                    planned.Date), 
+                    new(
+                        v3Transaction.Type switch
+                        {
+                            TransactionType.Income => PlanAmountType.ExpectedIncome,
+                            TransactionType.Expense => PlanAmountType.ExpectedExpense,
+                            _ => throw new ArgumentOutOfRangeException(),
+                        },
+                        amounts,
+                        null,
+                        planned.Date)), 
                     DateTime.UtcNow));
             }
         }
@@ -108,23 +115,27 @@ internal class MigratorV3
         plan.Name,
         plan.SpecialNotes,
         plan.ParentPlanId,
-        Convert(plan.Schedule),
-        null,
-        plan.Schedule?.Amounts.Select(x => x with
-        {
-            Value = x.Value * (int)(plan.Schedule.FinishDate.ToDateTime() - plan.Schedule.StartDate.ToDateTime()).TotalDays
-        }).SelectSingle(x =>
-        {
-            if (x == null)
-                return null;
-            var amounts = new Amounts();
-            amounts.AddRange(x);
-            return amounts;
-        }),
-        null);
+        Convert(plan.Schedule));
 
-    private static PlanSchedule? Convert(V3PlanSchedule? planSchedule) 
+    private static PlanAmount? Convert(V3PlanSchedule? planSchedule) 
         => planSchedule == null 
             ? null 
-            : new PlanSchedule(new(planSchedule.StartDate, planSchedule.FinishDate), planSchedule.Schedule == ScheduleType.Daily ? ScheduleType.Daily : throw new ArgumentOutOfRangeException(nameof(planSchedule), "Only daily conversion is supported."), ScheduleBehavior.Mix);
+            : new PlanAmount(
+                PlanAmountType.ExpectedExpense,
+                planSchedule.Amounts.Select(x => x with
+                {
+                    Value = x.Value * (int)(planSchedule.FinishDate.ToDateTime() - planSchedule.StartDate.ToDateTime()).TotalDays
+                }).SelectSingle(x =>
+                {
+                    if (x == null)
+                        return null;
+                    var amounts = new Amounts();
+                    amounts.AddRange(x);
+                    return amounts;
+                }),
+                new(
+                    new(planSchedule.StartDate, planSchedule.FinishDate), 
+                    planSchedule.Schedule == ScheduleInterval.Daily ? ScheduleInterval.Daily : throw new ArgumentOutOfRangeException(nameof(planSchedule), "Only daily conversion is supported."), 
+                    ScheduleBehavior.Mix),
+                null);
 }

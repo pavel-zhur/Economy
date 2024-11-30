@@ -2,9 +2,9 @@
 
 namespace Economy.Memory.Models.State.Sub;
 
-public record PlanSchedule(
+public record PlanAmountSchedule(
     Period Period, 
-    ScheduleType Type,
+    ScheduleInterval Interval,
     ScheduleBehavior Behavior)
 {
     public void Validate()
@@ -12,5 +12,5 @@ public record PlanSchedule(
         Period.Validate();
     }
 
-    public string ToDetails() => $"[{Type} {Behavior} {Period.ToDetails()}]";
+    public string ToDetails() => $"[{Interval} {Behavior} {Period.ToDetails()}]";
 }

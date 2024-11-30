@@ -15,8 +15,7 @@
         <thead>
             <tr>
                 <th>Plan ID</th>
-                <th>Schedule</th>
-                <th>All</th>
+                <th>Amounts</th>
             </tr>
         </thead>
         <tbody>
@@ -30,8 +29,7 @@
                             <div>@plan.SpecialNotes</div>
                         }
                     </td>
-                    <td>@plan.Schedule?.ToDetails()</td>
-                    <td>@plan.ToExpectedDetails(state.Repositories)</td>
+                    <td>@plan.Amount?.ToDetails(state.Repositories)</td>
                 </tr>
             }
         </tbody>

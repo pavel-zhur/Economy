@@ -6,5 +6,5 @@ namespace Economy.Memory.Migrations.V3.Sub;
 internal record V3PlanSchedule(
     Date StartDate, 
     Date FinishDate, 
-    ScheduleType Schedule, 
+    ScheduleInterval Schedule, 
     Amounts Amounts);

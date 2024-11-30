@@ -18,8 +18,8 @@ public record Transaction(
     DateTime DateAndTime,
     Amounts Amounts,
     int? PlanId,
-    Period? PlanReferencePeriod,
-    Date? PlanReferenceDate)
+    Period? PlanSchedulePeriod,
+    Date? PlanScheduleDate)
     : EntityBase(Id)
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() =>
@@ -37,7 +37,15 @@ public record Transaction(
             throw new ArgumentException("Transaction special notes must be null or not empty.");
         }
 
-        Amounts?.Validate(false, false, true, false);
+        Amounts.Validate(false, false, true, false);
+
+        PlanSchedulePeriod?.Validate();
+        PlanScheduleDate?.Validate();
+
+        if (PlanSchedulePeriod != null && PlanScheduleDate != null)
+        {
+            throw new ArgumentException("Transaction schedule period and date must not be set together.");
+        }
     }
 
     public override string ToReferenceTitle()
@@ -47,5 +55,5 @@ public record Transaction(
         => $"{Id} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {Type} {Amounts.ToDetails(repositories)} r:[{PlanReferencePeriod?.ToDetails()}{PlanReferenceDate}]";
+        => $"{Id} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {Type} {Amounts.ToDetails(repositories)} r:[{PlanSchedulePeriod?.ToDetails()}{PlanScheduleDate}]";
 }
