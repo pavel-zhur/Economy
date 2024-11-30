@@ -1,6 +1,7 @@
 ﻿@model Economy.Web.Pages.TransactionsModel
 @using Economy.Memory.Models
 @using Economy.Memory.Models.State.Enums
+@using Economy.Memory.Models.State.Root
 @using Economy.Memory.Tools
 
 @{
@@ -26,7 +27,14 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var transaction in Model.State.Repositories.Transactions.GetAll().OrderBy(x => x.DateAndTime))
+            @foreach (var transaction in Model.State.Repositories.Transactions.GetAll().OrderBy<Transaction, IComparable>(x => Model.Ordering switch
+                      {
+                          TransactionsModel.TransactionsOrdering.Id => x.Id,
+                          TransactionsModel.TransactionsOrdering.IdDesc => -x.Id,
+                          TransactionsModel.TransactionsOrdering.DateAndTime => x.DateAndTime,
+                          TransactionsModel.TransactionsOrdering.DateAndTimeDesc => DateTime.MaxValue - x.DateAndTime,
+                          _ => throw new ArgumentOutOfRangeException()
+                      }))
             {
                 <tr>
                     <td class="data-info">@transaction.DateAndTime.WithDayOfWeek()</td>

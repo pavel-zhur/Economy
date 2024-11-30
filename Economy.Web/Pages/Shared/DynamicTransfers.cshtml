@@ -1,6 +1,7 @@
 ﻿@model Economy.Web.Pages.TransfersModel
 @using Economy.Engine
 @using Economy.Memory.Containers.State
+@using Economy.Memory.Models.State.Root
 @inject StateFactory<State> StateFactory
 
 @{
@@ -9,7 +10,14 @@
 
 <input type="hidden" id="latestRevision" value="@state.Events.Count" />
 
-@foreach (var transfer in state.Repositories.Transfers.GetAll())
+@foreach (var transfer in state.Repositories.Transfers.GetAll().OrderBy<Transfer, IComparable>(x => Model.Ordering switch
+          {
+              TransfersModel.TransfersOrdering.Id => x.Id,
+              TransfersModel.TransfersOrdering.IdDesc => -x.Id,
+              TransfersModel.TransfersOrdering.Date => x.Date,
+              TransfersModel.TransfersOrdering.DateDesc => x.Date.OppositeComparable,
+              _ => throw new ArgumentOutOfRangeException()
+          }))
 {
     <p>
         @transfer.ToDetails(state.Repositories)

@@ -9,6 +9,19 @@ namespace Economy.Web.Pages;
 
 public class WalletsModel(StateFactory<State> stateFactory) : PageModel
 {
+    [FromQuery] public WalletsOrdering Ordering { get; set; } = WalletsOrdering.Name;
+
+    public enum WalletsOrdering
+    {
+        Id,
+        IdDesc,
+        Name,
+        Total,
+        TotalDesc,
+        LastAudit,
+        LastAuditDesc,
+    }
+
     public Amounts Total { get; set; } = null!;
 
     public IReadOnlyList<(Wallet wallet, WalletAudit? audit)> Wallets { get; set; } = null!;

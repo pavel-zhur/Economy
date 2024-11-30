@@ -1,0 +1,12 @@
+﻿@model (int current, Type orderingType)
+
+<div id="ordering-container">
+    <div class="btn-group" role="group" aria-label="Ordering">
+        @foreach (var ordering in Enum.GetValues(Model.orderingType))
+        {
+            <input type="radio" class="btn-check" name="Ordering" id="orderingRadio_@ordering" value="@ordering" @(Model.current == (int)ordering ? "checked" : "") autocomplete="off">
+            <label class="btn btn-outline-primary" for="orderingRadio_@ordering">@ordering</label>
+        }
+    </div>
+    <button type="button" id="reload-button" class="btn btn-primary">Reload</button>
+</div>

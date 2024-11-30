@@ -5,9 +5,7 @@
     ViewData["Title"] = "Wallets";
 }
 
-<div>
-    <button id="reload-button" class="btn btn-primary">Reload Wallets</button>
-</div>
+<partial name="_Ordering" model="((int)Model.Ordering, typeof(WalletsModel.WalletsOrdering))" />
 
 <div id="dynamic-container" class="mt-4">
     <partial name="DynamicWallets" />

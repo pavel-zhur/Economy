@@ -11,6 +11,16 @@ namespace Economy.Web.Pages;
 
 public class TransactionsModel(StateFactory<State> stateFactory) : PageModel
 {
+    [FromQuery] public TransactionsOrdering Ordering { get; set; } = TransactionsOrdering.IdDesc;
+
+    public enum TransactionsOrdering
+    {
+        Id,
+        IdDesc,
+        DateAndTime,
+        DateAndTimeDesc,
+    }
+
     public State State { get; set; } = null!;
     public Amounts TotalIncomes { get; set; } = null!;
     public Amounts TotalExpenses { get; set; } = null!;

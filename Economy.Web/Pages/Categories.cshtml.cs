@@ -7,6 +7,13 @@ public class CategoriesModel : PageModel
 {
     [FromQuery] public CategoriesOrdering Ordering { get; set; } = CategoriesOrdering.Name;
 
+    public enum CategoriesOrdering
+    {
+        Id,
+        IdDesc,
+        Name,
+    }
+
     public void OnGet()
     {
     }
@@ -15,12 +22,5 @@ public class CategoriesModel : PageModel
     {
         OnGet();
         return Partial("DynamicCategories", this);
-    }
-
-    public enum CategoriesOrdering
-    {
-        Id,
-        IdDesc,
-        Name,
     }
 }

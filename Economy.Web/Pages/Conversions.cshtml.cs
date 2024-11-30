@@ -5,6 +5,16 @@ namespace Economy.Web.Pages;
 
 public class ConversionsModel : PageModel
 {
+    [FromQuery] public ConversionsOrdering Ordering { get; set; } = ConversionsOrdering.IdDesc;
+
+    public enum ConversionsOrdering
+    {
+        Id,
+        IdDesc,
+        DateAndTime,
+        DateAndTimeDesc,
+    }
+
     public void OnGet()
     {
     }

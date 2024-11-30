@@ -1,6 +1,7 @@
 ﻿@model Economy.Web.Pages.WalletsModel
 @using Economy.Engine
 @using Economy.Memory.Containers.State
+@using Economy.Memory.Models.State.Root
 @using Economy.Memory.Tools
 @inject StateFactory<State> StateFactory
 
@@ -20,7 +21,17 @@
         </tr>
         </thead>
         <tbody>
-        @foreach (var (wallet, audit) in Model.Wallets)
+        @foreach (var (wallet, audit) in Model.Wallets.OrderBy<(Wallet wallet, WalletAudit? audit), IComparable>(x => Model.Ordering switch
+                  {
+                      WalletsModel.WalletsOrdering.Id => x.wallet.Id,
+                      WalletsModel.WalletsOrdering.IdDesc => -x.wallet.Id,
+                      WalletsModel.WalletsOrdering.Name => x.wallet.Name,
+                      WalletsModel.WalletsOrdering.Total => x.audit?.Amounts.ToEquivalentAmount(state.Repositories).Amount,
+                      WalletsModel.WalletsOrdering.TotalDesc => -x.audit?.Amounts.ToEquivalentAmount(state.Repositories).Amount,
+                      WalletsModel.WalletsOrdering.LastAudit => x.audit?.CheckDateAndTime,
+                      WalletsModel.WalletsOrdering.LastAuditDesc => DateTime.MaxValue - x.audit?.CheckDateAndTime,
+                      _ => throw new ArgumentOutOfRangeException()
+                  }))
         {
             <tr>
                 <td>@wallet.ToDetails(state.Repositories)</td>

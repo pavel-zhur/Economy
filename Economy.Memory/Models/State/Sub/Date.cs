@@ -4,7 +4,7 @@ using Economy.Memory.Tools;
 namespace Economy.Memory.Models.State.Sub;
 
 [method: JsonConstructor]
-public readonly record struct Date(int Year, int Month, int Day) : IComparable<Date>
+public readonly record struct Date(int Year, int Month, int Day) : IComparable<Date>, IComparable
 {
     public void Validate()
     {
@@ -18,6 +18,15 @@ public readonly record struct Date(int Year, int Month, int Day) : IComparable<D
 
     public override string ToString()
         => $"{Day:D2}.{Month:D2}.{Year}";
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is null) return 1;
+        if (obj is Date date) return CompareTo(date);
+        throw new ArgumentException($"Object must be of type {nameof(Date)}.");
+    }
+
+    public IComparable OppositeComparable => new Date(-Year, -Month, -Day);
 
     public Date AddDays(int i)
     {

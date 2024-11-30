@@ -1,6 +1,7 @@
 ﻿@model Economy.Web.Pages.CurrenciesModel
 @using Economy.Engine
 @using Economy.Memory.Containers.State
+@using Economy.Memory.Models.State.Root
 @inject StateFactory<State> StateFactory
 
 @{
@@ -10,7 +11,14 @@
 <input type="hidden" id="latestRevision" value="@state.Events.Count" />
 
 <ul>
-    @foreach (var entity in state.Repositories.Currencies.GetAll().OrderBy(x => x.Id))
+    @foreach (var entity in state.Repositories.Currencies.GetAll().OrderBy<Currency, IComparable>(x => Model.Ordering switch
+              {
+                  CurrenciesModel.CurrenciesOrdering.Id => x.Id,
+                  CurrenciesModel.CurrenciesOrdering.IdDesc => -x.Id,
+                  CurrenciesModel.CurrenciesOrdering.LongName => x.LongName.ToLowerInvariant().Trim(),
+                  CurrenciesModel.CurrenciesOrdering.Abbreviation => x.Abbreviation.ToLowerInvariant().Trim(),
+                  _ => throw new ArgumentOutOfRangeException()
+              }))
     {
         <li>
             @entity.ToDetails(state.Repositories)

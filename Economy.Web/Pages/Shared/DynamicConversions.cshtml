@@ -1,6 +1,7 @@
 ﻿@model Economy.Web.Pages.ConversionsModel
 @using Economy.Engine
 @using Economy.Memory.Containers.State
+@using Economy.Memory.Models.State.Root
 @inject StateFactory<State> StateFactory
 
 @{
@@ -9,7 +10,14 @@
 
 <input type="hidden" id="latestRevision" value="@state.Events.Count" />
 
-@foreach (var entity in state.Repositories.Conversions.GetAll().OrderBy(x => x.Id))
+@foreach (var entity in state.Repositories.Conversions.GetAll().OrderBy<Conversion, IComparable>(x => Model.Ordering switch
+          {
+              ConversionsModel.ConversionsOrdering.Id => x.Id,
+              ConversionsModel.ConversionsOrdering.IdDesc => -x.Id,
+              ConversionsModel.ConversionsOrdering.DateAndTime => x.DateAndTime,
+             ConversionsModel.ConversionsOrdering.DateAndTimeDesc => DateTime.MaxValue - x.DateAndTime,
+              _ => throw new ArgumentOutOfRangeException()
+          }))
 {
     <p>
         @entity.ToDetails(state.Repositories)
