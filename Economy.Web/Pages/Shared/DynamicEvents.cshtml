@@ -1,7 +1,7 @@
 ﻿@model Economy.Web.Pages.EventsModel
 @using Economy.Engine
 @using Economy.Memory.Containers.State
-@using OneShelf.Common
+@using Economy.Memory.Models.State.Root
 @inject StateFactory<State> StateFactory
 
 @{
@@ -10,14 +10,16 @@
 
 <input type="hidden" id="latestRevision" value="@state.Events.Count" />
 
-@foreach (var (@event, _) in state.Events.WithIndices().OrderBy(x => Model.Ordering switch
+@foreach (var transfer in state.Repositories.Events.GetAll().OrderBy<Event, IComparable>(x => Model.Ordering switch
           {
-              EventsModel.EventsOrdering.Id => x.i,
-              EventsModel.EventsOrdering.IdDesc => -x.i,
+              EventsModel.EventsOrdering.Id => x.Id,
+              EventsModel.EventsOrdering.IdDesc => -x.Id,
+              EventsModel.EventsOrdering.Date => x.Date,
+              EventsModel.EventsOrdering.DateDesc => x.Date.OppositeComparable,
               _ => throw new ArgumentOutOfRangeException()
           }))
 {
     <p>
-        @(@event.GetRevision()). @(@event.ToDetails(state))
+        @transfer.ToDetails(state.Repositories)
     </p>
 }

@@ -26,6 +26,7 @@ public readonly record struct Date(int Year, int Month, int Day) : IComparable<D
         throw new ArgumentException($"Object must be of type {nameof(Date)}.");
     }
 
+    [JsonIgnore]
     public IComparable OppositeComparable => new Date(-Year, -Month, -Day);
 
     public Date AddDays(int i)

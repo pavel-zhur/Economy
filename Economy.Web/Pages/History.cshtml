@@ -1,0 +1,12 @@
+﻿@page
+@model Economy.Web.Pages.HistoryModel
+
+@{
+    ViewData["Title"] = "History";
+}
+
+<partial name="_Ordering" model="((int)Model.Ordering, typeof(HistoryModel.HistoryOrdering))" />
+
+<div id="dynamic-container" class="mt-4">
+    <partial name="DynamicHistory" />
+</div>

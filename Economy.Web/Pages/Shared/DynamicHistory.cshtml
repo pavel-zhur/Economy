@@ -1,0 +1,23 @@
+﻿@model Economy.Web.Pages.HistoryModel
+@using Economy.Engine
+@using Economy.Memory.Containers.State
+@using OneShelf.Common
+@inject StateFactory<State> StateFactory
+
+@{
+    var state = await StateFactory.GetState();
+}
+
+<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+
+@foreach (var (@event, _) in state.Events.WithIndices().OrderBy(x => Model.Ordering switch
+          {
+              HistoryModel.HistoryOrdering.Id => x.i,
+              HistoryModel.HistoryOrdering.IdDesc => -x.i,
+              _ => throw new ArgumentOutOfRangeException()
+          }))
+{
+    <p>
+        @(@event.GetRevision()). @(@event.ToDetails(state))
+    </p>
+}

@@ -3,16 +3,14 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class EventsModel : PageModel
+public class HistoryModel : PageModel
 {
-    [FromQuery] public EventsOrdering Ordering { get; set; } = EventsOrdering.IdDesc;
+    [FromQuery] public HistoryOrdering Ordering { get; set; } = HistoryOrdering.IdDesc;
 
-    public enum EventsOrdering
+    public enum HistoryOrdering
     {
         Id,
         IdDesc,
-        Date,
-        DateDesc,
     }
 
     public void OnGet()
@@ -22,6 +20,6 @@ public class EventsModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicEvents", this);
+        return Partial("DynamicHistory", this);
     }
 }
