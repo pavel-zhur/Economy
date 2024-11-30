@@ -1,6 +1,7 @@
 ﻿@model Economy.Web.Pages.CategoriesModel
 @using Economy.Engine
 @using Economy.Memory.Containers.State
+@using Economy.Memory.Models.State.Root
 @inject StateFactory<State> StateFactory
 
 @{
@@ -10,7 +11,13 @@
 <input type="hidden" id="latestRevision" value="@state.Events.Count" />
 
 <ul>
-    @foreach (var entity in state.Repositories.Categories.GetAll().OrderBy(x => x.Id))
+    @foreach (var entity in state.Repositories.Categories.GetAll().OrderBy<Category, IComparable>(x => Model.Ordering switch
+              {
+                  CategoriesModel.CategoriesOrdering.Id => x.Id,
+                  CategoriesModel.CategoriesOrdering.IdDesc => -x.Id,
+                  CategoriesModel.CategoriesOrdering.Name => x.Name.ToLowerInvariant().Trim(),
+                  _ => throw new ArgumentOutOfRangeException(),
+              }))
     {
         <li>
             @entity.ToDetails(state.Repositories)
