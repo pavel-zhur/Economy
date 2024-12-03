@@ -1,6 +1,6 @@
 ﻿namespace Economy.Memory.Models.State.Enums;
 
-public enum ScheduleBehavior
+public enum RecurringAmountsBalancingBehavior
 {
     Mix,
     Isolate,

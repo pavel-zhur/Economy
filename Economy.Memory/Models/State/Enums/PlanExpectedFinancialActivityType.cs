@@ -1,6 +1,6 @@
 ﻿namespace Economy.Memory.Models.State.Enums;
 
-public enum PlanAmountType
+public enum PlanExpectedFinancialActivityType
 {
     ExpectedExpense,
     ExpectedIncome,

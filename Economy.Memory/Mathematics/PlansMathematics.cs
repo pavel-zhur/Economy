@@ -57,18 +57,18 @@ public static class PlansMathematics
 
         foreach (var plan in state.Repositories.Plans.GetAll())
         {
-            if (plan.Amount is { } amount)
+            if (plan.ExpectedFinancialActivity is { } amount)
             {
-                if (amount.ExpectedSchedule is { } schedule)
+                if (amount.PlannedRecurringDates is { } schedule)
                 {
                     var occurrences = new List<Date>();
                     for (var current = schedule.Period.StartDate.ToDateTime();
                          current <= schedule.Period.EndDate.ToDateTime();
                          current = schedule.Interval switch
                          {
-                             ScheduleInterval.Daily => current.AddDays(1),
-                             ScheduleInterval.Weekly => current.AddDays(7),
-                             ScheduleInterval.Monthly => current.AddMonths(1),
+                             RecurringInterval.Daily => current.AddDays(1),
+                             RecurringInterval.Weekly => current.AddDays(7),
+                             RecurringInterval.Monthly => current.AddMonths(1),
                              _ => throw new ArgumentOutOfRangeException(),
                          })
                     {
@@ -83,18 +83,18 @@ public static class PlansMathematics
                                 2,
                                 amount.Type switch
                                 {
-                                    PlanAmountType.ExpectedExpense => MidpointRounding.ToPositiveInfinity,
-                                    PlanAmountType.ExpectedIncome => MidpointRounding.ToNegativeInfinity,
+                                    PlanExpectedFinancialActivityType.ExpectedExpense => MidpointRounding.ToPositiveInfinity,
+                                    PlanExpectedFinancialActivityType.ExpectedIncome => MidpointRounding.ToNegativeInfinity,
                                 }) * amount.Type switch
                             {
-                                PlanAmountType.ExpectedExpense => -1,
-                                PlanAmountType.ExpectedIncome => 1,
+                                PlanExpectedFinancialActivityType.ExpectedExpense => -1,
+                                PlanExpectedFinancialActivityType.ExpectedIncome => 1,
                                 _ => throw new ArgumentOutOfRangeException(),
                             },
                             amount.Type switch
                             {
-                                PlanAmountType.ExpectedExpense => PlanFlowRecordType.ExpectedExpense,
-                                PlanAmountType.ExpectedIncome => PlanFlowRecordType.ExpectedIncome,
+                                PlanExpectedFinancialActivityType.ExpectedExpense => PlanFlowRecordType.ExpectedExpense,
+                                PlanExpectedFinancialActivityType.ExpectedIncome => PlanFlowRecordType.ExpectedIncome,
                                 _ => throw new ArgumentOutOfRangeException(),
                             },
                             plan.ParentPlanId,
@@ -104,17 +104,17 @@ public static class PlansMathematics
                 else
                 {
                     result.Add(new PlanFlow2Record(
-                        amount.ExpectedDate!.Value,
+                        amount.PlannedDate!.Value,
                         amount.Amounts.ToEquivalentAmount(state.Repositories).Amount * amount.Type switch
                         {
-                            PlanAmountType.ExpectedExpense => -1,
-                            PlanAmountType.ExpectedIncome => 1,
+                            PlanExpectedFinancialActivityType.ExpectedExpense => -1,
+                            PlanExpectedFinancialActivityType.ExpectedIncome => 1,
                             _ => throw new ArgumentOutOfRangeException(),
                         },
                         amount.Type switch
                         {
-                            PlanAmountType.ExpectedExpense => PlanFlowRecordType.ExpectedExpense,
-                            PlanAmountType.ExpectedIncome => PlanFlowRecordType.ExpectedIncome,
+                            PlanExpectedFinancialActivityType.ExpectedExpense => PlanFlowRecordType.ExpectedExpense,
+                            PlanExpectedFinancialActivityType.ExpectedIncome => PlanFlowRecordType.ExpectedIncome,
                             _ => throw new ArgumentOutOfRangeException(),
                         },
                         plan.ParentPlanId,

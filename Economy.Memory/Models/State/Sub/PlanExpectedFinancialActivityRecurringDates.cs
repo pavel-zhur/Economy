@@ -2,10 +2,10 @@
 
 namespace Economy.Memory.Models.State.Sub;
 
-public record PlanAmountSchedule(
+public record PlanExpectedFinancialActivityRecurringDates(
     Period Period, 
-    ScheduleInterval Interval,
-    ScheduleBehavior Behavior)
+    RecurringInterval Interval,
+    RecurringAmountsBalancingBehavior Behavior)
 {
     public void Validate()
     {

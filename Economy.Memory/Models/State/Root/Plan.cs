@@ -15,7 +15,7 @@ public record Plan(
     string Name,
     string? SpecialNotes,
     int? ParentPlanId,
-    PlanAmount? Amount)
+    PlanExpectedFinancialActivity? ExpectedFinancialActivity)
     : EntityBase(Id)
 {
     protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => ParentPlanId.ToEntityFullId(EntityType.Plan).Once();
@@ -32,17 +32,17 @@ public record Plan(
             throw new ArgumentException("Plan special notes must be null or not empty.");
         }
 
-        if (repositories.Plans.GetParents(this).Any(x => x.Amount?.ExpectedSchedule != null))
+        if (repositories.Plans.GetParents(this).Any(x => x.ExpectedFinancialActivity?.PlannedRecurringDates != null))
         {
-            throw new ArgumentException("Plans with schedules may not have children.");
+            throw new ArgumentException("Plans with activity with recurring dates may not have children.");
         }
 
-        Amount?.Validate();
+        ExpectedFinancialActivity?.Validate();
     }
 
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
     public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} {Amount?.ToDetails(repositories)}";
+        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} {ExpectedFinancialActivity?.ToDetails(repositories)}";
 }

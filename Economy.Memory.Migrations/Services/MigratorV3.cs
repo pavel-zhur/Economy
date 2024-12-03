@@ -80,8 +80,8 @@ internal class MigratorV3
                     new(
                         v3Transaction.Type switch
                         {
-                            TransactionType.Income => PlanAmountType.ExpectedIncome,
-                            TransactionType.Expense => PlanAmountType.ExpectedExpense,
+                            TransactionType.Income => PlanExpectedFinancialActivityType.ExpectedIncome,
+                            TransactionType.Expense => PlanExpectedFinancialActivityType.ExpectedExpense,
                             _ => throw new ArgumentOutOfRangeException(),
                         },
                         amounts,
@@ -117,11 +117,11 @@ internal class MigratorV3
         plan.ParentPlanId,
         Convert(plan.Schedule));
 
-    private static PlanAmount? Convert(V3PlanSchedule? planSchedule) 
+    private static PlanExpectedFinancialActivity? Convert(V3PlanSchedule? planSchedule) 
         => planSchedule == null 
             ? null 
-            : new PlanAmount(
-                PlanAmountType.ExpectedExpense,
+            : new PlanExpectedFinancialActivity(
+                PlanExpectedFinancialActivityType.ExpectedExpense,
                 planSchedule.Amounts.Select(x => x with
                 {
                     Value = x.Value * (int)(planSchedule.FinishDate.ToDateTime() - planSchedule.StartDate.ToDateTime()).TotalDays
@@ -135,7 +135,7 @@ internal class MigratorV3
                 }),
                 new(
                     new(planSchedule.StartDate, planSchedule.FinishDate), 
-                    planSchedule.Schedule == ScheduleInterval.Daily ? ScheduleInterval.Daily : throw new ArgumentOutOfRangeException(nameof(planSchedule), "Only daily conversion is supported."), 
-                    ScheduleBehavior.Mix),
+                    planSchedule.Schedule == RecurringInterval.Daily ? RecurringInterval.Daily : throw new ArgumentOutOfRangeException(nameof(planSchedule), "Only daily conversion is supported."), 
+                    RecurringAmountsBalancingBehavior.Mix),
                 null);
 }
