@@ -1,0 +1,24 @@
+﻿@page
+@model Economy.Web.Pages.PlanRecordsModel
+
+@{
+    ViewData["Title"] = "Plan Records";
+}
+
+<partial name="_Ordering" model="((int)Model.Ordering, typeof(PlanRecordsModel.PlanRecordsOrdering))" />
+
+@if (Model.PlanId.HasValue)
+{
+    <h2>Plan Records for Plan @Model.PlanId</h2>
+    <div>
+        <a asp-page="/PlanTotals" asp-all-route-data='new Dictionary<string, string> { { "PlanId", Model.PlanId.Value.ToString() } }'>Go to Totals</a>
+    </div>
+}
+else
+{
+    <h2>All Plan Records</h2>
+}
+
+<div id="dynamic-container" class="mt-4">
+    <partial name="DynamicPlanRecords" />
+</div>

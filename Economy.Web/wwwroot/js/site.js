@@ -31,11 +31,14 @@ function reloadListPage(isExternalTrigger = false, latestRevision = null) {
     // Retrieve current ordering
     const ordering = getCurrentOrdering();
 
-    // Construct URL with or without Ordering parameter
-    let url = `${window.location.pathname}?handler=Reload`;
+    // Construct URL with existing query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('handler', 'Reload');
     if (ordering) {
-        url += `&Ordering=${encodeURIComponent(ordering)}`;
+        urlParams.set('Ordering', ordering);
     }
+
+    const url = `${window.location.pathname}?${urlParams.toString()}`;
 
     // Update Reload button state
     reloadButton.textContent = 'Reloading...';

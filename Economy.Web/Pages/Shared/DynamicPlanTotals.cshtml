@@ -1,0 +1,41 @@
+﻿@model Economy.Web.Pages.PlanTotalsModel
+@using Economy.Engine
+@using Economy.Memory.Containers.State
+@using Economy.Memory.Models.Reports
+@using Economy.Memory.Tools
+@inject StateFactory<State> StateFactory
+
+@{
+    var state = await StateFactory.GetState();
+    var records = PlansMath.CreateRecords(state);
+    var (totalsByPlanId, _, grandTotal) = PlansMath.CalculateTotals(state, records);
+    var totals = Model.PlanId.HasValue ? totalsByPlanId[Model.PlanId.Value] : grandTotal;
+}
+
+<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+
+<div class="table-fixed-header omt-4">
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Record</th>
+                <th>Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var (date, _, balance, record) in totals.Records.OrderBy(x => Model.Ordering switch
+                  {
+                      PlanTotalsModel.PlanTotalsOrdering.Date => (IComparable)x.date,
+                      PlanTotalsModel.PlanTotalsOrdering.DateDesc => DateTime.MaxValue - x.date.ToDateTime(),
+                      _ => throw new ArgumentOutOfRangeException()
+                  }))            {
+                <tr>
+                    <td class="data-info">@date</td>
+                    <td class="data-info">@record.ToDetails(state.Repositories, Model.PlanId)</td>
+                    <td class="data-record">@balance</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

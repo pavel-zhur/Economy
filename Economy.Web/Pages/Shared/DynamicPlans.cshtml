@@ -16,6 +16,7 @@
             <tr>
                 <th>Plan ID</th>
                 <th>Amounts</th>
+                <th>Records</th>
             </tr>
         </thead>
         <tbody>
@@ -30,6 +31,9 @@
                         }
                     </td>
                     <td>@plan.Amount?.ToDetails(state.Repositories)</td>
+                    <td>
+                        <a asp-page="/PlanRecords" asp-all-route-data='new Dictionary<string, string> { { "PlanId", plan.Id.ToString() } }'>View</a>
+                    </td>
                 </tr>
             }
         </tbody>

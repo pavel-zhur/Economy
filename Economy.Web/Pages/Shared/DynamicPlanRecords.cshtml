@@ -1,0 +1,26 @@
+﻿@model Economy.Web.Pages.PlanRecordsModel
+@using Economy.Engine
+@using Economy.Memory.Containers.State
+@using Economy.Memory.Models.Reports
+@using Economy.Memory.Tools
+@using OneShelf.Common
+@inject StateFactory<State> StateFactory
+
+@{
+    var state = await StateFactory.GetState();
+    var records = PlansMath.CreateRecords(state);
+}
+
+<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+
+<div>
+    @foreach (var record in records.SelectSingle(x => !Model.PlanId.HasValue ? x : x.Where(x => x.PlanIds.Any(x => x.planId == Model.PlanId))).OrderBy(x => Model.Ordering switch
+              {
+                  PlanRecordsModel.PlanRecordsOrdering.Date => (IComparable)x.Date,
+                  PlanRecordsModel.PlanRecordsOrdering.DateDesc => DateTime.MaxValue - x.Date.ToDateTime(),
+                  _ => throw new ArgumentOutOfRangeException()
+              }))
+    {
+        <p>@record.ToDetails(state.Repositories, null)</p>
+    }
+</div>
