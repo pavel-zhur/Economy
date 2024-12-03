@@ -8,7 +8,7 @@ namespace Economy.Web.Services;
 public class ChatsService(ILogger<ChatsService> logger)
 {
     private readonly Dictionary<(string userId, Guid chatId, string messageId), CancellationTokenSource> _cancellations = new();
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
 
     public async Task GotMessage(ChatsServiceContext<State, ChatInitializer> context, Guid chatId, string messageId, string message)
     {

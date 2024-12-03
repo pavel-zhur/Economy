@@ -5,7 +5,7 @@ namespace Economy.Engine;
 public class StateFactory<TState>(FactoriesMemory<TState> factoriesMemory, IUserDataStorage userDataStorage)
     where TState : class, IState, new()
 {
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private UserData<TState>? _detachedState;
 
     public async Task<TState> GetState()
