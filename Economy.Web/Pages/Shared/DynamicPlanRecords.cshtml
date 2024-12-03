@@ -1,6 +1,7 @@
 ﻿@model Economy.Web.Pages.PlanRecordsModel
 @using Economy.Engine
 @using Economy.Memory.Containers.State
+@using Economy.Memory.Mathematics
 @using Economy.Memory.Models.Reports
 @using Economy.Memory.Tools
 @using OneShelf.Common
@@ -8,7 +9,7 @@
 
 @{
     var state = await StateFactory.GetState();
-    var records = PlansMath.CreateRecords(state);
+    var records = PlansMathematics.CreateRecords(state);
 }
 
 <input type="hidden" id="latestRevision" value="@state.Events.Count" />

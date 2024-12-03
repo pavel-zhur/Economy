@@ -1,14 +1,15 @@
 ﻿@model Economy.Web.Pages.PlanTotalsModel
 @using Economy.Engine
 @using Economy.Memory.Containers.State
+@using Economy.Memory.Mathematics
 @using Economy.Memory.Models.Reports
 @using Economy.Memory.Tools
 @inject StateFactory<State> StateFactory
 
 @{
     var state = await StateFactory.GetState();
-    var records = PlansMath.CreateRecords(state);
-    var (totalsByPlanId, _, grandTotal) = PlansMath.CalculateTotals(state, records);
+    var records = PlansMathematics.CreateRecords(state);
+    var (totalsByPlanId, _, grandTotal) = PlansMathematics.CalculateTotals(state, records);
     var totals = Model.PlanId.HasValue ? totalsByPlanId[Model.PlanId.Value] : grandTotal;
 }
 
