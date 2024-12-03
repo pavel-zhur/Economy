@@ -18,6 +18,7 @@ public static class ServiceCollectionExtensions
             new JsonStringEnumConverter(),
         },
         TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
     };
 
     public static IServiceCollection AddAudioTranscriptionService(this IServiceCollection services, IConfiguration configuration)
