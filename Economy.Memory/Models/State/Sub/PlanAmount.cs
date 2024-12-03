@@ -19,12 +19,12 @@ public record PlanAmount(
 
         if (ExpectedSchedule != null && ExpectedDate != null)
         {
-            throw new ArgumentException("Plan amount schedule and date must not be set together.");
+            throw new InvalidOperationException("ExpectedSchedule and ExpectedDate may not be set together, one of them should be null");
         }
 
-        if (Type == PlanAmountType.Reserve && (ExpectedSchedule != null || ExpectedDate != null))
+        if (ExpectedSchedule == null && ExpectedDate == null)
         {
-            throw new ArgumentException("Reserve plan amount cannot have schedule or date.");
+            throw new InvalidOperationException("ExpectedSchedule or ExpectedDate are required if the plan amount is set");
         }
     }
 

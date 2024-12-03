@@ -4,5 +4,4 @@ public enum PlanAmountType
 {
     ExpectedExpense,
     ExpectedIncome,
-    Reserve,
 }
