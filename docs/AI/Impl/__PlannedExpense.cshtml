@@ -1,0 +1,43 @@
+@page "/planned-expenses"
+
+@inject PlannedExpensesViewService PlannedExpensesService
+
+    <h3>Планируемые расходы (прошлые и будущие)</h3>
+
+    @if (plannedExpenses != null)
+{
+    <table class="table">
+        <thead>
+        <tr>
+        <th>Дата</th>
+        <th>Категория</th>
+        <th>Сумма</th>
+        <th>Статус</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var expense in plannedExpenses)
+    {
+        <tr>
+            <td>@expense.Date.ToShortDateString()</td>
+            <td>@expense.Category</td>
+            <td>@expense.Amount.ToString("C")</td>
+            <td>@expense.Status</td>
+            </tr>
+    }
+    </tbody>
+        </table>
+}
+else
+{
+    <p>Загрузка данных...</p>
+}
+
+@code {
+private List<PlannedExpenseViewModel> plannedExpenses;
+
+protected override async Task OnInitializedAsync()
+{
+    plannedExpenses = PlannedExpensesService.GetPlannedExpenses();
+}
+}

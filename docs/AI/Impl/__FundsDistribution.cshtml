@@ -1,0 +1,43 @@
+@page "/funds-distribution"
+
+@inject ActualFundsDistributionService DistributionService
+
+    <h3>Распределение фактических денег по планам</h3>
+
+    @if (distributionItems != null)
+{
+    <table class="table">
+        <thead>
+        <tr>
+        <th>План</th>
+        <th>Тип</th>
+        <th>Сумма</th>
+        <th>Процент от общего</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in distributionItems)
+    {
+        <tr>
+            <td>@item.PlanName</td>
+            <td>@item.PlanType</td>
+            <td>@item.Amount.ToString("C")</td>
+            <td>@item.PercentageOfTotal.ToString("F2")%</td>
+            </tr>
+    }
+    </tbody>
+        </table>
+}
+else
+{
+    <p>Загрузка данных...</p>
+}
+
+@code {
+private List<ActualFundDistributionItem> distributionItems;
+
+protected override void OnInitialized()
+{
+    distributionItems = DistributionService.GetActualFundsDistribution();
+}
+}

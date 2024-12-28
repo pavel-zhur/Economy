@@ -1,0 +1,50 @@
+@page "/fund-delay"
+
+@using ViewModels
+@using Services
+
+@inject FundDelayService DelayService
+
+    <h3>Время задержки средств</h3>
+
+    @if (fundDelayItems != null && fundDelayItems.Any())
+{
+    <!-- Chart displaying the delays -->
+        <MudChart ChartType="ChartType.Scatter" XAxisFormat="dd.MM.yyyy">
+        <MudChartSeries Name="Задержка средств"
+    Data="@fundDelayItems.Select(item => (double)item.DelayDays).ToArray()"
+    Labels="@fundDelayItems.Select(item => item.IncomeDate.ToString("dd.MM.yyyy")).ToArray()" />
+        </MudChart>
+
+        <!-- Optional: Display data in a table -->
+        <table class="table mt-4">
+        <thead>
+        <tr>
+        <th>Дата поступления средств</th>
+        <th>Задержка в днях</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in fundDelayItems)
+    {
+        <tr>
+            <td>@item.IncomeDate:dd.MM.yyyy</td>
+            <td>@item.DelayDays</td>
+            </tr>
+    }
+    </tbody>
+        </table>
+}
+else
+{
+    <p>Нет данных для отображения.</p>
+}
+
+@code {
+private List<FundDelayItem> fundDelayItems;
+
+protected override void OnInitialized()
+{
+    fundDelayItems = DelayService.GetFundDelays();
+}
+}

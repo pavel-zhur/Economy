@@ -1,0 +1,74 @@
+@page "/expense-distribution"
+
+@inject ExpenseDistributionService ExpenseService
+
+<h3>Распределение расходов по категориям</h3>
+
+<h4>Таблица расходов:</h4>
+@if (expenseItems != null)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Категория</th>
+            <th>Дата расхода</th>
+            <th>Сумма</th>
+            <th>План</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var expense in expenseItems)
+        {
+            <tr>
+                <td>@expense.Category</td>
+                <td>@expense.ExpenseDate:yyyy-MM-dd</td>
+                <td>@expense.Amount.ToString("C")</td>
+                <td>@expense.PlanName</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Загрузка данных...</p>
+}
+
+<h4>Распределение по категориям:</h4>
+@if (categoryDistributions != null)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Категория</th>
+            <th>Общая сумма</th>
+            <th>Процент от расходов</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var category in categoryDistributions)
+        {
+            <tr>
+                <td>@category.Category</td>
+                <td>@category.TotalAmount.ToString("C")</td>
+                <td>@category.PercentageOfExpenses:F2%</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Загрузка данных...</p>
+}
+
+@code {
+    private List<ExpenseItem> expenseItems;
+    private List<CategoryDistributionItem> categoryDistributions;
+
+    protected override void OnInitialized()
+    {
+        expenseItems = ExpenseService.GetExpenses();
+        categoryDistributions = ExpenseService.GetCategoryDistributions();
+    }
+}
