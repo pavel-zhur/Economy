@@ -47,5 +47,10 @@ public static class Extensions
         {
             throw new ArgumentException("Date and time year must be between 2020 and 2040.");
         }
+
+        if (dateTime.Kind is not (DateTimeKind.Utc or DateTimeKind.Unspecified))
+        {
+            throw new ArgumentException("Date and time kind must be UTC or unspecified.");
+        }
     }
 }
