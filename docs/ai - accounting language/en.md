@@ -94,7 +94,7 @@ This financial management system offers a structured, rigorous framework for ind
 
 #### Strategic Value and Economic Rationalization
 
-From an economist’s viewpoint, this system functions as a microeconomic environment where the individual or organization acts as the central agent. Decisions made within this framework:
+From an economistâ€™s viewpoint, this system functions as a microeconomic environment where the individual or organization acts as the central agent. Decisions made within this framework:
 
 - **Maximize Utility:**
    - By balancing immediate financial needs against long-term goals.
@@ -103,5 +103,5 @@ From an economist’s viewpoint, this system functions as a microeconomic environm
 - **Enhance Decision-Making:**
    - By providing actionable insights rooted in data analytics.
 
-From an accountant's perspective, the system integrates all critical components of fiscal management—recording, categorization, reconciliation, and analysis—ensuring that every dollar is accounted for and optimized. Its versatile workflows and robust forecasting capabilities make it indispensable for both operational management and strategic planning, fostering financial resilience and efficiency in any economic context.
+From an accountant's perspective, the system integrates all critical components of fiscal managementâ€”recording, categorization, reconciliation, and analysisâ€”ensuring that every dollar is accounted for and optimized. Its versatile workflows and robust forecasting capabilities make it indispensable for both operational management and strategic planning, fostering financial resilience and efficiency in any economic context.
 
