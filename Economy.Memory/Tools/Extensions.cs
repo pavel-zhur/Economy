@@ -1,6 +1,5 @@
 ﻿using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Models;
-using Economy.Memory.Models.State;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Sub;
 
@@ -8,6 +7,12 @@ namespace Economy.Memory.Tools;
 
 public static class Extensions
 {
+    public static readonly DateTime MinDateTime = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+    public static readonly DateTime MaxDateTime = new(2040, 12, 31, 0, 0, 0, DateTimeKind.Utc);
+
+    public static readonly Date MinDate = new(2020, 1, 1);
+    public static readonly Date MaxDate = new(2040, 12, 31);
+
     public static Date ToDate(this DateTime dateTime) => new(dateTime.Year, dateTime.Month, dateTime.Day);
 
     public static DateTime ToDateTime(this Date date) => new(date.Year, date.Month, date.Day);

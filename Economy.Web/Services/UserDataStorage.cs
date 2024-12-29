@@ -4,7 +4,7 @@ using Economy.UserStorage;
 
 namespace Economy.Web.Services;
 
-public class UserDataStorage(IHttpContextAccessor httpContextAccessor, GoogleStorage googleStorage) : IUserDataStorage
+public class UserDataStorage(IHttpContextAccessor httpContextAccessor, GoogleStorage googleStorage, IConfiguration configuration) : IUserDataStorage
 {
     private const string FileNameTemplate = "c:/temp/{0}.json";
 
@@ -27,6 +27,9 @@ public class UserDataStorage(IHttpContextAccessor httpContextAccessor, GoogleSto
 
     public async Task<byte[]?> GetUserData()
     {
+        if (configuration.GetValue<string>("DevMockUserKey") is { } userKey)
+            return await File.ReadAllBytesAsync(GetLocalFileName(userKey));
+
         return await googleStorage.RetrieveUserData();
     }
 
