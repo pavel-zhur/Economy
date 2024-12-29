@@ -1,0 +1,296 @@
+﻿.plan {
+    display: inline-block;
+    padding-top: calc(-1* var(--vertical-amount-position));
+    padding-left: calc(var(--horizontal-amount-left-min-width) + 100px);
+    padding-bottom: calc(-1* var(--vertical-amount-position));
+    padding-right: calc(var(--horizontal-amount-left-min-width) + 100px);
+    --gray-color: darkgray;
+    --vertical-arrows-left-position-1: 19%;
+    --vertical-arrows-left-position-2: 70%;
+    --horizontal-arrows-top-position-1: 17%;
+    --horizontal-arrows-top-position-2: 64%;
+    --horizontal-arrows-top-position-3: 86%;
+    --vertical-arrows-labels-padding: 12px;
+    --horizontal-arrows-labels-padding: 15px;
+    --horizontal-amount-position: -101px;
+    --vertical-amount-position: -80px;
+    --horizontal-arrows-width: -101px;
+    --horizontal-amount-padding: -21px;
+    --horizontal-amount-padding-left: -76px;
+    --horizontal-amount-left-min-width: 70px;
+    --horizontal-amount-position-adjustment: -4px;
+}
+
+.plan-container {
+    position: relative;
+    width: auto;
+    height: auto;
+    border: 2px solid var(--gray-color);
+    padding: 20px;
+    text-align: center;
+    background: #fff;
+}
+
+.title {
+    /* font-weight: bold; */
+    text-align: left;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.details {
+    margin-top: 25px;
+    text-align: left;
+    font-size: 14px;
+}
+
+    .details p {
+        margin-top: 8px;
+        margin-bottom: 0;
+        display: flex;
+        justify-content: space-between;
+        white-space: nowrap;
+        gap: 30px;
+        color: var(--gray-color);
+    }
+
+        .details p .number {
+            color: black;
+            font-weight: bold;
+        }
+
+.arrow {
+    display: none;
+}
+
+.arrow-svg {
+    position: absolute;
+}
+
+.arrow-text {
+    position: absolute;
+    font-size: 14px;
+    color: #7a7a7a;
+    text-wrap: nowrap;
+}
+
+.amount-text {
+    position: absolute;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.from-parent-text {
+    top: -40px;
+    left: calc(var(--vertical-arrows-left-position-1) + var(--vertical-arrows-labels-padding));
+    revert-layer;
+    revert-layer;
+    -; /* Next to the arrow on the right */
+}
+
+.from-parent-amount {
+    top: var(--vertical-amount-position); /* At the origin of the arrow */
+    left: var(--vertical-arrows-left-position-1);
+    transform: translateX(-50%);
+}
+
+.to-parent-text {
+    top: -40px;
+    left: calc(var(--vertical-arrows-left-position-2) + var(--vertical-arrows-labels-padding));
+    revert-layer;
+    revert-layer;
+    -; /* Next to the arrow on the right */
+}
+
+.to-parent-amount {
+    top: var(--vertical-amount-position); /* At the origin of the arrow */
+    left: var(--vertical-arrows-left-position-2);
+    transform: translateX(-50%);
+}
+
+.from-children-text {
+    bottom: -40px;
+    left: calc(var(--vertical-arrows-left-position-1) + var(--vertical-arrows-labels-padding)); /* Use variable instead of fixed value */
+}
+
+.from-children-amount {
+    bottom: var(--vertical-amount-position); /* At the arrowhead */
+    left: var(--vertical-arrows-left-position-1);
+    transform: translateX(-50%);
+}
+
+.to-children-text {
+    bottom: -40px;
+    left: calc(var(--vertical-arrows-left-position-2) + var(--vertical-arrows-labels-padding)); /* Use variable instead of fixed value */
+}
+
+.to-children-amount {
+    bottom: var(--vertical-amount-position); /* At the arrowhead */
+    left: var(--vertical-arrows-left-position-2);
+    transform: translateX(-50%);
+}
+
+.transfer-left-text {
+    top: calc(var(--horizontal-arrows-top-position-1) - var(--horizontal-arrows-labels-padding));
+    left: -130px; /* Above the arrow */
+    left: calc(var(--horizontal-arrows-width) - 8px);
+    min-width: calc(-1* var(--horizontal-arrows-width));
+    text-align: center;
+}
+
+.transfer-left-amount {
+    top: calc(var(--horizontal-arrows-top-position-1) + var(--horizontal-amount-position-adjustment)); /* At the origin of the arrow */
+    left: calc(var(--horizontal-amount-position) + var(--horizontal-amount-padding-left));
+    text-align: right;
+    min-width: var(--horizontal-amount-left-min-width);
+    /* float: right; */
+}
+
+.transfer-right-text {
+    top: calc(var(--horizontal-arrows-top-position-1) - var(--horizontal-arrows-labels-padding));
+    right: calc(var(--horizontal-arrows-width) + 8px);
+    ); /* Above the arrow */
+    min-width: calc(-1 * var(--horizontal-arrows-width));
+    text-align: center;
+}
+
+.transfer-right-amount {
+    top: calc(var(--horizontal-arrows-top-position-1) + var(--horizontal-amount-position-adjustment));
+    );
+    ); /* At the arrowhead */
+    right: calc(var(--horizontal-amount-position) + var(--horizontal-amount-padding)); /* Moved further to the right */
+}
+
+.expense-text {
+    top: calc(var(--horizontal-arrows-top-position-2) - var(--horizontal-arrows-labels-padding));
+    /* right: -130px; */ /* Above the arrow */
+    right: calc(var(--horizontal-arrows-width) + 8px);
+    min-width: calc(-1* var(--horizontal-arrows-width));
+    text-align: center;
+}
+
+.expense-amount {
+    top: calc(var(--horizontal-arrows-top-position-2) + var(--horizontal-amount-position-adjustment)); /* At the arrowhead */
+    right: calc(var(--horizontal-amount-position) + var(--horizontal-amount-padding)); /* Moved further to the right */
+}
+
+.income-text {
+    top: calc(var(--horizontal-arrows-top-position-2) - var(--horizontal-arrows-labels-padding));
+    left: -130px; /* Above the arrow */
+    left: calc(var(--horizontal-arrows-width) - 8px);
+    min-width: calc(-1* var(--horizontal-arrows-width));
+    text-align: center;
+}
+
+.income-amount {
+    top: calc(var(--horizontal-arrows-top-position-2) + var(--horizontal-amount-position-adjustment)); /* At the origin of the arrow */
+    left: calc(var(--horizontal-amount-position) + var(--horizontal-amount-padding-left));
+    text-align: right;
+    min-width: var(--horizontal-amount-left-min-width);
+}
+
+.pending-left-text {
+    top: calc(var(--horizontal-arrows-top-position-3) - var(--horizontal-arrows-labels-padding));
+    left: -130px; /* Above the arrow */
+    left: calc(var(--horizontal-arrows-width) - 8px);
+    min-width: calc(-1* var(--horizontal-arrows-width));
+    text-align: center;
+}
+
+.pending-left-amount {
+    top: calc(var(--horizontal-arrows-top-position-3) + var(--horizontal-amount-position-adjustment)); /* At the origin of the arrow */
+    left: calc(var(--horizontal-amount-position) + var(--horizontal-amount-padding-left));
+    text-align: right;
+    min-width: var(--horizontal-amount-left-min-width);
+}
+
+.pending-right-text {
+    top: calc(var(--horizontal-arrows-top-position-3) - var(--horizontal-arrows-labels-padding));
+    /* right: -130px; */ /* Above the arrow */
+    right: calc(var(--horizontal-arrows-width) + 8px);
+    min-width: calc(-1* var(--horizontal-arrows-width));
+    text-align: center;
+}
+
+.pending-right-amount {
+    top: calc(var(--horizontal-arrows-top-position-3) + var(--horizontal-amount-position-adjustment)); /* At the arrowhead */
+    right: calc(var( --horizontal-amount-position) + var(--horizontal-amount-padding)); /* Moved further to the right */
+}
+
+.from-parent-arrow {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.to-parent-arrow {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.from-children-arrow {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.to-children-arrow {
+    left: 50%;
+    transform: translateX(-50%);
+}
+/* Moved SVG styles */
+.arrow-svg.from-parent-arrow {
+    top: -60px;
+    left: var(--vertical-arrows-left-position-1);
+}
+
+.arrow-svg.to-parent-arrow {
+    top: -60px;
+    left: var(--vertical-arrows-left-position-2);
+}
+
+.arrow-svg.transfer-left-arrow {
+    top: var(--horizontal-arrows-top-position-1);
+    left: var(--horizontal-arrows-width);
+}
+
+.arrow-svg.transfer-right-arrow {
+    top: var(--horizontal-arrows-top-position-1);
+    right: var(--horizontal-arrows-width);
+}
+
+.arrow-svg.from-children-arrow {
+    bottom: -60px;
+    left: var(--vertical-arrows-left-position-1);
+}
+
+.arrow-svg.to-children-arrow {
+    bottom: -60px;
+    left: var(--vertical-arrows-left-position-2);
+}
+
+.arrow-svg.expense-arrow {
+    top: var(--horizontal-arrows-top-position-2);
+    /* right: var(--horizontal-arrows-width); */
+    right: var(--horizontal-arrows-width);
+    /* min-width: calc(-1* var(--horizontal-arrows-width)); */
+    /* text-align: center; */
+}
+
+.arrow-svg.income-arrow {
+    top: var(--horizontal-arrows-top-position-2);
+    left: var(--horizontal-arrows-width);
+}
+
+.arrow-svg.income-left-arrow {
+    top: var(--horizontal-arrows-top-position-2);
+    left: var(--horizontal-arrows-width);
+}
+
+.arrow-svg.pending-left-arrow {
+    top: var(--horizontal-arrows-top-position-3);
+    right: var(--horizontal-arrows-width);
+}
+
+.arrow-svg.pending-right-arrow {
+    top: var(--horizontal-arrows-top-position-3);
+    left: var(--horizontal-arrows-width);
+}
