@@ -1,0 +1,14 @@
+﻿@page
+@model FaqModel
+@{
+    ViewData["Title"] = "FAQ";
+}
+<h1>@ViewData["Title"]</h1>
+
+@await Html.PartialAsync("_RenderFaqNode", Model.Root)
+
+@if (Model.HtmlContent != null)
+{
+    <hr />
+    <div>@Html.Raw(Model.HtmlContent)</div>
+}
