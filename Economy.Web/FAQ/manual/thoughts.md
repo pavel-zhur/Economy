@@ -1,14 +1,14 @@
-# Some internal thoughts
+## Some internal thoughts
 
-1. Planned-actual atomic transactions (current implementation) correspondence is important, otherwise I'll need to close planned transactions in favour of unknown actual in order to avoid the budget overflow.
-
-## Plan types
-
-- Planned Expense
-- Planned Income
-- Budget
-- Planned Recurring Expense
-- Planned Recurring Income
+- Типы баланса в точке времени
+	- Накопленный
+	- Доступный для трат
+- Для режима планирования богатства, доступный для трат баланс не имеет значения
+- И тогда типы нодов такие:
+	- Трата ("всё будет потрачено")
+		- Ну только если ограниченная трата, а в ней как-то оказалось больше денег... То в ней возникает баланс временно. Наверноа
+	- Приход
+	- Аккумулятор / фонд
 
 ## Actual Transactions linking
 

@@ -36,9 +36,6 @@
     <None Update="FAQ\ai - arch\planning-layer.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="FAQ\manual\plan totals.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="FAQ\manual\thoughts.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
