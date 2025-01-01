@@ -1,3 +1,4 @@
+using Economy.AiInterface.Interfaces;
 using Economy.AiInterface.Services;
 using Economy.Common;
 using Economy.Engine.Enums;
@@ -12,7 +13,10 @@ internal class ChatsService<TState, TChatInitializer>(
     TChatInitializer chatInitializer,
     AiCompletion aiCompletion,
     AiTranscription aiTranscription,
-    IStateFactory<TState> stateFactory) : IChatsService where TState : class, IState, new()
+    IStateFactory<TState> stateFactory,
+    AiProcessingLogger aiProcessingLogger) 
+        : IChatsService
+    where TState : class, IState, new()
     where TChatInitializer : IChatInitializer
 {
     public async Task GotMessage(ChatsServiceContext context, Guid chatId, string messageId, string message)
@@ -100,6 +104,19 @@ internal class ChatsService<TState, TChatInitializer>(
         await SendUpdate(context);
     }
 
+    public async Task OnFunctionInvokedAsync(ChatsServiceContext context, Guid chatId, FunctionInvocationLog log)
+    {
+        var userData = await stateFactory.GetUserData();
+        var chat = userData.GetChat(chatId, out _);
+
+        lock (userData.ChatsLock)
+        {
+            chat.Messages.Add(new(DateTime.UtcNow, MessageType.SystemText, null, log.ToString(), null, SystemMessageSeverity.Success));
+        }
+
+        await SendUpdate(context);
+    }
+
     private async Task SendUpdate(ChatsServiceContext context)
     {
         try
@@ -122,73 +139,79 @@ internal class ChatsService<TState, TChatInitializer>(
         try
         {
             var chat = userData.GetChat(chatId, out chatIndex);
+            var lastMessageIndex = chat.Messages.Count - 1;
 
-            if (new[]
-                {
-                    chat.Messages[^1].Type == MessageType.UserVoice,
-                    audioData != null
-                }.Distinct().Single())
+            try
             {
-                using var audioStream = new MemoryStream(audioData!);
-                var text = await aiTranscription.Transcribe(audioStream);
+                if (new[]
+                    {
+                        chat.Messages[lastMessageIndex].Type == MessageType.UserVoice,
+                        audioData != null
+                    }.Distinct().Single())
+                {
+                    using var audioStream = new MemoryStream(audioData!);
+                    var text = await aiTranscription.Transcribe(audioStream);
+
+                    lock (userData.ChatsLock)
+                    {
+                        chat.Messages[lastMessageIndex] = chat.Messages[lastMessageIndex] with
+                        {
+                            Text = text,
+                            Status = UserMessageStatus.Thinking,
+                        };
+                    }
+                }
+
+                await SendUpdate(context);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var chatHistory = userData.GetChatHistory(chatIndex);
+                if (!chatHistory.Any())
+                {
+                    await chatInitializer.Init(chatHistory);
+                }
+
+                aiProcessingLogger.SetCurrentChatId((this, chatId, context));
+                var response = await aiCompletion.Execute(chatHistory, chat.Messages[lastMessageIndex].Text!);
+                aiProcessingLogger.SetCurrentChatId(null);
 
                 lock (userData.ChatsLock)
                 {
-                    chat.Messages[^1] = chat.Messages[^1] with
+                    chat.Messages[lastMessageIndex] = chat.Messages[lastMessageIndex] with
                     {
-                        Text = text,
-                        Status = UserMessageStatus.Thinking,
+                        Status = UserMessageStatus.Done,
                     };
+
+                    chat.Messages.Add(new(DateTime.UtcNow, MessageType.AssistantText, null, response,
+                        null, SystemMessageSeverity.Success));
+
+                    userData.UpdateChat(chatIndex, chat => chat with { Status = ChatStatus.Success, });
+                }
+
+                await SendUpdate(context);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    logger.LogInformation("The cancellation had been requested for {chatId}, but it was too late.", chatId);
                 }
             }
-
-            await SendUpdate(context);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var chatHistory = userData.GetChatHistory(chatIndex);
-            if (!chatHistory.Any())
+            catch (Exception e) when (e is TaskCanceledException or OperationCanceledException)
             {
-                await chatInitializer.Init(chatHistory);
-            }
+                logger.LogInformation("The cancellation is successful for {chatId}.", chatId);
 
-            var response = await aiCompletion.Execute(chatHistory, chat.Messages[^1].Text!);
-
-            lock (userData.ChatsLock)
-            {
-                chat.Messages[^1] = chat.Messages[^1] with
+                lock (userData.ChatsLock)
                 {
-                    Status = UserMessageStatus.Done,
-                };
+                    chat = userData.UpdateChat(chatIndex, chat => chat with { Status = ChatStatus.Ready, });
 
-                chat.Messages.Add(new(DateTime.UtcNow, MessageType.AssistantText, null, response,
-                    null, SystemMessageSeverity.Success));
+                    chat.Messages[lastMessageIndex] = chat.Messages[lastMessageIndex] with
+                    {
+                        Status = UserMessageStatus.Canceled,
+                    };
+                }
 
-                userData.UpdateChat(chatIndex, chat => chat with { Status = ChatStatus.Success, });
+                await SendUpdate(context);
             }
-
-            await SendUpdate(context);
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                logger.LogInformation("The cancellation had been requested for {chatId}, but it was too late.", chatId);
-            }
-        }
-        catch (Exception e) when (e is TaskCanceledException or OperationCanceledException)
-        {
-            logger.LogInformation("The cancellation is successful for {chatId}.", chatId);
-
-            lock (userData.ChatsLock)
-            {
-                var chat = userData.UpdateChat(chatIndex, chat => chat with { Status = ChatStatus.Ready, });
-
-                chat.Messages[^1] = chat.Messages[^1] with
-                {
-                    Status = UserMessageStatus.Canceled,
-                };
-            }
-
-            await SendUpdate(context);
         }
         catch (Exception e)
         {
@@ -219,6 +242,7 @@ internal class ChatsService<TState, TChatInitializer>(
         }
         finally
         {
+            aiProcessingLogger.SetCurrentChatId(null);
             cancellationTokenSource.Dispose();
         }
     }

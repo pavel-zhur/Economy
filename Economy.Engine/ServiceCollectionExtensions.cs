@@ -16,7 +16,9 @@ public static class ServiceCollectionExtensions
         where TState : class, IState, new()
         where TChatInitializer : class, IChatInitializer =>
         services
-            .AddCompletionKernel<TMemoryPlugin, AiProcessingLogger>(configuration)
+            .AddCompletionKernel<TMemoryPlugin>(configuration)
+            .AddScoped<AiProcessingLogger>()
+            .AddScoped(serviceProvider => (IAiProcessingLogger)serviceProvider.GetRequiredService<AiProcessingLogger>())
             .AddScoped<TChatInitializer>()
             .AddScoped<IChatsService, ChatsService<TState, TChatInitializer>>()
             .AddSingleton<ChatsServiceMemory>()
