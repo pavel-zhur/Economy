@@ -1,6 +1,6 @@
 ﻿using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Economy.Engine.Models;
+namespace Economy.Engine.Services;
 
 public interface IChatInitializer
 {

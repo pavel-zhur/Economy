@@ -1,13 +1,12 @@
 using Economy.AiInterface.Services;
-using Economy.Engine;
-using Economy.Engine.Models;
+using Economy.Engine.Services;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Sub;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Economy.Implementation;
 
-public class ChatInitializer(AiCompletion aiCompletion, StateFactory<State> stateFactory) : IChatInitializer
+public class ChatInitializer(AiCompletion aiCompletion, IStateFactory<State> stateFactory) : IChatInitializer
 {
     public async Task Init(ChatHistory chatHistory)
     {

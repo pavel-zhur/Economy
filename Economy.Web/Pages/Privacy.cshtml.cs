@@ -1,4 +1,4 @@
-﻿using Economy.Engine;
+﻿using Economy.Engine.Services;
 using Economy.Memory.Containers.State;
 using Economy.Web.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class PrivacyModel(ILogger<PrivacyModel> logger, StateFactory<State> stateFactory, UserDataStorage userDataStorage, IHostEnvironment hostEnvironment) : PageModel
+public class PrivacyModel(ILogger<PrivacyModel> logger, IStateFactory<State> stateFactory, UserDataStorage userDataStorage, IHostEnvironment hostEnvironment) : PageModel
 {
     public void OnGet()
     {

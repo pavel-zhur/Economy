@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Economy.Engine.Models;
+namespace Economy.Engine.Enums;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum UserMessageStatus

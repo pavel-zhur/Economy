@@ -1,6 +1,6 @@
 using Economy.AiInterface.Services;
-using Economy.Engine;
 using Economy.Engine.Models;
+using Economy.Engine.Services;
 using Economy.Implementation;
 using Economy.Memory.Containers.State;
 using Economy.UserStorage;
@@ -9,13 +9,13 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Economy.Web.Hubs;
 
-public class ChatHub(ILogger<ChatHub> logger, ChatsService<State, ChatInitializer> chatsService, ChatsRenderer chatsRenderer, IHubContext<ChatHub> hubContext, StateFactory<State> stateFactory, IServiceScopeFactory serviceScopeFactory) : Hub
+public class ChatHub(ILogger<ChatHub> logger, ChatsRenderer chatsRenderer, IHubContext<ChatHub> hubContext, IStateFactory<State> stateFactory, IServiceScopeFactory serviceScopeFactory) : Hub
 {
     public async Task SendMessage(Guid chatId, string messageId, string message)
     {
         await Task.Delay(1000);
 
-        await ProcessSafe(Context.ConnectionId, async context =>
+        await ProcessSafe(Context.ConnectionId, async (chatsService, context) =>
         {
             await chatsService.GotMessage(context, chatId, messageId, message);
         });
@@ -23,7 +23,7 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService<State, ChatInitialize
 
     public async Task SendAudio(Guid chatId, string messageId, byte[] audioData)
     {
-        await ProcessSafe(Context.ConnectionId, async context =>
+        await ProcessSafe(Context.ConnectionId, async (chatsService, context) =>
         {
             await chatsService.GotAudio(context, chatId, messageId, audioData);
         });
@@ -32,16 +32,16 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService<State, ChatInitialize
     public async Task Hello()
     {
         var connectionId = Context.ConnectionId;
-        await ProcessSafe(connectionId, async context =>
+        await ProcessSafe(connectionId, async (chatsService, context) =>
         {
-            var stateModel = chatsService.GetState(context);
+            var stateModel = await chatsService.GetState(context);
             await RespondHello(connectionId, stateModel);
         });
     }
 
     public async Task TryCancel(Guid chatId, string messageId)
     {
-        await ProcessSafe(Context.ConnectionId, async context =>
+        await ProcessSafe(Context.ConnectionId, async (chatsService, context) =>
         {
             await chatsService.TryCancel(context, chatId, messageId);
         });
@@ -49,7 +49,7 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService<State, ChatInitialize
 
     public async Task CloseChat(Guid chatId)
     {
-        await ProcessSafe(Context.ConnectionId, async context =>
+        await ProcessSafe(Context.ConnectionId, async (chatsService, context) =>
         {
             await chatsService.CloseChat(context, chatId);
         });
@@ -60,7 +60,7 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService<State, ChatInitialize
         await base.OnConnectedAsync();
         logger.LogInformation($"User {Context.UserIdentifier} connected");
 
-        await ProcessSafe(Context.ConnectionId, _ => Task.CompletedTask);
+        await ProcessSafe(Context.ConnectionId, (_, _) => Task.CompletedTask);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -69,27 +69,25 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService<State, ChatInitialize
         logger.LogInformation($"User {Context.UserIdentifier} disconnected");
     }
 
-    private async void ProcessDetached(string connectionId, string userId, Func<ChatsServiceContext<State, ChatInitializer>, Task> action)
+    private async void ProcessDetached(string connectionId, string userId, Func<IChatsService, ChatsServiceContext, Task> action)
     {
         try
         {
             using var scope = serviceScopeFactory.CreateScope();
-            var userData = await stateFactory.GetUserData();
-            var scopeStateFactory = scope.ServiceProvider.GetRequiredService<StateFactory<State>>();
-            scopeStateFactory.InitializeDetached(userData);
-            var chatsServiceContext = new ChatsServiceContext<State, ChatInitializer>
+            var scopeStateFactory = scope.ServiceProvider.GetRequiredService<IStateFactory<State>>();
+            await scopeStateFactory.InitializeDetached(stateFactory);
+
+            var chatsService = scope.ServiceProvider.GetRequiredService<IChatsService>();
+
+            var chatsServiceContext = new ChatsServiceContext
             {
-                ChatInitializer = scope.ServiceProvider.GetRequiredService<ChatInitializer>(),
-                UserData = userData,
                 UserId = userId,
                 SendUpdate = async state => await RespondHello(hubContext.Clients.User(userId), state),
-                AiCompletion = scope.ServiceProvider.GetRequiredService<AiCompletion>(),
-                AiTranscription = scope.ServiceProvider.GetRequiredService<AiTranscription>(),
             };
 
             try
             {
-                await action(chatsServiceContext);
+                await action(chatsService, chatsServiceContext);
             }
             catch (Exception e) when (e is not ReauthenticationNeededException)
             {
@@ -97,7 +95,7 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService<State, ChatInitialize
 
                 try
                 {
-                    var stateModel = chatsService.GetState(chatsServiceContext);
+                    var stateModel = await chatsService.GetState(chatsServiceContext);
                     await RespondHello(
                         connectionId, 
                         stateModel);
@@ -114,7 +112,7 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService<State, ChatInitialize
         }
     }
 
-    private async Task ProcessSafe(string connectionId, Func<ChatsServiceContext<State, ChatInitializer>, Task> action)
+    private async Task ProcessSafe(string connectionId, Func<IChatsService, ChatsServiceContext, Task> action)
     {
         try
         {
@@ -141,10 +139,9 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsService<State, ChatInitialize
         catch (Exception e)
         {
             logger.LogError(e, "Fatal exception processing the incoming chat hub message.");
-            var fatalErrorHelloResponse = chatsService.GetFatalErrorHelloResponse();
             await RespondHello(
                 connectionId, 
-                fatalErrorHelloResponse,
+                StateModel.GetFatalErrorHelloResponse(),
                 "fatal error");
         }
     }

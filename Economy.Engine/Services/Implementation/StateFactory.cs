@@ -1,8 +1,9 @@
 ﻿using Economy.Common;
+using Economy.Engine.Models.Internal;
 
-namespace Economy.Engine;
+namespace Economy.Engine.Services.Implementation;
 
-public class StateFactory<TState>(FactoriesMemory<TState> factoriesMemory, IUserDataStorage userDataStorage)
+internal class StateFactory<TState>(FactoriesMemory<TState> factoriesMemory, IUserDataStorage userDataStorage) : IStateFactory<TState>
     where TState : class, IState, new()
 {
     private readonly Lock _lock = new();
@@ -28,8 +29,10 @@ public class StateFactory<TState>(FactoriesMemory<TState> factoriesMemory, IUser
         await factoriesMemory.Save(userDataStorage);
     }
 
-    public void InitializeDetached(UserData<TState> state)
+    public async Task InitializeDetached(IStateFactory<TState> from)
     {
+        var state = await from.GetUserData();
+
         lock (_lock)
         {
             if (_detachedState != null)

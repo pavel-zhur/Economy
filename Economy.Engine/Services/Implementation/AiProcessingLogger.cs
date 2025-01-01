@@ -1,8 +1,8 @@
 ﻿using Economy.AiInterface.Interfaces;
 
-namespace Economy.Engine;
+namespace Economy.Engine.Services.Implementation;
 
-public class AiProcessingLogger : IAiProcessingLogger
+internal class AiProcessingLogger : IAiProcessingLogger
 {
     [Obsolete] // todo
     public void OnFunctionInvoked(FunctionInvocationLog log)

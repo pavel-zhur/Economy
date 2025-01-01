@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using Economy.Engine;
+using Economy.Engine.Services;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.EventSourcing;
 using Economy.Memory.Models.State;
@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel;
 
 namespace Economy.Implementation;
 
-public class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory<State> stateFactory)
+public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<State> stateFactory)
 {
     [KernelFunction("create_or_update_currency")]
     [Description("Creates a new currency (-1 currency id value expected) or updates an existing one (entire record will be overridden, all properties)")]

@@ -1,3 +1,4 @@
+using Economy.Engine.Enums;
 using MessagePack;
 
 namespace Economy.Engine.Models;

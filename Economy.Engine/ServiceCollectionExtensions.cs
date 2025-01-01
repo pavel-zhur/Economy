@@ -1,7 +1,8 @@
 ﻿using Economy.AiInterface;
 using Economy.AiInterface.Interfaces;
 using Economy.Common;
-using Economy.Engine.Models;
+using Economy.Engine.Services;
+using Economy.Engine.Services.Implementation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,16 +14,14 @@ public static class ServiceCollectionExtensions
         where TUserDataStorage : class, IUserDataStorage 
         where TMemoryPlugin : class
         where TState : class, IState, new()
-        where TChatInitializer : class, IChatInitializer
-    {
-        services.AddCompletionKernel<TMemoryPlugin, AiProcessingLogger>(configuration);
-        services.AddScoped<TChatInitializer>();
-        services.AddSingleton<ChatsService<TState, TChatInitializer>>();
-        services.AddSingleton<FactoriesMemory<TState>>();
-        services.AddScoped<StateFactory<TState>>();
-        services.AddScoped<TUserDataStorage>()
+        where TChatInitializer : class, IChatInitializer =>
+        services
+            .AddCompletionKernel<TMemoryPlugin, AiProcessingLogger>(configuration)
+            .AddScoped<TChatInitializer>()
+            .AddScoped<IChatsService, ChatsService<TState, TChatInitializer>>()
+            .AddSingleton<ChatsServiceMemory>()
+            .AddSingleton<FactoriesMemory<TState>>()
+            .AddScoped<IStateFactory<TState>, StateFactory<TState>>()
+            .AddScoped<TUserDataStorage>()
             .AddScoped<IUserDataStorage>(x => x.GetRequiredService<TUserDataStorage>());
-
-        return services;
-    }
 }
