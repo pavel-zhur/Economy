@@ -111,7 +111,14 @@ internal class ChatsService<TState, TChatInitializer>(
 
         lock (userData.ChatsLock)
         {
-            chat.Messages.Add(new(DateTime.UtcNow, MessageType.SystemText, null, log.ToString(), null, SystemMessageSeverity.Success));
+            chat.Messages.Add(new(
+                DateTime.UtcNow, 
+                MessageType.SystemText, 
+                null, 
+                log.ToString(), 
+                null, 
+                log.Success ? SystemMessageSeverity.Success : SystemMessageSeverity.Error, 
+                log.ToAdditionalData()));
         }
 
         await SendUpdate(context);

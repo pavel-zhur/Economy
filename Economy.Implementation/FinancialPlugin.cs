@@ -2,7 +2,6 @@ using System.ComponentModel;
 using Economy.Engine.Services;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.EventSourcing;
-using Economy.Memory.Models.State;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Root;
 using Microsoft.Extensions.Logging;
@@ -13,7 +12,7 @@ namespace Economy.Implementation;
 public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<State> stateFactory)
 {
     [KernelFunction("create_or_update_currency")]
-    [Description("Creates a new currency (-1 currency id value expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new currency (currency.id: -1 value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated currency.")]
     public async Task<Currency> UpsertCurrency(Currency currency)
     {
@@ -24,7 +23,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
     }
 
     [KernelFunction("create_or_update_wallet")]
-    [Description("Creates a new wallet (-1 wallet id value expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new wallet (wallet.id: -1 value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated wallet")]
     public async Task<Wallet> UpsertWallet(Wallet wallet)
     {
@@ -35,7 +34,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
     }
 
     [KernelFunction("create_or_update_event")]
-    [Description("Creates a new event (-1 event id value expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new event (event.id: -1 value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated event")]
     public async Task<Event> UpsertEvent(Event @event)
     {
@@ -46,7 +45,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
     }
 
     [KernelFunction("create_or_update_category")]
-    [Description("Creates a new category (-1 wallet id value expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new category (category.id: -1 value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated category")]
     public async Task<Category> UpsertCategory(Category category)
     {
@@ -57,7 +56,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
     }
 
     [KernelFunction("create_or_update_wallet_audit")]
-    [Description("Creates a new wallet audit (-1 wallet audit id value expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new wallet audit (walletAudit.id: -1 value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated wallet audit")]
     public async Task<WalletAudit> UpsertWalletAudit(WalletAudit walletAudit)
     {
@@ -68,7 +67,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
     }
 
     [KernelFunction("create_or_update_plan")]
-    [Description("Creates a new plan (-1 plan id value expected) or updates an existing one (entire record will be overridden, all properties). " +
+    [Description("Creates a new plan (plan.id: -1 value expected) or updates an existing one (entire record will be overridden, all properties). " +
                  "A plan is an expected or planned expense or income, or a group of those, or a recurring set of those, or a budget, fund, etc. " +
                  "For incomes or expenses that have actually happened, use the transaction entity. " +
                  "A plan may have an expected financial activity (expense or income), in that case, either a planned date or planned recurring dates are needed in the financial activity.")]
@@ -82,7 +81,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
     }
 
     [KernelFunction("create_or_update_transaction")]
-    [Description("Creates a new transaction (-1 transaction id value expected) or updates an existing one (entire record will be overridden, all properties). " +
+    [Description("Creates a new transaction (transaction.id: -1 value expected) or updates an existing one (entire record will be overridden, all properties). " +
                  "A transaction is an expense or income that has actually happened, not a planned, not a desired, not a future - for those, use the plan entity and set their expected financial activity, including amount and a planned date or planned recurring dates.")]
     [return: Description("The created (with id assigned) or updated transaction")]
     public async Task<Transaction> UpsertTransaction(Transaction transaction)
@@ -94,7 +93,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
     }
 
     [KernelFunction("create_or_update_conversion")]
-    [Description("Creates a new conversion (-1 conversion id value expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new conversion (conversion.id: -1 value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated conversion")]
     public async Task<Conversion> UpsertConversion(Conversion conversion)
     {
@@ -105,7 +104,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
     }
 
     [KernelFunction("create_or_update_transfer")]
-    [Description("Creates a new transfer (-1 transfer id value expected) or updates an existing one (entire record will be overridden, all properties)")]
+    [Description("Creates a new transfer (transfer.id: -1 value expected) or updates an existing one (entire record will be overridden, all properties)")]
     [return: Description("The created (with id assigned) or updated transfer")]
     public async Task<Transfer> UpsertTransfer(Transfer transfer)
     {
@@ -154,7 +153,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
                 verb = "Creating";
                 return new Creation(entity = entity with { Id = state.Repositories.GetRepository<T>().GetNextNormalId() }, DateTime.UtcNow);
             case 0 or < -1:
-                throw new("To update an entity, specify its id (field of the entity, according to schema). To create an entity, pass the value -1 as the id field of the entity.");
+                throw new("To update an entity, specify its id. To create an entity, pass the value -1 as the id field of the entity parameter.");
             default:
                 verb = "Updating";
                 return new Update(entity, DateTime.UtcNow);

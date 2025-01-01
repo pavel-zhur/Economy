@@ -60,6 +60,11 @@
                                     default:
                                         throw new ArgumentOutOfRangeException(nameof(message.Type), message.Type, "Unexpected message type.");
                                 }
+                                
+                                @if (message.AdditionalData != null)
+                                {
+                                    <button onclick="alert(this.getAttribute('json-data'))" json-data="@message.AdditionalData">JSON</button>
+                                }
 
                                 @if (message.Type is MessageType.UserText or MessageType.UserVoice && message.Status is UserMessageStatus.Thinking or UserMessageStatus.Transcribing)
                                 {
