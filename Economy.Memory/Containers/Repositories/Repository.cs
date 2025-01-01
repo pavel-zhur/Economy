@@ -93,7 +93,7 @@ public class Repository<T>(Repositories repositories) : IRepository where T : En
 
         if (repositories.GetIncomingForeignKeysTo(entityFullId).Any())
         {
-            throw new InvalidOperationException($"Entity with id {id} has incoming foreign keys.");
+            throw new InvalidOperationException($"Entity with id {id} has incoming foreign keys from: {string.Join(", ", repositories.GetIncomingForeignKeysTo(entityFullId))}.");
         }
 
         if (!_entities.Remove(id))
