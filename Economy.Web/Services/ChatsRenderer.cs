@@ -18,8 +18,8 @@ public class ChatsRenderer(IRazorViewEngine razorViewEngine, IServiceScopeFactor
 
         var actionContext = new ActionContext(
             new DefaultHttpContext { RequestServices = scope.ServiceProvider, },
-            new RouteData(),
-            new ActionDescriptor()
+            new(),
+            new()
         );
 
         var viewResult = razorViewEngine.FindView(actionContext, "_ChatsPartial", false);
@@ -34,13 +34,13 @@ public class ChatsRenderer(IRazorViewEngine razorViewEngine, IServiceScopeFactor
             viewResult.View,
             new ViewDataDictionary<IReadOnlyList<ChatModel>>(
                 new EmptyModelMetadataProvider(),
-                new ModelStateDictionary())
+                new())
             {
                 Model = model
             },
             new TempDataDictionary(actionContext.HttpContext, scope.ServiceProvider.GetRequiredService<ITempDataProvider>()),
             stringWriter,
-            new HtmlHelperOptions()
+            new()
         );
 
         await viewResult.View.RenderAsync(viewContext);

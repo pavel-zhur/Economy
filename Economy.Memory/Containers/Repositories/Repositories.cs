@@ -17,15 +17,15 @@ public class Repositories : IHistory
 
     public Repositories()
     {
-        Currencies = new Repository<Currency>(this);
-        Wallets = new Repository<Wallet>(this);
-        WalletAudits = new Repository<WalletAudit>(this);
-        Plans = new PlansRepository(this);
-        Transactions = new Repository<Transaction>(this);
-        Events = new Repository<Event>(this);
-        Categories = new Repository<Category>(this);
-        Conversions = new Repository<Conversion>(this);
-        Transfers = new Repository<Transfer>(this);
+        Currencies = new(this);
+        Wallets = new(this);
+        WalletAudits = new(this);
+        Plans = new(this);
+        Transactions = new(this);
+        Events = new(this);
+        Categories = new(this);
+        Conversions = new(this);
+        Transfers = new(this);
 
         AllByType = new IRepository[]
         {
@@ -90,7 +90,7 @@ public class Repositories : IHistory
 
         if (!_incomingForeignKeysTo.TryGetValue(to, out var incomingList))
         {
-            incomingList = new HashSet<EntityFullId>();
+            incomingList = new();
             _incomingForeignKeysTo[to] = incomingList;
         }
 
@@ -98,7 +98,7 @@ public class Repositories : IHistory
 
         if (!_outgoingForeignKeysFrom.TryGetValue(from, out var outgoingList))
         {
-            outgoingList = new HashSet<EntityFullId>();
+            outgoingList = new();
             _outgoingForeignKeysFrom[from] = outgoingList;
         }
 

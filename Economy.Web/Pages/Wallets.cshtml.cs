@@ -41,7 +41,7 @@ public class WalletsModel(StateFactory<State> stateFactory) : PageModel
                     .FirstOrDefault()))
             .ToList();
 
-        Total = new Amounts();
+        Total = new();
         foreach (var (_, audit) in Wallets.Where(x => x.audit != null))
         {
             Total.Add(audit!.Amounts);

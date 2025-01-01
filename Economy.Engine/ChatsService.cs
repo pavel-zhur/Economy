@@ -59,7 +59,7 @@ public class ChatsService<TState, TChatInitializer>(ILogger<ChatsService<TState,
 
         chats = chats.Where(x => x.Status is not ChatStatus.Closed).ToList();
 
-        return new StateModel(
+        return new(
             context.UserData.State.LatestRevision,
             chats);
     }
@@ -131,7 +131,7 @@ public class ChatsService<TState, TChatInitializer>(ILogger<ChatsService<TState,
     private async Task Process(ChatsServiceContext<TState, TChatInitializer> context, Guid chatId, CancellationTokenSource cancellationTokenSource, byte[]? audioData = null)
     {
         var cancellationToken = cancellationTokenSource.Token;
-        int chatIndex = -1;
+        var chatIndex = -1;
 
         try
         {
@@ -239,7 +239,7 @@ public class ChatsService<TState, TChatInitializer>(ILogger<ChatsService<TState,
 
     private void AddUserMessage(ChatsServiceContext<TState, TChatInitializer> context, Guid chatId, MessageModel messageModel, Action<ChatStatus> chatStatusValidation, (string messageId, CancellationTokenSource cancellationTokenSource)? cancellation)
     {
-        context.UserData.GetChat(chatId, out var chatIndex, () => (new ChatModel(chatId, [], ChatStatus.Ready), new()));
+        context.UserData.GetChat(chatId, out var chatIndex, () => (new(chatId, [], ChatStatus.Ready), new()));
 
         lock (context.UserData.ChatsLock)
         {
@@ -265,7 +265,7 @@ public class ChatsService<TState, TChatInitializer>(ILogger<ChatsService<TState,
             if (context.UserData.GetAllChatModels().All(x => x.Messages.Any()))
             {
                 var newChatId = Guid.NewGuid();
-                context.UserData.GetChat(newChatId, out _, () => (new ChatModel(newChatId, [], ChatStatus.Ready), new()));
+                context.UserData.GetChat(newChatId, out _, () => (new(newChatId, [], ChatStatus.Ready), new()));
             }
         }
     }

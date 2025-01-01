@@ -37,7 +37,7 @@ public class TransactionsModel(StateFactory<State> stateFactory) : PageModel
         TotalIncomes = CreateTotal(TransactionType.Income);
         TotalExpenses = CreateTotal(TransactionType.Expense);
 
-        Total = new Amounts
+        Total = new()
         {
             TotalIncomes,
             { TotalExpenses, true }

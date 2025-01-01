@@ -32,7 +32,7 @@ public readonly record struct Date(int Year, int Month, int Day) : IComparable<D
     public Date AddDays(int i)
     {
         var dateTime = new DateTime(Year, Month, Day).AddDays(i);
-        return new Date(dateTime.Year, dateTime.Month, dateTime.Day);
+        return new(dateTime.Year, dateTime.Month, dateTime.Day);
     }
 
     public int CompareTo(Date other)

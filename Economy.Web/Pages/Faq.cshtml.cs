@@ -30,7 +30,7 @@ public class FaqModel(ILogger<FaqModel> logger, IHostEnvironment hostEnvironment
                 var child = node.Children.SingleOrDefault(c => c.Title == part);
                 if (child == null)
                 {
-                    child = new FaqNode(part);
+                    child = new(part);
                     node.Children.Add(child);
                 }
 

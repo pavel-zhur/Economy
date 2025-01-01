@@ -54,7 +54,7 @@ public class PlanTotals : IReadOnlyPlanTotals
         decimal GetValueOrDefault(SortedDictionary<Date, decimal> dictionary) =>
             dictionary.TryGetValue(date, out var value) ? value : dictionary.LastOrDefault(x => x.Key <= date).Value;
 
-        return new PlanTotalsPoint(
+        return new(
             GetValueOrDefault(_balances),
             GetValueOrDefault(_subtreeBalanceSums),
             GetValueOrDefault(_subtreeNegativeBalanceSums),

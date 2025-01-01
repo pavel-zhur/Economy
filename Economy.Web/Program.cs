@@ -56,7 +56,7 @@ var customCulture = new CultureInfo("en-US")
 
 var localizationOptions = new RequestLocalizationOptions
 {
-    DefaultRequestCulture = new RequestCulture(customCulture),
+    DefaultRequestCulture = new(customCulture),
     SupportedCultures = new List<CultureInfo> { customCulture },
     SupportedUICultures = new List<CultureInfo> { customCulture }
 };

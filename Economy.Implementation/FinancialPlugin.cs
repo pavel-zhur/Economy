@@ -125,7 +125,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, StateFactory<State
             throw new InvalidOperationException($"{entityType}with id {id} is not found.");
         }
 
-        state.Apply(new Deletion(new EntityFullId(entityType, id), DateTime.UtcNow));
+        state.Apply(new Deletion(new(entityType, id), DateTime.UtcNow));
     }
 
     [KernelFunction("get_entities")]
