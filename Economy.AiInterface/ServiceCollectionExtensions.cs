@@ -2,10 +2,10 @@
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Economy.AiInterface.Filters;
+using Economy.AiInterface.Interfaces;
 using Economy.AiInterface.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 namespace Economy.AiInterface;
@@ -29,13 +29,15 @@ public static class ServiceCollectionExtensions
             .AddScoped<AiTranscription>();
     }
 
-    public static IServiceCollection AddCompletionKernel<TMemoryPlugin>(this IServiceCollection services, IConfiguration configuration)
-        where TMemoryPlugin : class
+    public static IServiceCollection AddCompletionKernel<TMemoryPlugin, TAiProcessingLogger>(this IServiceCollection services, IConfiguration configuration)
+        where TMemoryPlugin : class 
+        where TAiProcessingLogger : class, IAiProcessingLogger
     {
         var aiInterfaceOptions = configuration.GetSection(nameof(AiInterfaceOptions)).Get<AiInterfaceOptions>()!;
 
         services.AddOpenAIChatCompletion("gpt-4o-mini", aiInterfaceOptions.ApiKey);
         services.AddScoped<TMemoryPlugin>();
+        services.AddScoped<IAiProcessingLogger, TAiProcessingLogger>();
         services.AddScoped<AiCompletion>();
         services.AddScoped<AutoFunctionInvocationFilter>();
         services.Configure<AiInterfaceOptions>(o => configuration.GetSection(nameof(AiInterfaceOptions)).Bind(o));

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Economy.Web.Hubs;
 
-public class ChatHub(ILogger<ChatHub> logger, ChatsService chatsService, ChatsRenderer chatsRenderer, IHubContext<ChatHub> hubContext, StateFactory<State> stateFactory, IServiceScopeFactory serviceScopeFactory) : Hub
+public class ChatHub(ILogger<ChatHub> logger, ChatsService<State, ChatInitializer> chatsService, ChatsRenderer chatsRenderer, IHubContext<ChatHub> hubContext, StateFactory<State> stateFactory, IServiceScopeFactory serviceScopeFactory) : Hub
 {
     public async Task SendMessage(Guid chatId, string messageId, string message)
     {

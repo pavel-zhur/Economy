@@ -1,10 +1,12 @@
-﻿using Economy.Engine.Models;
+﻿using Economy.Common;
+using Economy.Engine.Models;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OneShelf.Common;
 
 namespace Economy.Engine;
 
 public class UserData<TState>(TState state)
+    where TState : IState
 {
     private readonly List<(ChatModel chatModel, ChatHistory chatHistory)> _chats =
     [

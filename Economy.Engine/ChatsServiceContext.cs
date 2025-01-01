@@ -1,9 +1,12 @@
 using Economy.AiInterface.Services;
+using Economy.Common;
 using Economy.Engine.Models;
 
 namespace Economy.Engine;
 
-public class ChatsServiceContext<TState, TChatInitializer>
+public class ChatsServiceContext<TState, TChatInitializer> 
+    where TState : IState
+    where TChatInitializer : IChatInitializer
 {
     public required UserData<TState> UserData { get; init; }
 

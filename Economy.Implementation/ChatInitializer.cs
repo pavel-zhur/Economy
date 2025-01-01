@@ -1,15 +1,15 @@
 using Economy.AiInterface.Services;
 using Economy.Engine;
+using Economy.Engine.Models;
 using Economy.Memory.Containers.State;
-using Economy.Memory.Models.State;
 using Economy.Memory.Models.State.Sub;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Economy.Implementation;
 
-public class ChatInitializer(AiCompletion aiCompletion)
+public class ChatInitializer(AiCompletion aiCompletion, StateFactory<State> stateFactory) : IChatInitializer
 {
-    public void Init(ChatHistory chatHistory, State state)
+    public async Task Init(ChatHistory chatHistory)
     {
         aiCompletion.AddSystemMessage(chatHistory, @"
 
@@ -23,6 +23,9 @@ public class ChatInitializer(AiCompletion aiCompletion)
 ");
 
         var now = DateTime.UtcNow;
+
+        var state = await stateFactory.GetState();
+
         aiCompletion.AddSystemMessage(chatHistory, new
             {
                 CurrentDate = new Date(now.Year, now.Month, now.Day),

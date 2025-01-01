@@ -1,16 +1,17 @@
-using Economy.Engine;
+using Economy.Common;
 using Economy.Engine.Models;
-using Economy.Implementation;
-using Economy.Memory.Containers.State;
+using Microsoft.Extensions.Logging;
 
-namespace Economy.Web.Services;
+namespace Economy.Engine;
 
-public class ChatsService(ILogger<ChatsService> logger)
+public class ChatsService<TState, TChatInitializer>(ILogger<ChatsService<TState, TChatInitializer>> logger)
+    where TState : IState 
+    where TChatInitializer : IChatInitializer
 {
     private readonly Dictionary<(string userId, Guid chatId, string messageId), CancellationTokenSource> _cancellations = new();
     private readonly Lock _lock = new();
 
-    public async Task GotMessage(ChatsServiceContext<State, ChatInitializer> context, Guid chatId, string messageId, string message)
+    public async Task GotMessage(ChatsServiceContext<TState, TChatInitializer> context, Guid chatId, string messageId, string message)
     {
         CancellationTokenSource cancellationTokenSource = new();
         var messageModel = new MessageModel(DateTime.UtcNow, MessageType.UserText, messageId, message, UserMessageStatus.Thinking, null);
@@ -28,7 +29,7 @@ public class ChatsService(ILogger<ChatsService> logger)
             Process(context, chatId, cancellationTokenSource));
     }
 
-    public async Task GotAudio(ChatsServiceContext<State, ChatInitializer> context, Guid chatId, string messageId, byte[] audioData)
+    public async Task GotAudio(ChatsServiceContext<TState, TChatInitializer> context, Guid chatId, string messageId, byte[] audioData)
     {
         CancellationTokenSource cancellationTokenSource = new();
         var messageModel = new MessageModel(
@@ -52,24 +53,24 @@ public class ChatsService(ILogger<ChatsService> logger)
             Process(context, chatId, cancellationTokenSource, audioData));
     }
 
-    public StateModel GetState(ChatsServiceContext<State, ChatInitializer> context)
+    public StateModel GetState(ChatsServiceContext<TState, TChatInitializer> context)
     {
         var chats = context.UserData.GetAllChatModels();
 
         chats = chats.Where(x => x.Status is not ChatStatus.Closed).ToList();
 
         return new StateModel(
-            context.UserData.State.Events.Count,
+            context.UserData.State.LatestRevision,
             chats);
     }
 
-    public async Task TryCancel(ChatsServiceContext<State, ChatInitializer> context, Guid chatId, string messageId)
+    public async Task TryCancel(ChatsServiceContext<TState, TChatInitializer> context, Guid chatId, string messageId)
     {
         logger.LogInformation("Requesting cancellation for {chatId}.", chatId);
         await _cancellations[(context.UserId, chatId, messageId)].CancelAsync();
     }
 
-    public async Task CloseChat(ChatsServiceContext<State, ChatInitializer> context, Guid chatId)
+    public async Task CloseChat(ChatsServiceContext<TState, TChatInitializer> context, Guid chatId)
     {
         lock (_lock)
         {
@@ -114,7 +115,7 @@ public class ChatsService(ILogger<ChatsService> logger)
             ]);
     }
 
-    private async Task SendUpdate(ChatsServiceContext<State, ChatInitializer> context)
+    private async Task SendUpdate(ChatsServiceContext<TState, TChatInitializer> context)
     {
         try
         {
@@ -127,7 +128,7 @@ public class ChatsService(ILogger<ChatsService> logger)
     }
 
     // reacts to cancellation, sends updates on any update
-    private async Task Process(ChatsServiceContext<State, ChatInitializer> context, Guid chatId, CancellationTokenSource cancellationTokenSource, byte[]? audioData = null)
+    private async Task Process(ChatsServiceContext<TState, TChatInitializer> context, Guid chatId, CancellationTokenSource cancellationTokenSource, byte[]? audioData = null)
     {
         var cancellationToken = cancellationTokenSource.Token;
         int chatIndex = -1;
@@ -162,7 +163,7 @@ public class ChatsService(ILogger<ChatsService> logger)
             var chatHistory = context.UserData.GetChatHistory(chatIndex);
             if (!chatHistory.Any())
             {
-                context.ChatInitializer.Init(chatHistory, context.UserData.State);
+                await context.ChatInitializer.Init(chatHistory);
             }
 
             var response = await context.AiCompletion.Execute(chatHistory, chat.Messages[^1].Text!);
@@ -236,7 +237,7 @@ public class ChatsService(ILogger<ChatsService> logger)
         }
     }
 
-    private void AddUserMessage(ChatsServiceContext<State, ChatInitializer> context, Guid chatId, MessageModel messageModel, Action<ChatStatus> chatStatusValidation, (string messageId, CancellationTokenSource cancellationTokenSource)? cancellation)
+    private void AddUserMessage(ChatsServiceContext<TState, TChatInitializer> context, Guid chatId, MessageModel messageModel, Action<ChatStatus> chatStatusValidation, (string messageId, CancellationTokenSource cancellationTokenSource)? cancellation)
     {
         context.UserData.GetChat(chatId, out var chatIndex, () => (new ChatModel(chatId, [], ChatStatus.Ready), new()));
 

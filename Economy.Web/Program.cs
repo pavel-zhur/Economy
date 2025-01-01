@@ -20,7 +20,6 @@ builder.Services
     .AddImplementation<UserDataStorage, FinancialPlugin>(builder.Configuration)
     .AddHttpContextAccessor()
     .AddUserStorage<GoogleAuthService>(builder.Configuration)
-    .AddSingleton<ChatsService>()
     .AddSingleton<ChatsRenderer>()
     .AddScoped<SessionAvailability>()
     .AddMigrator();
