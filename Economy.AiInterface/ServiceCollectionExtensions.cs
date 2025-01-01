@@ -31,9 +31,9 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddCompletionKernel<TMemoryPlugin>(this IServiceCollection services, IConfiguration configuration)
         where TMemoryPlugin : class
     {
-        var tempOptions = configuration.GetSection(nameof(AiInterfaceOptions)).Get<AiInterfaceOptions>()!;
+        var aiInterfaceOptions = configuration.GetSection(nameof(AiInterfaceOptions)).Get<AiInterfaceOptions>()!;
 
-        services.AddOpenAIChatCompletion("gpt-4o-mini", tempOptions.ApiKey);
+        services.AddOpenAIChatCompletion("gpt-4o-mini", aiInterfaceOptions.ApiKey);
         services.AddScoped<TMemoryPlugin>();
         services.AddScoped<AiCompletion>();
         services.Configure<AiInterfaceOptions>(o => configuration.GetSection(nameof(AiInterfaceOptions)).Bind(o));

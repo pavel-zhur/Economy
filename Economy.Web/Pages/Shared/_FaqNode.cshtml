@@ -6,14 +6,14 @@
         if (child is FaqModel.FaqFile file)
         {
             <li>
-                <a asp-page="/FAQ" asp-route-filePath="@file.Path">@file.Title</a>
+                <a asp-page="/Faq" asp-route-filePath="@file.Path">@file.Title</a>
             </li>
         }
         else
         {
             <li>
                 <strong>@child.Title</strong>
-                @await Html.PartialAsync("_RenderFaqNode", child)
+                @await Html.PartialAsync("_FaqNode", child)
             </li>
         }
     }
