@@ -4,7 +4,6 @@ using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Sub;
 using Economy.Memory.Tools;
-using OneShelf.Common;
 
 namespace Economy.Memory.Models.State.Root;
 
@@ -18,7 +17,7 @@ public record Plan(
     PlanExpectedFinancialActivity? ExpectedFinancialActivity)
     : EntityBase(Id)
 {
-    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => ParentPlanId.ToEntityFullId(EntityType.Plan).Once();
+    protected override IEnumerable<EntityFullId?> GetForeignKeysDirty() => (ExpectedFinancialActivity?.GetForeignKeysDirty() ?? []).Append(ParentPlanId.ToEntityFullId(EntityType.Plan));
 
     internal override void Validate(Repositories repositories)
     {

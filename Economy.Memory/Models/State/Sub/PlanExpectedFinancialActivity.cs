@@ -1,4 +1,5 @@
 ﻿using Economy.Memory.Containers.State;
+using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Enums;
 
 namespace Economy.Memory.Models.State.Sub;
@@ -30,4 +31,7 @@ public record PlanExpectedFinancialActivity(
 
     public string ToDetails(IHistory repositories)
         => $"{Type} {Amounts.ToDetails(repositories)} d:[{PlannedRecurringDates?.ToDetails()}{PlannedDate}]";
+
+    public IEnumerable<EntityFullId?> GetForeignKeysDirty()
+        => Amounts.GetForeignKeysDirty();
 }
