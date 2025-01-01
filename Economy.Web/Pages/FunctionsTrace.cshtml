@@ -1,0 +1,15 @@
+﻿@page
+@using System.Text.Json
+@model Economy.Web.Pages.FunctionsTraceModel
+@{
+    ViewData["Title"] = "Functions Trace";
+}
+
+<h1>Functions Trace</h1>
+
+<a href="?handler=json">JSON</a>
+
+<pre>@JsonSerializer.Serialize(Model.Functions, new JsonSerializerOptions
+{
+    WriteIndented = true,
+})</pre>

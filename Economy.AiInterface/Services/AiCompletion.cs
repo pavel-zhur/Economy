@@ -38,4 +38,40 @@ public class AiCompletion(Kernel kernel, IChatCompletionService chatCompletionSe
 
         return result.ToString();
     }
+
+    public List<object> GetFunctions()
+    {
+        var results = new List<object>();
+
+        foreach (var kernelPlugin in kernel.Plugins)
+        {
+            foreach (var kernelFunctionMetadata in kernelPlugin.GetFunctionsMetadata())
+            {
+                results.Add(new
+                {
+                    kernelFunctionMetadata.Name,
+                    kernelFunctionMetadata.Description,
+                    kernelFunctionMetadata.PluginName,
+                    kernelFunctionMetadata.AdditionalProperties,
+                    ReturnParameter = new
+                    {
+                        kernelFunctionMetadata.ReturnParameter.Description,
+                        kernelFunctionMetadata.ReturnParameter.ParameterType?.FullName,
+                        kernelFunctionMetadata.ReturnParameter.Schema,
+                    },
+                    Parameters = kernelFunctionMetadata.Parameters.Select(p => new
+                    {
+                        p.Name,
+                        p.Description,
+                        p.DefaultValue,
+                        p.IsRequired,
+                        ParameterType = p.ParameterType.FullName,
+                        p.Schema,
+                    }).ToList(),
+                });
+            }
+        }
+
+        return results;
+    }
 }
