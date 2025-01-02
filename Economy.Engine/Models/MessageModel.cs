@@ -1,3 +1,4 @@
+using Economy.Engine.Enums;
 using MessagePack;
 
 namespace Economy.Engine.Models;
@@ -9,4 +10,5 @@ public record MessageModel(
     [property: Key("messageId")] string? MessageId,
     [property: Key("text")] string? Text,
     [property: Key("status")] UserMessageStatus? Status,
-    [property: Key("systemMessageSeverity")] SystemMessageSeverity? SystemMessageSeverity);
+    [property: Key("systemMessageSeverity")] SystemMessageSeverity? SystemMessageSeverity,
+    [property: Key("additionalData")] string? AdditionalData = null);

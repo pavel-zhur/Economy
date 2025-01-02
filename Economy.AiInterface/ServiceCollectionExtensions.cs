@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Economy.AiInterface.Filters;
+using Economy.AiInterface.Interfaces;
 using Economy.AiInterface.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,13 +30,14 @@ public static class ServiceCollectionExtensions
     }
 
     public static IServiceCollection AddCompletionKernel<TMemoryPlugin>(this IServiceCollection services, IConfiguration configuration)
-        where TMemoryPlugin : class
+        where TMemoryPlugin : class 
     {
-        var tempOptions = configuration.GetSection(nameof(AiInterfaceOptions)).Get<AiInterfaceOptions>()!;
+        var aiInterfaceOptions = configuration.GetSection(nameof(AiInterfaceOptions)).Get<AiInterfaceOptions>()!;
 
-        services.AddOpenAIChatCompletion("gpt-4o-mini", tempOptions.ApiKey);
+        services.AddOpenAIChatCompletion("gpt-4o-mini", aiInterfaceOptions.ApiKey);
         services.AddScoped<TMemoryPlugin>();
         services.AddScoped<AiCompletion>();
+        services.AddScoped<AutoFunctionInvocationFilter>();
         services.Configure<AiInterfaceOptions>(o => configuration.GetSection(nameof(AiInterfaceOptions)).Bind(o));
         services.AddScoped<KernelPluginCollection>(serviceProvider =>
             [
@@ -46,9 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped(serviceProvider =>
         {
             var kernel = new Kernel(serviceProvider, serviceProvider.GetRequiredService<KernelPluginCollection>());
-            var chatDebuggingFilter = new ChatDebuggingFilter();
-            kernel.AutoFunctionInvocationFilters.Add(chatDebuggingFilter);
-            kernel.PromptRenderFilters.Add(chatDebuggingFilter);
+            kernel.AutoFunctionInvocationFilters.Add(serviceProvider.GetRequiredService<AutoFunctionInvocationFilter>());
             return kernel;
         });
 

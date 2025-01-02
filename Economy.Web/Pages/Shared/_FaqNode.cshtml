@@ -1,0 +1,20 @@
+﻿@model FaqModel.FaqNode
+
+<ul>
+    @foreach (var child in Model.Children)
+    {
+        if (child is FaqModel.FaqFile file)
+        {
+            <li>
+                <a asp-page="/Faq" asp-route-filePath="@file.Path">@file.Title</a>
+            </li>
+        }
+        else
+        {
+            <li>
+                <strong>@child.Title</strong>
+                @await Html.PartialAsync("_FaqNode", child)
+            </li>
+        }
+    }
+</ul>

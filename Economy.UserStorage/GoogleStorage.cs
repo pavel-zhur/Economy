@@ -79,7 +79,7 @@ public class GoogleStorage(ILogger<GoogleStorage> logger, IGoogleAuthService goo
     {
         var accessToken = await googleAuthService.GetAccessTokenAsync();
         var credential = GoogleCredential.FromAccessToken(accessToken);
-        var driveService = new DriveService(new BaseClientService.Initializer
+        var driveService = new DriveService(new()
         {
             HttpClientInitializer = credential,
             ApplicationName = options.Value.ApplicationName

@@ -1,7 +1,8 @@
 ﻿@model Economy.Web.Pages.PlansModel
-@using Economy.Engine
+@using Economy.Engine.Services
 @using Economy.Memory.Containers.State
-@inject StateFactory<State> StateFactory
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IStateFactory<State> StateFactory
 
 @{
     var state = await StateFactory.GetState();

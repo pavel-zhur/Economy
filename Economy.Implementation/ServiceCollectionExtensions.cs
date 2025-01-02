@@ -13,7 +13,6 @@ public static class ServiceCollectionExtensions
         where TMemoryPlugin : class
     {
         return services
-            .AddStateManagement<TUserDataStorage, TMemoryPlugin, State>(configuration)
-            .AddScoped<ChatInitializer>();
+            .AddStateManagement<TUserDataStorage, TMemoryPlugin, State, ChatInitializer>(configuration);
     }
 }

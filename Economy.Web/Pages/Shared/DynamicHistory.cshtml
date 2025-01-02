@@ -1,8 +1,8 @@
 ﻿@model Economy.Web.Pages.HistoryModel
-@using Economy.Engine
+@using Economy.Engine.Services
 @using Economy.Memory.Containers.State
 @using OneShelf.Common
-@inject StateFactory<State> StateFactory
+@inject IStateFactory<State> StateFactory
 
 @{
     var state = await StateFactory.GetState();

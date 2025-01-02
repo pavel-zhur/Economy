@@ -1,4 +1,5 @@
-﻿using Economy.Memory.Containers.State;
+﻿using Economy.Memory.Containers.Repositories;
+using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Base;
 using OneShelf.Common;
 
@@ -7,7 +8,8 @@ namespace Economy.Memory.Models.State.Sub;
 [Obsolete("Refactor")] // todo: think
 public class Amounts : List<Amount>
 {
-    public void Validate(bool allowNegative, bool allowZero, bool allowPositive, bool allowEmpty)
+    public void Validate(bool allowNegative, bool allowZero, bool allowPositive,
+        bool allowEmpty)
     {
         if (this.AnyDuplicates(a => a.CurrencyId, out _))
         {

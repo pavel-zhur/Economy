@@ -216,8 +216,7 @@
     }
 
 ::deep .message-type-SystemText {
-    color: gray;
-    font-style: italic;
+    color: darkblue;
 }
 
 ::deep .message-type-UserText, ::deep .message-type-UserVoice {

@@ -14,6 +14,8 @@ public class State : IState
 
     public Repositories Repositories { get; } = new();
 
+    public int LatestRevision => Events.Count;
+
     public IReadOnlyList<EventBase> GetEventsByEntityFullId(EntityFullId entityFullId) => _eventsByEntityFullId[entityFullId];
 
     public void Apply(EventBase @event)

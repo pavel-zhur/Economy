@@ -1,4 +1,4 @@
-using Economy.Engine;
+using Economy.Engine.Services;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Root;
 using Economy.Memory.Models.State.Sub;
@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class WalletsModel(StateFactory<State> stateFactory) : PageModel
+public class WalletsModel(IStateFactory<State> stateFactory) : PageModel
 {
     [FromQuery] public WalletsOrdering Ordering { get; set; } = WalletsOrdering.Name;
 
@@ -41,7 +41,7 @@ public class WalletsModel(StateFactory<State> stateFactory) : PageModel
                     .FirstOrDefault()))
             .ToList();
 
-        Total = new Amounts();
+        Total = new();
         foreach (var (_, audit) in Wallets.Where(x => x.audit != null))
         {
             Total.Add(audit!.Amounts);

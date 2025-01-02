@@ -2,4 +2,5 @@
 
 public interface IState
 {
+    int LatestRevision { get; }
 }

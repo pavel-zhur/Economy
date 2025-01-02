@@ -1,9 +1,9 @@
 ﻿@model Economy.Web.Pages.WalletsModel
-@using Economy.Engine
+@using Economy.Engine.Services
 @using Economy.Memory.Containers.State
 @using Economy.Memory.Models.State.Root
 @using Economy.Memory.Tools
-@inject StateFactory<State> StateFactory
+@inject IStateFactory<State> StateFactory
 
 @{
     var state = await StateFactory.GetState();

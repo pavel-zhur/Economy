@@ -1,8 +1,9 @@
 ﻿using Economy.Common;
+using Economy.Engine.Models.Internal;
 
-namespace Economy.Engine;
+namespace Economy.Engine.Services.Implementation;
 
-public class FactoriesMemory<TState>(IMigrator<TState> migrator)
+internal class FactoriesMemory<TState>(IMigrator<TState> migrator)
     where TState : class, IState, new()
 {
     private readonly Dictionary<string, UserSession> _memory = new();
@@ -25,12 +26,12 @@ public class FactoriesMemory<TState>(IMigrator<TState> migrator)
     public async Task Save(IUserDataStorage storage)
     {
         UserSession userSession;
-        
+
         lock (_memory)
         {
             userSession = _memory[storage.GetUserKey()];
         }
-        
+
         await storage.SaveUserData(migrator.SaveToBinary(userSession.UserData.State));
     }
 

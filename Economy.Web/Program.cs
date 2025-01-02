@@ -20,7 +20,6 @@ builder.Services
     .AddImplementation<UserDataStorage, FinancialPlugin>(builder.Configuration)
     .AddHttpContextAccessor()
     .AddUserStorage<GoogleAuthService>(builder.Configuration)
-    .AddSingleton<ChatsService>()
     .AddSingleton<ChatsRenderer>()
     .AddScoped<SessionAvailability>()
     .AddMigrator();
@@ -57,7 +56,7 @@ var customCulture = new CultureInfo("en-US")
 
 var localizationOptions = new RequestLocalizationOptions
 {
-    DefaultRequestCulture = new RequestCulture(customCulture),
+    DefaultRequestCulture = new(customCulture),
     SupportedCultures = new List<CultureInfo> { customCulture },
     SupportedUICultures = new List<CultureInfo> { customCulture }
 };

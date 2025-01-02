@@ -1,19 +1,18 @@
 using Economy.AiInterface.Services;
-using Economy.Engine;
+using Economy.Engine.Services;
 using Economy.Memory.Containers.State;
-using Economy.Memory.Models.State;
 using Economy.Memory.Models.State.Sub;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Economy.Implementation;
 
-public class ChatInitializer(AiCompletion aiCompletion)
+public class ChatInitializer(AiCompletion aiCompletion, IStateFactory<State> stateFactory) : IChatInitializer
 {
-    public void Init(ChatHistory chatHistory, State state)
+    public async Task Init(ChatHistory chatHistory)
     {
         aiCompletion.AddSystemMessage(chatHistory, @"
 
-- When you call create_or_update_*, pass -1 id value if you intend to create a new entity.
+- When you call create_or_update_*, pass -1 value of the id field of the entity parameter if you intend to create a new entity.
 - When you call create_or_update_*, pass all fields in case of update as well. The update will be a full replacement.
 - When create_or_update_* is executed successfully, the user sees the new or updated entity right away. Do not repeat the entity in the response.
 - For date_and_time fields, try to specify realistic the time as well, try to avoid 00:00:00.
@@ -23,6 +22,9 @@ public class ChatInitializer(AiCompletion aiCompletion)
 ");
 
         var now = DateTime.UtcNow;
+
+        var state = await stateFactory.GetState();
+
         aiCompletion.AddSystemMessage(chatHistory, new
             {
                 CurrentDate = new Date(now.Year, now.Month, now.Day),
