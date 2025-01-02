@@ -8,7 +8,7 @@
     var state = await StateFactory.GetState();
 }
 
-<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+<input type="hidden" id="uniqueIdentifier" value="@state.Events.Count" />
 
 @foreach (var (@event, _) in state.Events.WithIndices().OrderBy(x => Model.Ordering switch
           {

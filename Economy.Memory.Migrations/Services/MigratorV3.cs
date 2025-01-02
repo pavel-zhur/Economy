@@ -1,6 +1,4 @@
-﻿using System;
-using System.Numerics;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Migrations.EventSourcing;

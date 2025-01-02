@@ -69,7 +69,7 @@ internal class ChatsService<TState, TChatInitializer>(
         chats = chats.Where(x => x.Status is not ChatStatus.Closed).ToList();
 
         return new(
-            userData.State.LatestRevision,
+            userData.State.UniqueIdentifier,
             chats);
     }
 

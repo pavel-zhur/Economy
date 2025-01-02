@@ -5,13 +5,13 @@ namespace Economy.Engine.Models;
 
 [MessagePackObject]
 public record StateModel(
-    [property: Key("latestRevision")] int LatestRevision,
+    [property: Key("uniqueIdentifier")] string UniqueIdentifier,
     [property: Key("chats")] IReadOnlyList<ChatModel> Chats)
 {
     public static StateModel GetFatalErrorHelloResponse()
     {
         return new(
-            0,
+            "fatal",
             [
                 new(
                     Guid.NewGuid(),

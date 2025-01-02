@@ -10,5 +10,5 @@ public abstract record EventBase(DateTime CreatedOn)
 
     public int GetRevision() => _revision;
 
-    public void SetRevision(int revision) => _revision = revision;
+    internal void SetRevision(int revision) => _revision = revision;
 }

@@ -11,7 +11,7 @@
     var records = PlansMathematics.CreateRecords(state);
 }
 
-<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+<input type="hidden" id="uniqueIdentifier" value="@state.Events.Count" />
 
 <div>
     @foreach (var record in records.SelectSingle(x => !Model.PlanId.HasValue ? x : x.Where(x => x.PlanIds.Any(x => x.planId == Model.PlanId))).OrderBy(x => Model.Ordering switch

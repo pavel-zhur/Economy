@@ -80,7 +80,7 @@
         }
 
         try {
-            window.dispatchDataUpdatedEvent(state.latestRevision);
+            window.dispatchDataUpdatedEvent(state.uniqueIdentifier);
         }
         catch (err) {
             console.error('Error dispatching dataUpdated event:', err);

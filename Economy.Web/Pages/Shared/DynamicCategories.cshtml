@@ -8,7 +8,7 @@
     var state = await StateFactory.GetState();
 }
 
-<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+<input type="hidden" id="uniqueIdentifier" value="@state.Events.Count" />
 
 <ul>
     @foreach (var entity in state.Repositories.Categories.GetAll().OrderBy<Category, IComparable>(x => Model.Ordering switch

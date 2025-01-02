@@ -9,12 +9,13 @@ using Repositories;
 public class State : IState
 {
     private readonly Dictionary<EntityFullId, List<EventBase>> _eventsByEntityFullId = new();
+    private readonly List<EventBase> _events = new();
 
-    public List<EventBase> Events { get; } = new();
+    public IReadOnlyList<EventBase> Events => _events;
 
     public Repositories Repositories { get; } = new();
 
-    public int LatestRevision => Events.Count;
+    public string UniqueIdentifier => Events.Count.ToString();
 
     public IReadOnlyList<EventBase> GetEventsByEntityFullId(EntityFullId entityFullId) => _eventsByEntityFullId[entityFullId];
 
@@ -44,7 +45,7 @@ public class State : IState
                 throw new ArgumentOutOfRangeException(nameof(@event));
         }
 
-        Events.Add(@event);
+        _events.Add(@event);
         @event.SetRevision(Events.Count);
     }
 
