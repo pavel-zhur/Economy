@@ -2,4 +2,4 @@
 
 namespace Economy.Memory.Migrations.Serialization.Future;
 
-internal record FutureSerializedEvents(int Version, List<EventBase> Events);
+internal record FutureSerializedEvents(int Version, IReadOnlyList<EventBase> Events);
