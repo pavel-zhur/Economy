@@ -3,7 +3,7 @@ using Economy.Engine.Models.Internal;
 
 namespace Economy.Engine.Services.Implementation;
 
-internal class FactoriesMemory<TState>(IMigrator<TState> migrator)
+internal class StateFactoryMemory<TState>(IMigrator<TState> migrator)
     where TState : class, IState, new()
 {
     private readonly Dictionary<string, UserSession> _memory = new();

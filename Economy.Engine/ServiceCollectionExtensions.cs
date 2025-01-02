@@ -22,7 +22,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<TChatInitializer>()
             .AddScoped<IChatsService, ChatsService<TState, TChatInitializer>>()
             .AddSingleton<ChatsServiceMemory>()
-            .AddSingleton<FactoriesMemory<TState>>()
+            .AddSingleton<StateFactoryMemory<TState>>()
             .AddScoped<IStateFactory<TState>, StateFactory<TState>>()
             .AddScoped<TUserDataStorage>()
             .AddScoped<IUserDataStorage>(x => x.GetRequiredService<TUserDataStorage>());
