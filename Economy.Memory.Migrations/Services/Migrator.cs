@@ -50,6 +50,21 @@ internal class Migrator(MigratorV3 migratorV3) : IMigrator<State>
                 }
 
                 return;
+            case 4:
+                var v4Events =
+                    JsonSerializer.Deserialize<FutureSerializedEvents>(data, _futureJsonSerializerOptions)!;
+
+                foreach (var @event in v4Events.Events)
+                {
+                    state.Apply(@event with
+                    {
+                        Id = Guid.NewGuid(),
+                        ParentId = state.Events.Any() ? state.Events[^1].Id : null,
+                        Revision = state.Events.Count + 1,
+                    });
+                }
+
+                return;
             case 3:
                 migratorV3.Apply(state, events.Events, _futureJsonSerializerOptions);
                 return;

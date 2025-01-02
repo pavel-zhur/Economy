@@ -3,4 +3,4 @@
 namespace Economy.Memory.Migrations.EventSourcing;
 
 [method: JsonConstructor]
-public record ExDeletion(ExEntityFullId EntityFullId, DateTime CreatedOn) : ExEventBase(CreatedOn);
+public record ExDeletion(ExEntityFullId EntityFullId, DateTime CreatedOn, Guid Id, Guid? ParentId, int Revision) : ExEventBase(CreatedOn, Id, ParentId, Revision);

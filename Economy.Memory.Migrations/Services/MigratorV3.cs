@@ -16,7 +16,7 @@ namespace Economy.Memory.Migrations.Services;
 
 internal class MigratorV3
 {
-    public void Apply(State state, List<ExEventBase> events, JsonSerializerOptions futureJsonSerializerOptions)
+    public void Apply(State state, IReadOnlyList<ExEventBase> events, JsonSerializerOptions futureJsonSerializerOptions)
     {
         var exJsonSerializerOptions = new JsonSerializerOptions
         {
@@ -28,27 +28,29 @@ internal class MigratorV3
 
         foreach (var @event in events)
         {
+            var (parentId, revision) = state.GetNextEventParentIdAndRevision();
+
             switch (@event)
             {
                 case ExCreation exCreation when Enum.TryParse<ExV3EntityType>(exCreation.Entity.Type, out var entityType) && entityType == ExV3EntityType.Transaction:
                     var v3Transaction = JsonSerializer.Deserialize<V3Transaction>(exCreation.Entity.Data.ToJsonString(), exJsonSerializerOptions)!;
                     v3Transactions[v3Transaction.Id] = v3Transaction;
-                    state.Apply(new Creation(Convert(state, v3Transaction), exCreation.CreatedOn));
+                    state.Apply(new Creation(Convert(state, v3Transaction), exCreation.CreatedOn, Guid.NewGuid(), parentId, revision));
                     break;
                 case ExCreation exCreation when Enum.TryParse<ExV3EntityType>(exCreation.Entity.Type, out var entityType) && entityType == ExV3EntityType.Plan:
                     var v3Plan = JsonSerializer.Deserialize<V3Plan>(exCreation.Entity.Data.ToJsonString(), exJsonSerializerOptions)!;
                     v3Plans[v3Plan.Id] = v3Plan;
-                    state.Apply(new Creation(Convert(state, v3Plan), exCreation.CreatedOn));
+                    state.Apply(new Creation(Convert(state, v3Plan), exCreation.CreatedOn, Guid.NewGuid(), parentId, revision));
                     break;
                 case ExUpdate exUpdate when Enum.TryParse<ExV3EntityType>(exUpdate.Entity.Type, out var entityType) && entityType == ExV3EntityType.Transaction:
                     v3Transaction = JsonSerializer.Deserialize<V3Transaction>(exUpdate.Entity.Data.ToJsonString(), exJsonSerializerOptions)!;
                     v3Transactions[v3Transaction.Id] = v3Transaction;
-                    state.Apply(new Update(Convert(state, v3Transaction), exUpdate.CreatedOn));
+                    state.Apply(new Update(Convert(state, v3Transaction), exUpdate.CreatedOn, Guid.NewGuid(), parentId, revision));
                     break;
                 case ExUpdate exUpdate when Enum.TryParse<ExV3EntityType>(exUpdate.Entity.Type, out var entityType) && entityType == ExV3EntityType.Plan:
                     v3Plan = JsonSerializer.Deserialize<V3Plan>(exUpdate.Entity.Data.ToJsonString(), exJsonSerializerOptions)!;
                     v3Plans[v3Plan.Id] = v3Plan;
-                    state.Apply(new Update(Convert(state, v3Plan), exUpdate.CreatedOn));
+                    state.Apply(new Update(Convert(state, v3Plan), exUpdate.CreatedOn, Guid.NewGuid(), parentId, revision));
                     break;
                 case ExCreation exCreation:
                     state.Apply(JsonSerializer.Deserialize<Creation>(JsonSerializer.Serialize(exCreation), futureJsonSerializerOptions)!);
@@ -69,7 +71,10 @@ internal class MigratorV3
             var v3Transaction = v3Transactions[transaction.Id];
             if (v3Transaction is { Planned: { Amounts: { } amounts } planned, Actual: null })
             {
-                state.Apply(new Deletion(transaction.GetFullId(), DateTime.UtcNow));
+                var (parentId, revision) = state.GetNextEventParentIdAndRevision();
+                state.Apply(new Deletion(transaction.GetFullId(), DateTime.UtcNow, Guid.NewGuid(), parentId, revision));
+
+                (parentId, revision) = state.GetNextEventParentIdAndRevision();
                 state.Apply(new Creation(new Plan(
                     state.Repositories.Plans.GetNextNormalId(),
                     transaction.SpecialNotes ?? "[converted]",
@@ -85,7 +90,7 @@ internal class MigratorV3
                         amounts,
                         null,
                         planned.Date)), 
-                    DateTime.UtcNow));
+                    DateTime.UtcNow, Guid.NewGuid(), parentId, revision));
             }
         }
     }

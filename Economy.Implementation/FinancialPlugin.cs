@@ -247,7 +247,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
             throw new InvalidOperationException($"{entityType}with id {id} is not found.");
         }
 
-        var (parentId, revision) = state.GetNextEventParentIdAndRevision(state);
+        var (parentId, revision) = state.GetNextEventParentIdAndRevision();
         state.Apply(new Deletion(new(entityType, id), DateTime.UtcNow, Guid.NewGuid(), parentId, revision));
     }
 
@@ -271,7 +271,7 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
     private EventBase PrepareForUpsert<T>(State state, ref T entity, out string verb)
         where T : EntityBase
     {
-        var (parentId, revision) = state.GetNextEventParentIdAndRevision(state);
+        var (parentId, revision) = state.GetNextEventParentIdAndRevision();
         switch (entity.Id)
         {
             case -1:

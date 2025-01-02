@@ -48,9 +48,9 @@ public class State : IState
         _events.Add(@event);
     }
 
-    public (Guid? parentId, int revision) GetNextEventParentIdAndRevision(State state)
+    public (Guid? parentId, int revision) GetNextEventParentIdAndRevision()
     {
-        return (parentId: state.Events.Any() ? state.Events[^1].Id : null, revision: state.Events.Count + 1);
+        return (parentId: Events.Any() ? Events[^1].Id : null, revision: Events.Count + 1);
     }
 
     internal IHistory CreateHistorySnapshot(int revision) => new StateSnapshot(this, revision);
