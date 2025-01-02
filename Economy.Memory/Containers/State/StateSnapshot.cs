@@ -15,7 +15,7 @@ internal readonly struct StateSnapshot(State state, int revision) : IHistory
         return !entityFullId.HasValue
             ? null
             : state.GetEventsByEntityFullId(new(entityType, entityFullId.Value))
-                    .TakeWhile(e => e.GetRevision() < revisionSnapshot)
+                    .TakeWhile(e => e.Revision < revisionSnapshot)
                     .Last() switch
                 {
                     Creation creation => creation.Entity.ToReferenceTitle(),
@@ -28,7 +28,7 @@ internal readonly struct StateSnapshot(State state, int revision) : IHistory
     {
         var revisionSnapshot = revision;
         return (state.GetEventsByEntityFullId(new(EntityType.Currency, currencyId))
-                .TakeWhile(e => e.GetRevision() < revisionSnapshot)
+                .TakeWhile(e => e.Revision < revisionSnapshot)
                 .Last() switch
             {
                 Creation creation => ((Currency)creation.Entity),
@@ -41,7 +41,7 @@ internal readonly struct StateSnapshot(State state, int revision) : IHistory
     {
         var revisionSnapshot = revision;
         return (state.GetEventsByEntityFullId(entityFullId)
-                .TakeWhile(e => e.GetRevision() < revisionSnapshot)
+                .TakeWhile(e => e.Revision < revisionSnapshot)
                 .Last() switch
             {
                 Creation creation => creation.Entity,

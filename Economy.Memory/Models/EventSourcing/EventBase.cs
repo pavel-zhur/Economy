@@ -2,13 +2,7 @@
 
 namespace Economy.Memory.Models.EventSourcing;
 
-public abstract record EventBase(DateTime CreatedOn)
+public abstract record EventBase(DateTime CreatedOn, Guid Id, Guid? ParentId, int Revision)
 {
-    private int _revision;
-
     public virtual string ToDetails(Containers.State.State state) => CreatedOn.ToString(CultureInfo.InvariantCulture);
-
-    public int GetRevision() => _revision;
-
-    internal void SetRevision(int revision) => _revision = revision;
 }

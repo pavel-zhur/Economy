@@ -247,7 +247,8 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
             throw new InvalidOperationException($"{entityType}with id {id} is not found.");
         }
 
-        state.Apply(new Deletion(new(entityType, id), DateTime.UtcNow));
+        var (parentId, revision) = state.GetNextEventParentIdAndRevision(state);
+        state.Apply(new Deletion(new(entityType, id), DateTime.UtcNow, Guid.NewGuid(), parentId, revision));
     }
 
     [KernelFunction("get_entities")]
@@ -270,16 +271,17 @@ public class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<Stat
     private EventBase PrepareForUpsert<T>(State state, ref T entity, out string verb)
         where T : EntityBase
     {
+        var (parentId, revision) = state.GetNextEventParentIdAndRevision(state);
         switch (entity.Id)
         {
             case -1:
                 verb = "Creating";
-                return new Creation(entity = entity with { Id = state.Repositories.GetRepository<T>().GetNextNormalId() }, DateTime.UtcNow);
+                return new Creation(entity = entity with { Id = state.Repositories.GetRepository<T>().GetNextNormalId() }, DateTime.UtcNow, Guid.NewGuid(), parentId, revision);
             case 0 or < -1:
                 throw new("To update an entity, specify its id. To create an entity, pass the value -1 as the id field of the entity parameter.");
             default:
                 verb = "Updating";
-                return new Update(entity, DateTime.UtcNow);
+                return new Update(entity, DateTime.UtcNow, Guid.NewGuid(), parentId, revision);
         }
     }
 }
