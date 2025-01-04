@@ -1,8 +1,8 @@
 using Economy.Memory.Models;
-using Economy.Memory.Models.State;
 using System.Reflection;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Tools;
+using OneShelf.Common;
 
 namespace Economy.Memory.Containers.Repositories;
 
@@ -29,7 +29,7 @@ public class Repository<T>(Repositories repositories) : IRepository where T : En
         return _entities.Values.AsEnumerable();
     }
 
-    public void Add(T entity)
+    internal void Add(T entity)
     {
         entity.Validate(repositories);
 
@@ -57,7 +57,7 @@ public class Repository<T>(Repositories repositories) : IRepository where T : En
         }
     }
 
-    public void Update(T entity)
+    internal void Update(T entity)
     {
         entity.Validate(repositories);
 
@@ -87,7 +87,7 @@ public class Repository<T>(Repositories repositories) : IRepository where T : En
         }
     }
 
-    public void Delete(int id)
+    void IRepository.Delete(int id)
     {
         var entityFullId = id.ToEntityFullId(GetEntityType());
 
@@ -107,6 +107,22 @@ public class Repository<T>(Repositories repositories) : IRepository where T : En
         }
 
         _deletedCount++;
+    }
+
+    void IRepository.AddFromWithoutValidation(IRepository repository)
+    {
+        AddFromWithoutValidation((Repository<T>)repository);
+    }
+
+    private void AddFromWithoutValidation(Repository<T> another)
+    {
+        if (_entities.Any() || _deletedCount > 0)
+        {
+            throw new InvalidOperationException("Cannot add from another repository when there are already entities in this repository.");
+        }
+
+        _entities.AddRange(another._entities.Select(x => (x.Key, x.Value)), false);
+        _deletedCount = another._deletedCount;
     }
 
     protected virtual void ValidateUpdate(T oldEntity, T newEntity)

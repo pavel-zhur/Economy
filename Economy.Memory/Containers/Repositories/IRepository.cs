@@ -11,9 +11,11 @@ public interface IRepository
     EntityBase? TryGetById(int id);
     EntityBase GetById(int id);
     IEnumerable<EntityBase> GetAll();
-    void Add(EntityBase entity);
-    void Update(EntityBase entity);
-    void Delete(int id);
+    internal void Add(EntityBase entity);
+    internal void Update(EntityBase entity);
+    internal void Delete(int id);
     Type GetEntityClrType();
     EntityType GetEntityType();
+    
+    internal void AddFromWithoutValidation(IRepository repository);
 }
