@@ -16,5 +16,12 @@
         max-height: 49px; /* Set the maximum height */
         height: 100%;
         background-image: url('img/one-compressed.png');
-        opacity: 0.8;
     }
+
+        div.animated-background div.animation:nth-child(1) {
+            opacity: 1;
+        }
+
+        div.animated-background div.animation:nth-child(2) {
+            opacity: .4;
+        }

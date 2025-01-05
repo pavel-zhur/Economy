@@ -1,14 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const animationElement = document.querySelector('div.animated-background div.animation');
+    const animationElements = document.querySelectorAll('div.animated-background div.animation');
 
-    if (animationElement) {
+    const speedUps = [];
+    const slowDowns = [];
+
+    for (var i = 0; i < animationElements.length; i++) {
+        const animationElement = animationElements[i];
+        const computedStyle = getComputedStyle(animationElement);
+        const currentBgPosX = parseFloat(computedStyle.backgroundPositionX) || 0;
+
         const keyframes = [
-            { backgroundPositionX: '0px' },
-            { backgroundPositionX: '-10792px' }
+            { backgroundPositionX: `${currentBgPosX - 10792 * ((i + 1) % 2)}px` },
+            { backgroundPositionX: `${currentBgPosX - 10792 * (i % 2) }px` }
         ];
 
         const timing = {
-            duration: 3600000,
+            duration: 8000000 * (i + 1),
             iterations: Infinity,
             easing: 'linear'
         };
@@ -55,9 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
             adjustPlaybackRateRequestID = requestAnimationFrame(updatePlaybackRate);
         }
 
-        window.speedUpAnimation = () => adjustPlaybackRate(250, easeInOutCubicBezier, 500);
-        window.slowDownAnimation = () => adjustPlaybackRate(1, easeOutCubic, 1000);
-    } else {
-        console.warn("Animation element not found.");
+        const iCopy = i;
+        speedUps.push(() => adjustPlaybackRate(120 + (iCopy % 2) * 300, easeInOutCubicBezier, 500));
+        slowDowns.push(() => adjustPlaybackRate(1, easeOutCubic, 1000));
     }
+
+    window.speedUpAnimation = () => speedUps.forEach(speedUp => speedUp());
+    window.slowDownAnimation = () => slowDowns.forEach(slowDown => slowDown());
 });

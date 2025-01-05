@@ -1,3 +1,7 @@
-﻿<div class="animated-background">
-    <div class="animation"></div>
+﻿@{
+    int RandomStart() => Random.Shared.Next(-10792, 0);
+}
+<div class="animated-background">
+    <div class="animation" style="background-position-x:@($"-{-RandomStart()}px");"></div>
+    <div class="animation" style="background-position-x:@($"-{-RandomStart()}px");"></div>
 </div>
