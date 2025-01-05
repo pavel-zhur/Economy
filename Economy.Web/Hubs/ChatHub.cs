@@ -1,7 +1,5 @@
-using Economy.AiInterface.Services;
 using Economy.Engine.Models;
 using Economy.Engine.Services;
-using Economy.Implementation;
 using Economy.Memory.Containers.State;
 using Economy.UserStorage;
 using Economy.Web.Services;
@@ -9,7 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Economy.Web.Hubs;
 
-public class ChatHub(ILogger<ChatHub> logger, ChatsRenderer chatsRenderer, IHubContext<ChatHub> hubContext, IStateFactory<State> stateFactory, IServiceScopeFactory serviceScopeFactory) : Hub
+public class ChatHub(ILogger<ChatHub> logger, ChatsRenderer chatsRenderer, IHubContext<ChatHub> hubContext, IStateFactory<States> stateFactory, IServiceScopeFactory serviceScopeFactory) : Hub
 {
     public async Task SendMessage(Guid chatId, string messageId, string message)
     {
@@ -74,7 +72,7 @@ public class ChatHub(ILogger<ChatHub> logger, ChatsRenderer chatsRenderer, IHubC
         try
         {
             using var scope = serviceScopeFactory.CreateScope();
-            var scopeStateFactory = scope.ServiceProvider.GetRequiredService<IStateFactory<State>>();
+            var scopeStateFactory = scope.ServiceProvider.GetRequiredService<IStateFactory<States>>();
             await scopeStateFactory.InitializeDetached(stateFactory);
 
             var chatsService = scope.ServiceProvider.GetRequiredService<IChatsService>();

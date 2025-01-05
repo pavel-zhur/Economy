@@ -16,7 +16,7 @@ internal class ChatsService<TState, TChatInitializer>(
     IStateFactory<TState> stateFactory,
     AiProcessingLogger aiProcessingLogger) 
         : IChatsService
-    where TState : class, IState, new()
+    where TState : class, IState
     where TChatInitializer : IChatInitializer
 {
     public async Task GotMessage(ChatsServiceContext context, Guid chatId, string messageId, string message)

@@ -6,10 +6,11 @@ using Economy.Memory.Migrations.Serialization.Ex;
 using Economy.Memory.Migrations.Serialization.Future;
 using Economy.Memory.Migrations.Tools;
 using System.Text.Json.Serialization;
+using Economy.Memory.Models.Branching;
 
 namespace Economy.Memory.Migrations.Services;
 
-internal class Migrator(MigratorV3 migratorV3) : IMigrator<State>
+internal class Migrator : IMigrator<States>
 {
     private readonly JsonSerializerOptions _futureJsonSerializerOptions = new()
     {
@@ -22,14 +23,15 @@ internal class Migrator(MigratorV3 migratorV3) : IMigrator<State>
         WriteIndented = true
     };
 
-    public byte[] SaveToBinary(State state)
+    public byte[] SaveToBinary(States state)
     {
-        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new FutureSerializedEvents(Constants.LatestVersion, state.Events), _futureJsonSerializerOptions));
+        var (events, branches) = state.Dump();
+        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new FutureSerializedEvents(Constants.LatestVersion, events, branches), _futureJsonSerializerOptions));
     }
 
-    public void LoadFromBinary(State state, byte[]? data)
+    public States LoadFromBinary(byte[]? data)
     {
-        var events = JsonSerializer.Deserialize<ExSerializedEvents>(data, (JsonSerializerOptions)new()
+        var exEvents = JsonSerializer.Deserialize<ExSerializedEvents>(data, (JsonSerializerOptions)new()
         {
             Converters =
             {
@@ -38,38 +40,64 @@ internal class Migrator(MigratorV3 migratorV3) : IMigrator<State>
             },
         })!;
 
-        switch (events.Version)
+        switch (exEvents.Version)
         {
             case Constants.LatestVersion:
-                var currentEvents =
-                    JsonSerializer.Deserialize<FutureSerializedEvents>(data, _futureJsonSerializerOptions)!;
+                var currentData = JsonSerializer.Deserialize<FutureSerializedEvents>(data, _futureJsonSerializerOptions)!;
+                return States.Load(currentData.Events, currentData.Branches);
 
-                foreach (var @event in currentEvents.Events)
+            case 5:
+                var v5Data = JsonSerializer.Deserialize<FutureSerializedEvents>(data, _futureJsonSerializerOptions)!;
+
+                List<Branch> branches = [
+                    new(0, null, BranchStatus.Committed, null),
+                ];
+
+                if (v5Data.Events.Any())
                 {
-                    state.Apply(@event);
+                    branches.Add(new(1, null, BranchStatus.Committed, v5Data.Events[^1].Id));
                 }
 
-                return;
+                return States.Load(v5Data.Events, [
+                    new(0, null, BranchStatus.Committed, null),
+                    new(1, null, BranchStatus.Committed, v5Data.Events[^1].Id),
+                ]);
             case 4:
-                var v4Events =
-                    JsonSerializer.Deserialize<FutureSerializedEvents>(data, _futureJsonSerializerOptions)!;
+                var v4Data = JsonSerializer.Deserialize<FutureSerializedEvents>(data, _futureJsonSerializerOptions)!;
 
-                foreach (var @event in v4Events.Events)
+                Guid? lastId = null;
+                var events = v4Data.Events.Select((e, i) =>
                 {
-                    state.Apply(@event with
+                    e = e with
                     {
+                        ParentId = lastId,
+                        Revision = i + 1,
                         Id = Guid.NewGuid(),
-                        ParentId = state.Events.Any() ? state.Events[^1].Id : null,
-                        Revision = state.Events.Count + 1,
-                    });
+                    };
+
+                    lastId = e.Id;
+
+                    return e;
+                }).ToList();
+
+                branches = [
+                    new(0, null, BranchStatus.Committed, null),
+                ];
+
+                if (events.Any())
+                {
+                    branches.Add(new(1, null, BranchStatus.Committed, lastId));
                 }
 
-                return;
-            case 3:
-                migratorV3.Apply(state, events.Events, _futureJsonSerializerOptions);
-                return;
+                return States.Load(events, branches);
+
             default:
-                throw new NotSupportedException($"Unsupported version: {events.Version}");
+                throw new NotSupportedException($"Unsupported version: {exEvents.Version}");
         }
+    }
+
+    public States CreateEmpty()
+    {
+        return States.Load([], [new(0, null, BranchStatus.Committed, null)]);
     }
 }

@@ -4,7 +4,7 @@ using Economy.Engine.Models.Internal;
 namespace Economy.Engine.Services.Implementation;
 
 internal class StateFactory<TState>(StateFactoryMemory<TState> stateFactoryMemory, IUserDataStorage userDataStorage) : IStateFactory<TState>
-    where TState : class, IState, new()
+    where TState : class, IState
 {
     private readonly Lock _lock = new();
     private UserData<TState>? _detachedState;

@@ -2,5 +2,5 @@
 
 internal static class Constants
 {
-    public const int LatestVersion = 5;
+    public const int LatestVersion = 6;
 }

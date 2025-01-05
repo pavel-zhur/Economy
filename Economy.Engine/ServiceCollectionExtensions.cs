@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddStateManagement<TUserDataStorage, TMemoryPlugin, TState, TChatInitializer>(this IServiceCollection services, IConfiguration configuration)
         where TUserDataStorage : class, IUserDataStorage 
         where TMemoryPlugin : class
-        where TState : class, IState, new()
+        where TState : class, IState
         where TChatInitializer : class, IChatInitializer =>
         services
             .AddCompletionKernel<TMemoryPlugin>(configuration)

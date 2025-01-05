@@ -1,10 +1,10 @@
 ﻿@model Economy.Web.Pages.PlanRecordsModel
-@using Economy.Engine.Services
+@using Economy.Implementation.Factories
 @using Economy.Memory.Containers.State
 @using Economy.Memory.Mathematics
 @using Economy.Memory.Tools
 @using OneShelf.Common
-@inject IStateFactory<State> StateFactory
+@inject IReadOnlyStateFactory<State> StateFactory
 
 @{
     var state = await StateFactory.GetState();

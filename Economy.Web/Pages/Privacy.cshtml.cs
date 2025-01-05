@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class PrivacyModel(ILogger<PrivacyModel> logger, IStateFactory<State> stateFactory, UserDataStorage userDataStorage, IHostEnvironment hostEnvironment) : PageModel
+public class PrivacyModel(ILogger<PrivacyModel> logger, IStateFactory<States> stateFactory, UserDataStorage userDataStorage, IHostEnvironment hostEnvironment) : PageModel
 {
     public void OnGet()
     {

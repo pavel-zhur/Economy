@@ -1,4 +1,5 @@
-using Economy.Engine.Services;
+using Economy.Implementation.Factories;
+using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Root;
 using Economy.Memory.Models.State.Sub;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class WalletsModel(IStateFactory<State> stateFactory) : PageModel
+public class WalletsModel(IReadOnlyStateFactory<Repositories> stateFactory) : PageModel
 {
     [FromQuery] public WalletsOrdering Ordering { get; set; } = WalletsOrdering.Name;
 
@@ -28,13 +29,13 @@ public class WalletsModel(IStateFactory<State> stateFactory) : PageModel
 
     public async Task OnGet()
     {
-        var state = await stateFactory.GetState();
+        var repositories = await stateFactory.GetState();
 
-        Wallets = state.Repositories.Wallets.GetAll()
+        Wallets = repositories.Wallets.GetAll()
             .OrderBy(x => x.Id)
             .Select(w => (
                 wallet: w,
-                audit: state.Repositories.WalletAudits.GetAll()
+                audit: repositories.WalletAudits.GetAll()
                     .Where(x => x.WalletId == w.Id)
                     .OrderByDescending(x => x.CheckDateAndTime)
                     .ThenByDescending(x => x.Id)

@@ -1,4 +1,4 @@
-using Economy.Engine.Services;
+using Economy.Implementation.Factories;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models;
 using Economy.Memory.Models.State.Enums;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Economy.Web.Pages;
 
-public class TransactionsModel(IStateFactory<State> stateFactory) : PageModel
+public class TransactionsModel(IReadOnlyStateFactory<State> stateFactory) : PageModel
 {
     [FromQuery] public TransactionsOrdering Ordering { get; set; } = TransactionsOrdering.IdDesc;
 

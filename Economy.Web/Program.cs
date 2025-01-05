@@ -2,7 +2,6 @@ using Economy.AiInterface;
 using Economy.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using Economy.Implementation;
 using Economy.Memory.Migrations;
@@ -17,7 +16,7 @@ builder.Services
 
 builder.Services
     .AddAudioTranscriptionService(builder.Configuration)
-    .AddImplementation<UserDataStorage, FinancialPlugin>(builder.Configuration)
+    .AddImplementation<UserDataStorage>(builder.Configuration)
     .AddHttpContextAccessor()
     .AddUserStorage<GoogleAuthService>(builder.Configuration)
     .AddSingleton<ChatsRenderer>()
