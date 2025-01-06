@@ -142,16 +142,20 @@ public class States : IState
             case null:
                 {
                     var oldTip = Current.state.Events[^1];
-                    var oldBranchId = _branchStates.Where(x => x.Key != EmptyRoot.Id).Single(x => x.Value.Events.Skip(_branchStates[_branchParents[x.Key]].Events.Count).Any(e => e.Id == @event.Id)).Key;
+                    var oldBranchId = _branchStates.Where(x => x.Key != EmptyRoot.Id).Single(x => x.Value.Events.Skip(_branchStates[_branchParents[x.Key]].Events.Count).Any(e => e.Id == oldTip.Id)).Key;
                     var fork = new Branch(_branches.Count, null, BranchStatus.Committed, oldTip.Id);
                     if (!_branchesByParentBranchId[_branchParents[oldBranchId]].Remove(oldBranchId))
                     {
                         throw new InvalidOperationException("Branch is not a child of its parent.");
                     }
 
+                    var oldGrandParentId = _branchParents[oldBranchId];
+                    
                     _branchesByParentBranchId[fork.Id] = [oldBranchId];
-
-                    _branchParents[fork.Id] = _branchParents[oldBranchId];
+                    _branchesByParentBranchId[oldGrandParentId].Add(fork.Id);
+                    _branchesByParentBranchId[oldGrandParentId].Remove(oldBranchId);
+                    
+                    _branchParents[fork.Id] = oldGrandParentId;
                     _branchParents[oldBranchId] = fork.Id;
 
                     _branches.Add(fork);
