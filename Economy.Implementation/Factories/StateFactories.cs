@@ -4,7 +4,7 @@ using Economy.Memory.Containers.State;
 
 namespace Economy.Implementation.Factories;
 
-internal class ReadOnlyStateFactory(IStateFactory<States> statesFactory) : IReadOnlyStateFactory<State>, IReadOnlyStateFactory<Repositories>
+internal class ReadOnlyStateFactory(IStateFactory<States> statesFactory) : IReadOnlyStateFactory<State>, IReadOnlyStateFactory<Repositories>, IReadOnlyStateFactory<States>
 {
     async Task<State> IReadOnlyStateFactory<State>.GetState()
     {
@@ -14,5 +14,10 @@ internal class ReadOnlyStateFactory(IStateFactory<States> statesFactory) : IRead
     async Task<Repositories> IReadOnlyStateFactory<Repositories>.GetState()
     {
         return (await statesFactory.GetState()).Current.state.Repositories;
+    }
+
+    async Task<States> IReadOnlyStateFactory<States>.GetState()
+    {
+        return (await statesFactory.GetState());
     }
 }

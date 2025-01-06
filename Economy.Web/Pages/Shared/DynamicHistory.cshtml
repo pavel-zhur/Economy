@@ -1,23 +1,95 @@
 ﻿@model Economy.Web.Pages.HistoryModel
-@using Economy.Implementation.Factories
+@using Economy.Engine.Services
 @using Economy.Memory.Containers.State
+@using Economy.Memory.Models.Branching
+@using Economy.Memory.Models.EventSourcing
 @using OneShelf.Common
-@inject IReadOnlyStateFactory<State> StateFactory
+@inject IStateFactory<States> StateFactory
 
 @{
-    var state = await StateFactory.GetState();
+    var states = await StateFactory.GetState();
+    var current = states.Current;
+    var currentBranch = current.branch ?? current.detachedFrom!;
+    var branchesByRevision = new Dictionary<int, Branch>();
+    var state = current.state;
+
+    while (true)
+    {
+        branchesByRevision.Add(currentBranch.TipEventId is { } value ? states.AllEvents[value].Revision : 0, currentBranch);
+        if (!states.BranchParents.TryGetValue(currentBranch.Id, out var parentId))
+        {
+            break;
+        }
+
+        currentBranch = states.Branches[parentId];
+    }
+
+    var records = new List<(Branch? branch, EventBase? eventBase, int? hiddenEvents, bool isCurrent)>
+    {
+        (states.EmptyRoot, null, null, currentBranch == states.EmptyRoot)
+    };
+
+    foreach (var (@event, isLast) in state.Events.WithIsLast())
+    {
+        records.Add((null, @event, null, isLast && !branchesByRevision.ContainsKey(@event.Revision)));
+
+        if (branchesByRevision.TryGetValue(@event.Revision, out var branch))
+        {
+            records.Add((branch, null, null, branch == currentBranch));
+        }
+    }
+
+    if (current.detachedFrom != null)
+    {
+        records.Add((null, null, states.BranchStates[current.detachedFrom.Id].Events.Count - state.Events.Count, false));
+        records.Add((current.detachedFrom, null, null, false));
+    }
+
+    switch (Model.Ordering)
+    {
+        case HistoryModel.HistoryOrdering.Id:
+            break;
+        case HistoryModel.HistoryOrdering.IdDesc:
+            records.Reverse();
+            break;
+        default:
+            throw new ArgumentOutOfRangeException();
+    }
 }
 
-<input type="hidden" id="uniqueIdentifier" value="@state.Events.Count" />
+<partial name="_DynamicUniqueIdentifier" />
 
-@foreach (var (@event, _) in state.Events.WithIndices().OrderBy(x => Model.Ordering switch
-          {
-              HistoryModel.HistoryOrdering.Id => x.i,
-              HistoryModel.HistoryOrdering.IdDesc => -x.i,
-              _ => throw new ArgumentOutOfRangeException()
-          }))
-{
-    <p>
-        @(@event.Revision). @(@event.ToDetails(state))
-    </p>
-}
+<div class="records">
+    @foreach (var (chunk, criterium) in records.ToChunks(x => x.branch != null))
+    {
+        if (criterium)
+        {
+            var (branch, _, _, isCurrent) = chunk.Single();
+            <div class="record @(isCurrent ? "current" : null)">
+                <span>@branch!.Id. @branch.Status: @(branch.Name ?? "no name")</span>
+            </div>
+        }
+        else
+        {
+            <ul>
+                @foreach (var (_, @event, hiddenEvents, isCurrent) in chunk)
+                {
+                    <li class="record @(isCurrent ? "current" : null)">
+                        @if (@event != null)
+                        {
+                            <span>@(@event.Revision). @(@event.ToDetails(state))</span>
+                        }
+                        else if (hiddenEvents.HasValue)
+                        {
+                            <span>(@hiddenEvents events)</span>
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException();
+                        }
+                    </li>
+                }
+           </ul>
+        }
+    }
+</div>

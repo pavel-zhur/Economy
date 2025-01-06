@@ -1,0 +1,7 @@
+.records .record.current {
+    font-weight: bold;
+}
+
+.records ul {
+    margin: .5rem 0;
+}

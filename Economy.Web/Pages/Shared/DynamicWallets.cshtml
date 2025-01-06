@@ -9,7 +9,7 @@
     var state = await StateFactory.GetState();
 }
 
-<input type="hidden" id="uniqueIdentifier" value="@state.Events.Count" />
+<partial name="_DynamicUniqueIdentifier" />
 
 <div>
     <table class="table">

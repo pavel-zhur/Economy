@@ -1,0 +1,13 @@
+﻿@page
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Economy.Web.Pages.BranchesModel
+
+@{
+    ViewData["Title"] = "Branches";
+}
+
+<partial name="_Ordering" model="((int)Model.Ordering, typeof(BranchesModel.BranchesOrdering))" />
+
+<div id="dynamic-container" class="mt-4">
+    <partial name="DynamicBranches" />
+</div>

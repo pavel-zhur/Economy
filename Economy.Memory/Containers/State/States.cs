@@ -11,35 +11,47 @@ public class States : IState
     private readonly Dictionary<int, int> _branchParents;
     private readonly List<Branch> _branches;
     private readonly Dictionary<int, List<int>> _branchesByParentBranchId;
-    private int _events;
+    private readonly Dictionary<Guid, EventBase> _allEvents;
 
     private States(Dictionary<int, State> branchStates, Dictionary<int, int> branchParents, Branch current,
-        Branch emptyRoot, List<Branch> branches, int events)
+        Branch emptyRoot, List<Branch> branches, Dictionary<Guid, EventBase> allEvents)
     {
-        _events = events;
+        _allEvents = allEvents;
         _branchStates = branchStates;
         _branchParents = branchParents;
-        Current = (current, branchStates[current.Id]);
+        Current = (current, branchStates[current.Id], null);
         EmptyRoot = emptyRoot;
         _branches = branches;
         _branchesByParentBranchId = branchParents.GroupBy(x => x.Value)
             .ToDictionary(g => g.Key, g => g.Select(x => x.Key).ToList());
     }
 
-    public (Branch? branch, State state) Current { get; private set; }
+    public (Branch? branch, State state, Branch? detachedFrom) Current { get; private set; }
 
     public Branch EmptyRoot { get; }
     public IReadOnlyDictionary<int, int> BranchParents => _branchParents;
     public IReadOnlyDictionary<int, State> BranchStates => _branchStates;
+    public IReadOnlyDictionary<Guid, EventBase> AllEvents => _allEvents;
 
     public IReadOnlyList<Branch> Branches => _branches;
 
     public IEnumerable<int> GetChildBranchIds(int parentBranchId) =>
         _branchesByParentBranchId.GetValueOrDefault(parentBranchId) ?? [];
 
+    public void RenameBranch(int branchId, string? newName)
+    {
+        Current = Current with
+        {
+            branch = _branches[branchId] = _branches[branchId] with
+            {
+                Name = newName
+            }
+        };
+    }
+
     public void CheckoutBranch(int branchId)
     {
-        Current = (Branches.Single(x => x.Id == branchId), _branchStates[branchId]);
+        Current = (Branches.Single(x => x.Id == branchId), _branchStates[branchId], null);
     }
 
     public void CheckoutDetached(int branchId, int revisionNumber)
@@ -65,7 +77,7 @@ public class States : IState
                 state.Apply(@event);
             }
 
-            Current = (null, state);
+            Current = (null, state, Branches[branchId]);
             break;
         }
     }
@@ -102,7 +114,7 @@ public class States : IState
                     _branchParents[newBranch.Id] = currentBranchId;
                     _branchStates[newBranch.Id] = newState;
 
-                    Current = (newBranch, newState);
+                    Current = (newBranch, newState, null);
 
                     break;
                 }
@@ -139,7 +151,7 @@ public class States : IState
                 throw new InvalidOperationException($"Invalid branch status: {Current.branch.Status}.");
         }
 
-        _events++;
+        _allEvents[@event.Id] = @event;
     }
 
     public void Commit()
@@ -235,8 +247,8 @@ public class States : IState
 
         var current = branches.Last();
 
-        return new(branchStates, branchParents, current, emptyRoot, branches.ToList(), events.Count);
+        return new(branchStates, branchParents, current, emptyRoot, branches.ToList(), events.ToDictionary(x => x.Id));
     }
 
-    public string UniqueIdentifier => _events.ToString();
+    public string UniqueIdentifier => $"{AllEvents.Count} {Current.branch?.Id} {Current.state.Events[^1].Id}";
 }

@@ -12,7 +12,7 @@
     var totals = Model.PlanId.HasValue ? totalsByPlanId[Model.PlanId.Value] : grandTotal;
 }
 
-<input type="hidden" id="uniqueIdentifier" value="@state.Events.Count" />
+<partial name="_DynamicUniqueIdentifier" />
 
 <div class="table-fixed-header omt-4">
     <table class="table table-sm">

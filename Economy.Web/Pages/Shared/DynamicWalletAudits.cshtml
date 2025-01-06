@@ -8,7 +8,7 @@
     var state = await StateFactory.GetState();
 }
 
-<input type="hidden" id="uniqueIdentifier" value="@state.Events.Count" />
+<partial name="_DynamicUniqueIdentifier" />
 
 @foreach (var entity in state.Repositories.WalletAudits.GetAll().OrderBy<WalletAudit, IComparable>(x => Model.Ordering switch
           {

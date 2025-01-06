@@ -50,7 +50,7 @@ internal class Migrator : IMigrator<States>
                 var v5Data = JsonSerializer.Deserialize<FutureSerializedEvents>(data, _futureJsonSerializerOptions)!;
 
                 List<Branch> branches = [
-                    new(0, null, BranchStatus.Committed, null),
+                    new(0, "Root", BranchStatus.Committed, null),
                 ];
 
                 if (v5Data.Events.Any())
@@ -58,10 +58,7 @@ internal class Migrator : IMigrator<States>
                     branches.Add(new(1, null, BranchStatus.Committed, v5Data.Events[^1].Id));
                 }
 
-                return States.Load(v5Data.Events, [
-                    new(0, null, BranchStatus.Committed, null),
-                    new(1, null, BranchStatus.Committed, v5Data.Events[^1].Id),
-                ]);
+                return States.Load(v5Data.Events, branches);
             case 4:
                 var v4Data = JsonSerializer.Deserialize<FutureSerializedEvents>(data, _futureJsonSerializerOptions)!;
 
@@ -81,7 +78,7 @@ internal class Migrator : IMigrator<States>
                 }).ToList();
 
                 branches = [
-                    new(0, null, BranchStatus.Committed, null),
+                    new(0, "Root", BranchStatus.Committed, null),
                 ];
 
                 if (events.Any())
