@@ -10,9 +10,9 @@
 }
 
 <li>
-    <span class="record @(isCurrent ? "current" : null)">@branch.Id. @branch.Status: @(branch.Name ?? "no name")</span>
+    <span class="record @(isCurrent ? "current" : null)">@branch.Id. @branch.Status: <a asp-page="/History" asp-all-route-data='@(new Dictionary<string, string> { ["branchId"] = branch.Id.ToString() })'>@(branch.Name ?? "no name")</a></span>
     <span>@states.BranchStates[branch.Id].Events.LastOrDefault()?.CreatedOn</span>
-    @if (states.Current.detachedFrom != null)
+    @if (states.Current.detachedFrom != null && isCurrent)
     {
         <span>(detached)</span>
     }
