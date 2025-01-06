@@ -9,9 +9,25 @@
 @{
     var states = await StateFactory.GetState();
     var current = states.Current;
-    var currentBranch = current.branch ?? current.detachedFrom!;
     var branchesByRevision = new Dictionary<int, Branch>();
-    var state = current.state;
+
+    Branch currentBranch;
+    State state;
+    Branch? detachedFrom = null;
+    var selectedBranch = current.branch;
+    var currentEvent = states.Current.state.Events.Any() ? states.Current.state.Events[^1] : null;
+
+    if (Model.BranchId.HasValue)
+    {
+        currentBranch = states.Branches[Model.BranchId.Value];
+        state = states.BranchStates[Model.BranchId.Value];
+    }
+    else
+    {
+        currentBranch = current.branch ?? current.detachedFrom!;
+        state = current.state;
+        detachedFrom = current.detachedFrom;
+    }
 
     while (true)
     {
@@ -26,23 +42,23 @@
 
     var records = new List<(Branch? branch, EventBase? eventBase, int? hiddenEvents, bool isCurrent)>
     {
-        (states.EmptyRoot, null, null, currentBranch == states.EmptyRoot)
+        (states.EmptyRoot, null, null, selectedBranch == states.EmptyRoot)
     };
 
-    foreach (var (@event, isLast) in state.Events.WithIsLast())
+    foreach (var @event in state.Events)
     {
-        records.Add((null, @event, null, isLast && !branchesByRevision.ContainsKey(@event.Revision)));
+        records.Add((null, @event, null, currentEvent == @event));
 
         if (branchesByRevision.TryGetValue(@event.Revision, out var branch))
         {
-            records.Add((branch, null, null, branch == currentBranch));
+            records.Add((branch, null, null, branch == selectedBranch));
         }
     }
 
-    if (current.detachedFrom != null)
+    if (detachedFrom != null)
     {
-        records.Add((null, null, states.BranchStates[current.detachedFrom.Id].Events.Count - state.Events.Count, false));
-        records.Add((current.detachedFrom, null, null, false));
+        records.Add((null, null, states.BranchStates[detachedFrom.Id].Events.Count - state.Events.Count, false));
+        records.Add((detachedFrom, null, null, false));
     }
 
     switch (Model.Ordering)

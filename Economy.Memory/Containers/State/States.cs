@@ -28,7 +28,9 @@ public class States : IState
 
     public (Branch? branch, State state, Branch? detachedFrom) Current { get; private set; }
 
-    public Branch EmptyRoot { get; }
+    public string UniqueIdentifier { get; private set; } = Guid.NewGuid().ToString();
+
+    public Branch EmptyRoot { get; private set; }
     public IReadOnlyDictionary<int, int> BranchParents => _branchParents;
     public IReadOnlyDictionary<int, State> BranchStates => _branchStates;
     public IReadOnlyDictionary<Guid, EventBase> AllEvents => _allEvents;
@@ -40,18 +42,34 @@ public class States : IState
 
     public void RenameBranch(int branchId, string? newName)
     {
+        var newBranch = _branches[branchId] = _branches[branchId] with
+        {
+            Name = newName
+        };
+
         Current = Current with
         {
-            branch = _branches[branchId] = _branches[branchId] with
-            {
-                Name = newName
-            }
+            branch = Current.branch?.Id == branchId
+                ? newBranch
+                : Current.branch,
+            detachedFrom = Current.detachedFrom?.Id == branchId
+                ? newBranch
+                : Current.detachedFrom
         };
+
+        if (branchId == 0)
+        {
+            EmptyRoot = newBranch;
+        }
+
+        ResetUniqueIdentifier();
     }
 
     public void CheckoutBranch(int branchId)
     {
         Current = (Branches.Single(x => x.Id == branchId), _branchStates[branchId], null);
+
+        ResetUniqueIdentifier();
     }
 
     public void CheckoutDetached(int branchId, int revisionNumber)
@@ -80,6 +98,8 @@ public class States : IState
             Current = (null, state, Branches[branchId]);
             break;
         }
+
+        ResetUniqueIdentifier();
     }
 
     public void Apply(EventBase @event)
@@ -152,16 +172,22 @@ public class States : IState
         }
 
         _allEvents[@event.Id] = @event;
+
+        ResetUniqueIdentifier();
     }
 
     public void Commit()
     {
         throw new NotImplementedException();
+
+        ResetUniqueIdentifier();
     }
 
-    public void CommitNewBranch()
+    public void CommitNewBranch(string? branchName)
     {
         throw new NotImplementedException();
+
+        ResetUniqueIdentifier();
     }
 
     public (List<EventBase> events, List<Branch> branches) Dump()
@@ -216,7 +242,7 @@ public class States : IState
                 }
 
                 var children = eventsByParentId[lastAppliedEventId].ToList();
-                if (children.Count > 1)
+                if (children.Count > 1 || stateCaptured != null)
                 {
                     if (stateCaptured == null)
                     {
@@ -250,5 +276,8 @@ public class States : IState
         return new(branchStates, branchParents, current, emptyRoot, branches.ToList(), events.ToDictionary(x => x.Id));
     }
 
-    public string UniqueIdentifier => $"{AllEvents.Count} {Current.branch?.Id} {Current.state.Events[^1].Id}";
+    private void ResetUniqueIdentifier()
+    {
+        UniqueIdentifier = Guid.NewGuid().ToString();
+    }
 }

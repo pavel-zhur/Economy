@@ -38,6 +38,23 @@ internal class VersioningPlugin(ILogger<VersioningPlugin> logger, IStateFactory<
     public async Task RenameBranch(int branchId, string? newName)
     {
         var states = await stateFactory.GetState();
+        newName = string.IsNullOrWhiteSpace(newName) ? null : newName;
         states.RenameBranch(branchId, newName);
+    }
+
+    [KernelFunction("commit_branch")]
+    [Description("Commits the current branch, i.e. saves the unsaved changes to the current branch")]
+    public async Task CommitBranch()
+    {
+        var states = await stateFactory.GetState();
+        states.Commit();
+    }
+
+    [KernelFunction("commit_to_new_branch")]
+    [Description("Commits the current version to a new branch, i.e. saves the current draft branch. The branch name is optional.")]
+    public async Task CommitToNewBranch(string? branchName)
+    {
+        var states = await stateFactory.GetState();
+        states.CommitNewBranch(branchName);
     }
 }
