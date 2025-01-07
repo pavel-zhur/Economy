@@ -3,20 +3,20 @@ using Economy.Engine.Models.Internal;
 
 namespace Economy.Engine.Services.Implementation;
 
-internal class StateFactory<TState>(FactoriesMemory<TState> factoriesMemory, IUserDataStorage userDataStorage) : IStateFactory<TState>
-    where TState : class, IState, new()
+internal class StateFactory<TState>(StateFactoryMemory<TState> stateFactoryMemory, IUserDataStorage userDataStorage) : IStateFactory<TState>
+    where TState : class, IState
 {
     private readonly Lock _lock = new();
     private UserData<TState>? _detachedState;
 
     public async Task<TState> GetState()
     {
-        return _detachedState?.State ?? (await factoriesMemory.GetOrCreate(userDataStorage)).State;
+        return _detachedState?.State ?? (await stateFactoryMemory.GetOrCreate(userDataStorage)).State;
     }
 
     public async Task<UserData<TState>> GetUserData()
     {
-        return _detachedState ?? await factoriesMemory.GetOrCreate(userDataStorage);
+        return _detachedState ?? await stateFactoryMemory.GetOrCreate(userDataStorage);
     }
 
     public async Task Save()
@@ -26,7 +26,7 @@ internal class StateFactory<TState>(FactoriesMemory<TState> factoriesMemory, IUs
             throw new InvalidOperationException("State is detached");
         }
 
-        await factoriesMemory.Save(userDataStorage);
+        await stateFactoryMemory.Save(userDataStorage);
     }
 
     public async Task InitializeDetached(IStateFactory<TState> from)

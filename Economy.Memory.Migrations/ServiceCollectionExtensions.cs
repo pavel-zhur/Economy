@@ -10,7 +10,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMigrator(this IServiceCollection services)
     {
         return services
-            .AddSingleton<IMigrator<State>, Migrator>()
-            .AddSingleton<MigratorV3>();
+            .AddSingleton<IMigrator<States>, Migrator>();
     }
 }

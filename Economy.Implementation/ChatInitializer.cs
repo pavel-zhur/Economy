@@ -1,12 +1,14 @@
 using Economy.AiInterface.Services;
 using Economy.Engine.Services;
+using Economy.Implementation.Factories;
+using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Sub;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Economy.Implementation;
 
-public class ChatInitializer(AiCompletion aiCompletion, IStateFactory<State> stateFactory) : IChatInitializer
+internal class ChatInitializer(AiCompletion aiCompletion, IReadOnlyStateFactory<Repositories> stateFactory) : IChatInitializer
 {
     public async Task Init(ChatHistory chatHistory)
     {
@@ -23,15 +25,15 @@ public class ChatInitializer(AiCompletion aiCompletion, IStateFactory<State> sta
 
         var now = DateTime.UtcNow;
 
-        var state = await stateFactory.GetState();
+        var repositories = await stateFactory.GetState();
 
         aiCompletion.AddSystemMessage(chatHistory, new
             {
                 CurrentDate = new Date(now.Year, now.Month, now.Day),
                 CurrentDateAndTime = now,
-                Currencies = state.Repositories.Currencies.GetAll(),
-                Wallets = state.Repositories.Wallets.GetAll(),
-                Categories = state.Repositories.Categories.GetAll(),
+                Currencies = repositories.Currencies.GetAll(),
+                Wallets = repositories.Wallets.GetAll(),
+                Categories = repositories.Categories.GetAll(),
             });
     }
 }

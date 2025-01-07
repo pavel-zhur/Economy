@@ -22,6 +22,6 @@ public class CurrenciesModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicCurrencies", this);
+        return Partial("Dynamic/DynamicCurrencies", this);
     }
 }

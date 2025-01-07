@@ -8,7 +8,7 @@
     var balance = new EquivalentAmount();
 }
 
-<input type="hidden" id="latestRevision" value="@Model.State.Events.Count" />
+<partial name="_DynamicUniqueIdentifier" />
 
 <div class="mt-4">
     <h4>Total Balance: <span class="data-record">@Model.TotalEquivalent.ToDetails()</span></h4>

@@ -1,5 +1,5 @@
-﻿window.dispatchDataUpdatedEvent = function (latestRevision) {
-    const event = new CustomEvent('dataUpdated', { detail: latestRevision });
+﻿window.dispatchDataUpdatedEvent = function (uniqueIdentifier) {
+    const event = new CustomEvent('dataUpdated', { detail: uniqueIdentifier });
     window.dispatchEvent(event);
 };
 
@@ -15,17 +15,17 @@ function getCurrentOrdering() {
 }
 
 // Function to handle the reload logic
-function reloadListPage(isExternalTrigger = false, latestRevision = null) {
+function reloadListPage(isExternalTrigger = false, uniqueIdentifier = null) {
     const reloadButton = document.getElementById('reload-button');
     const dynamicContainer = document.getElementById('dynamic-container');
 
     if (!dynamicContainer || !reloadButton) return;
 
-    const currentRevision = document.getElementById('latestRevision')?.value;
+    const currentRevision = document.getElementById('uniqueIdentifier')?.value;
 
     // If triggered by an external event, check revisions
     if (isExternalTrigger) {
-        if (latestRevision == currentRevision) return;
+        if (uniqueIdentifier == currentRevision) return;
     }
 
     // Retrieve current ordering
@@ -74,8 +74,8 @@ function reloadListPage(isExternalTrigger = false, latestRevision = null) {
 
 // Event listener for external 'dataUpdated' events
 window.addEventListener('dataUpdated', function (event) {
-    const latestRevision = event.detail;
-    reloadListPage(true, latestRevision);
+    const uniqueIdentifier = event.detail;
+    reloadListPage(true, uniqueIdentifier);
 });
 
 // Initialize event listeners for the Reload button and Radio buttons after DOM is loaded

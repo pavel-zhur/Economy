@@ -1,0 +1,5 @@
+﻿@using Economy.Implementation.Factories
+@using Economy.Memory.Containers.State
+@inject IReadOnlyStateFactory<States> StateFactory
+
+<input type="hidden" id="uniqueIdentifier" value="@((await StateFactory.GetState()).UniqueIdentifier)" />

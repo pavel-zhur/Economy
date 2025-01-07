@@ -1,21 +1,21 @@
 ﻿@model Economy.Web.Pages.ConversionsModel
-@using Economy.Engine.Services
+@using Economy.Implementation.Factories
 @using Economy.Memory.Containers.State
 @using Economy.Memory.Models.State.Root
-@inject IStateFactory<State> StateFactory
+@inject IReadOnlyStateFactory<State> StateFactory
 
 @{
     var state = await StateFactory.GetState();
 }
 
-<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+<partial name="_DynamicUniqueIdentifier" />
 
 @foreach (var entity in state.Repositories.Conversions.GetAll().OrderBy<Conversion, IComparable>(x => Model.Ordering switch
           {
               ConversionsModel.ConversionsOrdering.Id => x.Id,
               ConversionsModel.ConversionsOrdering.IdDesc => -x.Id,
               ConversionsModel.ConversionsOrdering.DateAndTime => x.DateAndTime,
-             ConversionsModel.ConversionsOrdering.DateAndTimeDesc => DateTime.MaxValue - x.DateAndTime,
+              ConversionsModel.ConversionsOrdering.DateAndTimeDesc => DateTime.MaxValue - x.DateAndTime,
               _ => throw new ArgumentOutOfRangeException()
           }))
 {

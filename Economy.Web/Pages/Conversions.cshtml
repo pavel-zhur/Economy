@@ -1,4 +1,5 @@
 ﻿@page
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model Economy.Web.Pages.ConversionsModel
 
 @{
@@ -8,5 +9,5 @@
 <partial name="_Ordering" model="((int)Model.Ordering, typeof(ConversionsModel.ConversionsOrdering))" />
 
 <div id="dynamic-container" class="mt-4">
-    <partial name="DynamicConversions" />
+    <partial name="Dynamic/DynamicConversions" />
 </div>

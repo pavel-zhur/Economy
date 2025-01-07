@@ -1,0 +1,12 @@
+﻿::deep .nav-link {
+    padding-top: .125rem;
+    padding-bottom: .125rem;
+}
+
+.nav-group-title {
+    font-weight: bold;
+}
+
+.nav-group {
+    margin-bottom: 1rem;
+}

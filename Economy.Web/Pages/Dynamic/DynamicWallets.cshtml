@@ -1,15 +1,15 @@
 ﻿@model Economy.Web.Pages.WalletsModel
-@using Economy.Engine.Services
+@using Economy.Implementation.Factories
 @using Economy.Memory.Containers.State
 @using Economy.Memory.Models.State.Root
 @using Economy.Memory.Tools
-@inject IStateFactory<State> StateFactory
+@inject IReadOnlyStateFactory<State> StateFactory
 
 @{
     var state = await StateFactory.GetState();
 }
 
-<input type="hidden" id="latestRevision" value="@state.Events.Count" />
+<partial name="_DynamicUniqueIdentifier" />
 
 <div>
     <table class="table">

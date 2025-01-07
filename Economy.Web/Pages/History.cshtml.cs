@@ -6,6 +6,7 @@ namespace Economy.Web.Pages;
 public class HistoryModel : PageModel
 {
     [FromQuery] public HistoryOrdering Ordering { get; set; } = HistoryOrdering.IdDesc;
+    [FromQuery] public int? BranchId { get; set; }
 
     public enum HistoryOrdering
     {
@@ -20,6 +21,6 @@ public class HistoryModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicHistory", this);
+        return Partial("Dynamic/DynamicHistory", this);
     }
 }

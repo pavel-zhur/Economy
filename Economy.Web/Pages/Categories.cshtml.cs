@@ -21,6 +21,6 @@ public class CategoriesModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicCategories", this);
+        return Partial("Dynamic/DynamicCategories", this);
     }
 }

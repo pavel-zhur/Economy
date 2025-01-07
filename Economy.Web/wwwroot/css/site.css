@@ -101,3 +101,9 @@ html, body {
     .table-fixed-header tr.top-border td {
         border-top: 2px solid #53a0ec;
     }
+
+
+    .table-fixed-header td {
+        --depth: 0;
+        padding-left: calc(0.25rem + 20px * var(--depth));
+    }

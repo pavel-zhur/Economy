@@ -29,20 +29,16 @@ public static class ServiceCollectionExtensions
             .AddScoped<AiTranscription>();
     }
 
-    public static IServiceCollection AddCompletionKernel<TMemoryPlugin>(this IServiceCollection services, IConfiguration configuration)
-        where TMemoryPlugin : class 
+    public static IServiceCollection AddCompletionKernel(this IServiceCollection services, IConfiguration configuration, IReadOnlyList<Type> pluginTypes)
     {
         var aiInterfaceOptions = configuration.GetSection(nameof(AiInterfaceOptions)).Get<AiInterfaceOptions>()!;
 
         services.AddOpenAIChatCompletion("gpt-4o-mini", aiInterfaceOptions.ApiKey);
-        services.AddScoped<TMemoryPlugin>();
         services.AddScoped<AiCompletion>();
         services.AddScoped<AutoFunctionInvocationFilter>();
         services.Configure<AiInterfaceOptions>(o => configuration.GetSection(nameof(AiInterfaceOptions)).Bind(o));
-        services.AddScoped<KernelPluginCollection>(serviceProvider =>
-            [
-                KernelPluginFactory.CreateFromObject(serviceProvider.GetRequiredService<TMemoryPlugin>(), JsonSerializerOptions)
-            ]
+        services.AddScoped<KernelPluginCollection>(serviceProvider => new(pluginTypes.Select(t =>
+            KernelPluginFactory.CreateFromObject(serviceProvider.GetRequiredService(t), JsonSerializerOptions)))
         );
 
         services.AddScoped(serviceProvider =>

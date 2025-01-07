@@ -16,7 +16,7 @@ internal class ChatsService<TState, TChatInitializer>(
     IStateFactory<TState> stateFactory,
     AiProcessingLogger aiProcessingLogger) 
         : IChatsService
-    where TState : class, IState, new()
+    where TState : class, IState
     where TChatInitializer : IChatInitializer
 {
     public async Task GotMessage(ChatsServiceContext context, Guid chatId, string messageId, string message)
@@ -69,7 +69,7 @@ internal class ChatsService<TState, TChatInitializer>(
         chats = chats.Where(x => x.Status is not ChatStatus.Closed).ToList();
 
         return new(
-            userData.State.LatestRevision,
+            userData.State.UniqueIdentifier,
             chats);
     }
 

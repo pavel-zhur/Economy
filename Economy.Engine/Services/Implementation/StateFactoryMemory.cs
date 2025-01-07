@@ -3,8 +3,8 @@ using Economy.Engine.Models.Internal;
 
 namespace Economy.Engine.Services.Implementation;
 
-internal class FactoriesMemory<TState>(IMigrator<TState> migrator)
-    where TState : class, IState, new()
+internal class StateFactoryMemory<TState>(IMigrator<TState> migrator)
+    where TState : class, IState
 {
     private readonly Dictionary<string, UserSession> _memory = new();
 
@@ -40,7 +40,7 @@ internal class FactoriesMemory<TState>(IMigrator<TState> migrator)
         private readonly SemaphoreSlim _initializationLock = new(1, 1);
         private bool _initialized;
 
-        public UserData<TState> UserData { get; } = new(new());
+        public UserData<TState> UserData { get; private set; }
 
         public async Task InitializeAsync(IMigrator<TState> migrator, IUserDataStorage storage)
         {
@@ -66,8 +66,9 @@ internal class FactoriesMemory<TState>(IMigrator<TState> migrator)
         {
             var userData = await storage.GetUserData();
 
-            if (userData != null)
-                migrator.LoadFromBinary(UserData.State, userData);
+            UserData = new(userData != null
+                ? migrator.LoadFromBinary(userData)
+                : migrator.CreateEmpty());
         }
     }
 }

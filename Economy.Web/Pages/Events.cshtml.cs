@@ -22,6 +22,6 @@ public class EventsModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicEvents", this);
+        return Partial("Dynamic/DynamicEvents", this);
     }
 }

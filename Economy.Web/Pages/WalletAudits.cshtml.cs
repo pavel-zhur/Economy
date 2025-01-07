@@ -22,6 +22,6 @@ public class WalletAuditsModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicWalletAudits", this);
+        return Partial("Dynamic/DynamicWalletAudits", this);
     }
 }

@@ -1,0 +1,29 @@
+﻿@model Economy.Web.Pages.PlansModel
+@using Economy.Implementation.Factories
+@using Economy.Memory.Containers.State
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IReadOnlyStateFactory<State> StateFactory
+
+@{
+    var state = await StateFactory.GetState();
+}
+
+<partial name="_DynamicUniqueIdentifier" />
+
+<div class="table-fixed-header">
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Plan</th>
+                <th>Amounts</th>
+                <th>Records</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var child in state.Repositories.Plans.GetChildren(null).OrderBy(Model.OrderingFunction))
+            {
+                <partial name="Dynamic/DynamicPlans.Plan" model="(Model, 0, child)" />
+            }
+        </tbody>
+    </table>
+</div>

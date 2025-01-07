@@ -3,7 +3,7 @@ using Economy.Engine.Models.Internal;
 
 namespace Economy.Engine.Services;
 
-public interface IStateFactory<TState> 
+public interface IStateFactory<TState>
     where TState : IState
 {
     Task<TState> GetState();

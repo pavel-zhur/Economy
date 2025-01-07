@@ -22,6 +22,6 @@ public class TransfersModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicTransfers", this);
+        return Partial("Dynamic/DynamicTransfers", this);
     }
 }

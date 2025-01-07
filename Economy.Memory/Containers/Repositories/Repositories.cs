@@ -2,10 +2,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models;
-using Economy.Memory.Models.State;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Enums;
 using Economy.Memory.Models.State.Root;
+using OneShelf.Common;
 
 namespace Economy.Memory.Containers.Repositories;
 
@@ -76,7 +76,7 @@ public class Repositories : IHistory
     public string GetDetails(EntityFullId entityFullId) =>
         GetRepository(entityFullId.Type).GetById(entityFullId.Id).ToDetails(this);
 
-    public void AddForeignKey(EntityFullId from, EntityFullId to)
+    internal void AddForeignKey(EntityFullId from, EntityFullId to)
     {
         if (from == to)
         {
@@ -105,7 +105,7 @@ public class Repositories : IHistory
         outgoingList.Add(to);
     }
 
-    public void RemoveForeignKey(EntityFullId from, EntityFullId to)
+    internal void RemoveForeignKey(EntityFullId from, EntityFullId to)
     {
         if (!_foreignKeys.Remove((from, to)))
         {
@@ -124,6 +124,24 @@ public class Repositories : IHistory
         if (outgoingList.Count == 0)
         {
             _outgoingForeignKeysFrom.Remove(from);
+        }
+    }
+
+    internal void AddFromWithoutValidation(Repositories another)
+    {
+        if (AllByEntityType.Values.Any(x => x.GetAll().Any())
+            || _foreignKeys.Any()
+            || _incomingForeignKeysTo.Any()
+            || _outgoingForeignKeysFrom.Any())
+            throw new InvalidOperationException("Cannot add from another repositories when there are already entities in this repositories.");
+
+        _foreignKeys.AddRange(another._foreignKeys);
+        _incomingForeignKeysTo.AddRange(another._incomingForeignKeysTo.Select(x => (x.Key, x.Value.ToHashSet())), false);
+        _outgoingForeignKeysFrom.AddRange(another._incomingForeignKeysTo.Select(x => (x.Key, x.Value.ToHashSet())), false);
+
+        foreach (var entityType in AllByEntityType.Keys.Union(another.AllByEntityType.Keys))
+        {
+            AllByEntityType[entityType].AddFromWithoutValidation(another.AllByEntityType[entityType]);
         }
     }
 }

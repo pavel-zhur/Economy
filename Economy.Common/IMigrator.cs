@@ -1,8 +1,9 @@
 ﻿namespace Economy.Common;
 
-public interface IMigrator<in TState>
+public interface IMigrator<TState>
     where TState : IState
 {
     byte[] SaveToBinary(TState state);
-    void LoadFromBinary(TState state, byte[]? data);
+    TState LoadFromBinary(byte[]? data);
+    TState CreateEmpty();
 }

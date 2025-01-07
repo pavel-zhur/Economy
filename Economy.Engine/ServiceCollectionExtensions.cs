@@ -10,19 +10,18 @@ namespace Economy.Engine;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddStateManagement<TUserDataStorage, TMemoryPlugin, TState, TChatInitializer>(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddStateManagement<TUserDataStorage, TState, TChatInitializer>(this IServiceCollection services, IConfiguration configuration, IReadOnlyList<Type> pluginTypes)
         where TUserDataStorage : class, IUserDataStorage 
-        where TMemoryPlugin : class
-        where TState : class, IState, new()
+        where TState : class, IState
         where TChatInitializer : class, IChatInitializer =>
         services
-            .AddCompletionKernel<TMemoryPlugin>(configuration)
+            .AddCompletionKernel(configuration, pluginTypes)
             .AddScoped<AiProcessingLogger>()
             .AddScoped(serviceProvider => (IAiProcessingLogger)serviceProvider.GetRequiredService<AiProcessingLogger>())
             .AddScoped<TChatInitializer>()
             .AddScoped<IChatsService, ChatsService<TState, TChatInitializer>>()
             .AddSingleton<ChatsServiceMemory>()
-            .AddSingleton<FactoriesMemory<TState>>()
+            .AddSingleton<StateFactoryMemory<TState>>()
             .AddScoped<IStateFactory<TState>, StateFactory<TState>>()
             .AddScoped<TUserDataStorage>()
             .AddScoped<IUserDataStorage>(x => x.GetRequiredService<TUserDataStorage>());
