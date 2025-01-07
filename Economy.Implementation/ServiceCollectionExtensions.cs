@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
         return services
             .AddScoped<FinancialPlugin>()
             .AddScoped<VersioningPlugin>()
+            .AddSingleton<ChatInitializerMemory>()
             .AddStateManagement<TUserDataStorage, States, ChatInitializer>(configuration, [
                 typeof(FinancialPlugin),
                 typeof(VersioningPlugin)
