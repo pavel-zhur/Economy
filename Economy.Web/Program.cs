@@ -8,6 +8,7 @@ using Economy.Memory.Migrations;
 using Economy.UserStorage;
 using Economy.Web.Hubs;
 using Economy.Web.Tools;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +35,12 @@ builder.Services.AddAuthentication(options =>
 {
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? throw new InvalidOperationException("Google ClientId is not configured.");
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? throw new InvalidOperationException("Google ClientSecret is not configured.");
+    
+    options.ClaimActions.MapJsonKey("urn:google:picture", "picture", "url");
+    options.ClaimActions.MapJsonKey("urn:google:locale", "locale", "string");
+
     options.Scope.Add(GoogleStorage.Scope);
+    options.AccessType = "offline"; // Set access_type to offline
     options.SaveTokens = true;
 });
 

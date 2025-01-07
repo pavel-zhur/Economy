@@ -32,6 +32,12 @@
     box-shadow: 1px -5px 1.5em rgba(0, 0, 0, .1), 1px 1px .5em rgb(0 0 0 / 28%);
 }
 
+.userpic {
+    width: 33px;
+    border-radius: 10%;
+    box-shadow: -1px -1px 7px 3px #ffffff96;
+}
+
 /* Main content styling */
 .main-content {
     padding: 20px;
