@@ -13,6 +13,18 @@
 
 <partial name="_DynamicUniqueIdentifier" />
 
+@if (Model.PlanId.HasValue)
+{
+    <h4>Plan Records for Plan @Model.PlanId</h4>
+    <div>
+        <a asp-page="/PlanTotals" asp-all-route-data='new Dictionary<string, string> { { "PlanId", Model.PlanId.Value.ToString() } }'>Go to Totals</a>
+    </div>
+}
+else
+{
+    <h4>All Plan Records</h4>
+}
+
 <div>
     @foreach (var record in records.SelectSingle(x => !Model.PlanId.HasValue ? x : x.Where(x => x.PlanIds.Any(x => x.planId == Model.PlanId))).OrderBy(x => Model.Ordering switch
               {

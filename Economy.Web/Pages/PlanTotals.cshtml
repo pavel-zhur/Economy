@@ -8,18 +8,6 @@
 
 <partial name="_Ordering" model="((int)Model.Ordering, typeof(PlanTotalsModel.PlanTotalsOrdering))" />
 
-@if (Model.PlanId.HasValue)
-{
-    <h2>Plan Totals for Plan @Model.PlanId</h2>
-    <div>
-        <a asp-page="/PlanRecords" asp-all-route-data='new Dictionary<string, string> { { "PlanId", Model.PlanId.Value.ToString() } }'>Go to Records</a>
-    </div>
-}
-else
-{
-    <h2>All Plan Totals</h2>
-}
-
 <div id="dynamic-container" class="mt-4">
     <partial name="Dynamic/DynamicPlanTotals" />
 </div>

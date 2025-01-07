@@ -14,6 +14,18 @@
 
 <partial name="_DynamicUniqueIdentifier" />
 
+@if (Model.PlanId.HasValue)
+{
+    <h4>Plan Totals for Plan @Model.PlanId</h4>
+    <div>
+        <a asp-page="/PlanRecords" asp-all-route-data='new Dictionary<string, string> { { "PlanId", Model.PlanId.Value.ToString() } }'>Go to Records</a>
+    </div>
+}
+else
+{
+    <h4>All Plan Totals</h4>
+}
+
 <div class="table-fixed-header omt-4">
     <table class="table table-sm">
         <thead>
