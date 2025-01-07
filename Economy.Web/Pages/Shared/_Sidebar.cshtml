@@ -1,70 +1,100 @@
 ﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
 <ul class="nav flex-column">
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
+    <li class="nav-group">
+        <span class="nav-group-title">Main</span>
+        <ul class="nav flex-column ms-0">
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Transactions">Transactions</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Plans">Plans</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Wallets">Wallets</a>
+            </li>
+        </ul>
     </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Transactions">Transactions</a>
+    <li class="nav-group">
+        <span class="nav-group-title">Analytics</span>
+        <ul class="nav flex-column ms-0">
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/PlanRecords">Plan Records</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/PlanTotals">Plan Totals</a>
+            </li>
+        </ul>
     </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Plans">Plans</a>
+    <li class="nav-group">
+        <span class="nav-group-title">Tools</span>
+        <ul class="nav flex-column ms-0">
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Currencies">Currencies</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Conversions">Conversions</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Transfers">Transfers</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Events">Events</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/WalletAudits">Wallet Audits</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Categories">Categories</a>
+            </li>
+        </ul>
     </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/History">History</a>
+    <li class="nav-group">
+        <span class="nav-group-title">Versioning</span>
+        <ul class="nav flex-column ms-0">
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Branches">Branches</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/History">History</a>
+            </li>
+        </ul>
     </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Currencies">Currencies</a>
+    <li class="nav-group">
+        <span class="nav-group-title">Dev</span>
+        <ul class="nav flex-column ms-0">
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/Faq">FAQ</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-page="/FunctionsTrace">Functions Trace</a>
+            </li>
+        </ul>
     </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Wallets">Wallets</a>
+    <li class="nav-group">
+        <span class="nav-group-title">Profile</span>
+        <ul class="nav flex-column ms-0">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                // todo: think about vertical or horizontal mode and see why these buttons are different
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-page="/Profile">Hello, @User.Identity.Name!</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-page="/Profile" asp-page-handler="Logout">Logout</a>
+                </li>
+            }
+            else
+            {
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-page="/Profile" asp-page-handler="Login">Login with Google</a>
+                </li>
+            }
+        </ul>
     </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/WalletAudits">Wallet Audits</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Categories">Categories</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Conversions">Conversions</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Transfers">Transfers</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Events">Events</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/PlanRecords">Plan Records</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/PlanTotals">Plan Totals</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Faq">FAQ</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/FunctionsTrace">Functions Trace</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="" asp-page="/Branches">Branches</a>
-    </li>
-    @if (User.Identity?.IsAuthenticated == true)
-    {
-        // todo: think about vertical or horizontal mode and see why these buttons are different
-        <li class="nav-item">
-            <a class="nav-link" asp-area="" asp-page="/Profile">Hello, @User.Identity.Name!</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" asp-area="" asp-page="/Profile" asp-page-handler="Logout">Logout</a>
-        </li>
-    }
-    else
-    {
-        <li class="nav-item">
-            <a class="nav-link" asp-area="" asp-page="/Profile" asp-page-handler="Login">Login with Google</a>
-        </li>
-    }
 </ul>

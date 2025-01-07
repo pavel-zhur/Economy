@@ -24,7 +24,12 @@
     width: 250px; /* Adjust as needed */
     overflow-y: auto; /* Allow the sidebar to scroll if its content overflows */
     z-index: 950;
-    /* Additional styles */
+    padding-left: .75rem;
+    padding-top: 1rem;
+}
+
+#sidebarMenu {
+    box-shadow: 1px -5px 1.5em rgba(0, 0, 0, .1), 1px 1px .5em rgb(0 0 0 / 28%);
 }
 
 /* Main content styling */
