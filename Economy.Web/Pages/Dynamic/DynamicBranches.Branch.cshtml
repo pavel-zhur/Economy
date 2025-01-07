@@ -1,7 +1,8 @@
 ﻿@inject IReadOnlyStateFactory<States> StateFactory
 @using Economy.Implementation.Factories
 @using Economy.Memory.Containers.State
-@model (Economy.Web.Pages.BranchesModel branchesModel, int branchId)
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model (Economy.Web.Pages.BranchesModel model, int depth, int branchId)
 
 @{
     var states = await StateFactory.GetState();
@@ -9,28 +10,36 @@
     var isCurrent = states.Current.branch == branch || states.Current.detachedFrom == branch;
 }
 
-<li>
-    <span class="record @(isCurrent ? "current" : null)">@branch.Id. @branch.Status: <a asp-page="/History" asp-all-route-data='@(new Dictionary<string, string> { ["branchId"] = branch.Id.ToString() })'>@(branch.Name ?? "no name")</a></span>
-    <span>@states.BranchStates[branch.Id].Events.LastOrDefault()?.CreatedOn</span>
-    @if (states.Current.detachedFrom != null && isCurrent)
+<tr>
+    <td style="--depth:@Model.depth;" class="@(isCurrent ? "current" : null) record">
+        @(branch.Id). <a asp-page="/History" asp-all-route-data='@(new Dictionary<string, string> { ["branchId"] = branch.Id.ToString() })'>@(branch.Name ?? "no name")</a>
+    </td>
+    <td>
+        @branch.Status
+        @if (states.Current.detachedFrom != null && isCurrent)
+        {
+            <span>(detached)</span>
+        }
+    </td>
+    @if (states.BranchStates[branch.Id].Events.Any())
     {
-        <span>(detached)</span>
+        <td>@states.BranchStates[branch.Id].Events.Count</td>
+        <td>@states.BranchStates[branch.Id].Events[^1].CreatedOn</td>
     }
-    
-    @if (states.GetChildBranchIds(Model.branchId).Any())
+    else
     {
-        <ul>
-            @foreach (var childBranchId in states.GetChildBranchIds(Model.branchId).OrderBy<int, long>(Model.branchesModel.Ordering switch
-                      {
-                          BranchesModel.BranchesOrdering.Id => x => x,
-                          BranchesModel.BranchesOrdering.IdDesc => x => -x,
-                          BranchesModel.BranchesOrdering.Date => x => (states.BranchStates[x].Events.LastOrDefault()?.CreatedOn ?? DateTime.MinValue).Ticks,
-                          BranchesModel.BranchesOrdering.DateDesc => x => (DateTime.MaxValue - states.BranchStates[x].Events.LastOrDefault()?.CreatedOn)?.Ticks ?? 0,
-                          _ => throw new ArgumentOutOfRangeException()
-                      }))
-            {
-                <partial name="Dynamic/DynamicBranches.Branch" model="(Model.branchesModel, childBranchId)" />
-            }
-        </ul>
+        <td colspan="2"></td>
     }
-</li>
+</tr>
+@foreach (var child in states.GetChildBranchIds(Model.branchId).OrderBy<int, IComparable?>(Model.model.Ordering switch
+          {
+              BranchesModel.BranchesOrdering.Id => x => x,
+              BranchesModel.BranchesOrdering.IdDesc => x => -x,
+              BranchesModel.BranchesOrdering.Date => x => (states.BranchStates[x].Events.LastOrDefault()?.CreatedOn ?? DateTime.MinValue).Ticks,
+              BranchesModel.BranchesOrdering.DateDesc => x => (DateTime.MaxValue - states.BranchStates[x].Events.LastOrDefault()?.CreatedOn)?.Ticks ?? 0, 
+              BranchesModel.BranchesOrdering.Name => x => states.Branches[x].Name?.ToLowerInvariant().Trim(),
+              _ => throw new ArgumentOutOfRangeException()
+          }))
+{
+    <partial name="Dynamic/DynamicBranches.Branch" model="(Model.model, Model.depth + 1, child)" />
+}

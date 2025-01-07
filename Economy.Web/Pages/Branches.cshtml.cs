@@ -13,6 +13,7 @@ public class BranchesModel : PageModel
         IdDesc,
         Date,
         DateDesc,
+        Name,
     }
 
     public void OnGet()

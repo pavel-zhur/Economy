@@ -2,8 +2,17 @@
 
 <partial name="_DynamicUniqueIdentifier" />
 
-<div class="records">
-    <ul>
-        <partial name="DynamicBranches.Branch" model="@(Model, 0)" />
-    </ul>
+<div class="records table-fixed-header">
+    <table class="table table-sm">
+        <thead>
+        <tr>
+            <th>Branch</th>
+            <th>Status</th>
+            <th colspan="2">Last Revision</th>
+        </tr>
+        </thead>
+        <tbody>
+            <partial name="Dynamic/DynamicBranches.Branch" model="@(Model, 0, 0)" />
+        </tbody>
+    </table>
 </div>

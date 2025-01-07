@@ -11,8 +11,7 @@
 }
 
 <tr>
-    <td style="padding-left:@(Model.depth * 20)px;">
-
+    <td style="--depth:@Model.depth;">
         @(plan.Id). @plan.Name
         @if (plan.SpecialNotes != null)
         {
