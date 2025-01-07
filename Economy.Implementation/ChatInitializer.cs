@@ -2,17 +2,24 @@ using Economy.AiInterface.Services;
 using Economy.Engine.Services;
 using Economy.Implementation.Factories;
 using Economy.Memory.Containers.Repositories;
-using Economy.Memory.Containers.State;
-using Economy.Memory.Models.State.Sub;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Economy.Implementation;
 
-internal class ChatInitializer(AiCompletion aiCompletion, IReadOnlyStateFactory<Repositories> stateFactory) : IChatInitializer
+internal class ChatInitializer(AiCompletion aiCompletion, IReadOnlyStateFactory<Repositories> stateFactory, ChatInitializerMemory memory, ILogger<ChatInitializer> logger) : IChatInitializer
 {
-    public async Task Init(ChatHistory chatHistory)
+    public async Task InitOrUpdate(ChatHistory chatHistory)
     {
-        aiCompletion.AddSystemMessage(chatHistory, @"
+        var now = DateTime.UtcNow;
+
+        var repositories = await stateFactory.GetState();
+
+        var chatInitInfo = new ChatInitInfo(new(now.Year, now.Month, now.Day), now, repositories.Currencies.GetAll().ToList(), repositories.Wallets.GetAll().ToList(), repositories.Categories.GetAll().ToList());
+
+        if (!chatHistory.Any())
+        {
+            aiCompletion.AddSystemMessage(chatHistory, @"
 
 - When you call create_or_update_*, pass -1 value of the id field of the entity parameter if you intend to create a new entity.
 - When you call create_or_update_*, pass all fields in case of update as well. The update will be a full replacement.
@@ -22,18 +29,17 @@ internal class ChatInitializer(AiCompletion aiCompletion, IReadOnlyStateFactory<
 - Use a ""plan"" for expected or planned expenses or incomes, also for groups of plans, recurring sets, budgets, or funds. Use a ""transaction"" for actual expenses or incomes that have already occurred. For future or desired financial activities, use a ""plan"" entity (defining an expected financial activity amount and planned date or planned recurring dates).
 
 ");
+            aiCompletion.AddSystemMessage(chatHistory, chatInitInfo);
 
-        var now = DateTime.UtcNow;
+            memory.Memory[chatHistory] = chatInitInfo;
+        }
+        else if (memory.Memory[chatHistory].ShouldUpdate(chatInitInfo))
+        {
+            aiCompletion.AddSystemMessage(chatHistory, chatInitInfo);
 
-        var repositories = await stateFactory.GetState();
+            memory.Memory[chatHistory] = chatInitInfo;
 
-        aiCompletion.AddSystemMessage(chatHistory, new
-            {
-                CurrentDate = new Date(now.Year, now.Month, now.Day),
-                CurrentDateAndTime = now,
-                Currencies = repositories.Currencies.GetAll(),
-                Wallets = repositories.Wallets.GetAll(),
-                Categories = repositories.Categories.GetAll(),
-            });
+            logger.LogInformation("Updated.");
+        }
     }
 }

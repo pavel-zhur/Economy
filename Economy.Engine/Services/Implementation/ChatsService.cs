@@ -174,10 +174,7 @@ internal class ChatsService<TState, TChatInitializer>(
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var chatHistory = userData.GetChatHistory(chatIndex);
-                if (!chatHistory.Any())
-                {
-                    await chatInitializer.Init(chatHistory);
-                }
+                await chatInitializer.InitOrUpdate(chatHistory);
 
                 aiProcessingLogger.SetCurrentChatId((this, chatId, context));
                 var response = await aiCompletion.Execute(chatHistory, chat.Messages[lastMessageIndex].Text!);

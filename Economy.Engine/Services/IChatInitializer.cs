@@ -4,5 +4,5 @@ namespace Economy.Engine.Services;
 
 public interface IChatInitializer
 {
-    Task Init(ChatHistory chatHistory);
+    Task InitOrUpdate(ChatHistory chatHistory);
 }
