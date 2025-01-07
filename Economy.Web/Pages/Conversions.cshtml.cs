@@ -22,6 +22,6 @@ public class ConversionsModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicConversions", this);
+        return Partial("Dynamic/DynamicConversions", this);
     }
 }

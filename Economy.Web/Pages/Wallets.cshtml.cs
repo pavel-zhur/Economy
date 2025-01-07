@@ -52,6 +52,6 @@ public class WalletsModel(IReadOnlyStateFactory<Repositories> stateFactory) : Pa
     public async Task<IActionResult> OnGetReload()
     {
         await OnGet();
-        return Partial("DynamicWallets", this);
+        return Partial("Dynamic/DynamicWallets", this);
     }
 }

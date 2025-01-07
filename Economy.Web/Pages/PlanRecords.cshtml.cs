@@ -22,6 +22,6 @@ public class PlanRecordsModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicPlanRecords", this);
+        return Partial("Dynamic/DynamicPlanRecords", this);
     }
 }

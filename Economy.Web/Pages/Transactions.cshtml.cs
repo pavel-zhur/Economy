@@ -51,7 +51,7 @@ public class TransactionsModel(IReadOnlyStateFactory<State> stateFactory) : Page
     public async Task<IActionResult> OnGetReload()
     {
         await OnGet();
-        return Partial("DynamicTransactions", this);
+        return Partial("Dynamic/DynamicTransactions", this);
     }
 
     private Amounts CreateTotal(TransactionType transactionType)

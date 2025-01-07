@@ -22,6 +22,6 @@ public class BranchesModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicBranches", this);
+        return Partial("Dynamic/DynamicBranches", this);
     }
 }

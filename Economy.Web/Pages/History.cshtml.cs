@@ -21,6 +21,6 @@ public class HistoryModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicHistory", this);
+        return Partial("Dynamic/DynamicHistory", this);
     }
 }

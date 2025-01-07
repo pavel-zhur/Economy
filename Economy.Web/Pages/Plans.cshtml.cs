@@ -12,6 +12,6 @@ public class PlansModel : PageModel
     public IActionResult OnGetReload()
     {
         OnGet();
-        return Partial("DynamicPlans", this);
+        return Partial("Dynamic/DynamicPlans", this);
     }
 }
