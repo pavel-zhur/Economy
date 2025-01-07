@@ -2,7 +2,7 @@
 <ul class="nav flex-column">
     <li class="nav-group">
         <span class="nav-group-title">Main</span>
-        <ul class="nav flex-column ms-0">
+        <ul class="nav flex-column ms-0 mt-1">
             <li class="nav-item">
                 <a class="nav-link" asp-area="" asp-page="/Transactions">Transactions</a>
             </li>
@@ -16,7 +16,7 @@
     </li>
     <li class="nav-group">
         <span class="nav-group-title">Analytics</span>
-        <ul class="nav flex-column ms-0">
+        <ul class="nav flex-column ms-0 mt-1">
             <li class="nav-item">
                 <a class="nav-link" asp-area="" asp-page="/PlanRecords">Plan Records</a>
             </li>
@@ -27,7 +27,7 @@
     </li>
     <li class="nav-group">
         <span class="nav-group-title">Tools</span>
-        <ul class="nav flex-column ms-0">
+        <ul class="nav flex-column ms-0 mt-1">
             <li class="nav-item">
                 <a class="nav-link" asp-area="" asp-page="/Currencies">Currencies</a>
             </li>
@@ -50,7 +50,7 @@
     </li>
     <li class="nav-group">
         <span class="nav-group-title">Versioning</span>
-        <ul class="nav flex-column ms-0">
+        <ul class="nav flex-column ms-0 mt-1">
             <li class="nav-item">
                 <a class="nav-link" asp-area="" asp-page="/Branches">Branches</a>
             </li>
@@ -61,7 +61,7 @@
     </li>
     <li class="nav-group">
         <span class="nav-group-title">Dev</span>
-        <ul class="nav flex-column ms-0">
+        <ul class="nav flex-column ms-0 mt-1">
             <li class="nav-item">
                 <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
             </li>
@@ -78,7 +78,7 @@
     </li>
     <li class="nav-group">
         <span class="nav-group-title">Profile</span>
-        <ul class="nav flex-column ms-0">
+        <ul class="nav flex-column ms-0 mt-1">
             @if (User.Identity?.IsAuthenticated == true)
             {
                 // todo: think about vertical or horizontal mode and see why these buttons are different
