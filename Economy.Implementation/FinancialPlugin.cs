@@ -154,16 +154,18 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<St
     public async Task<Plan> UpdatePlan(int planId, string name, string? specialNotes,
         [Description("Parent plan id, if any. Otherwise, -1")] int? parentPlanId)
     {
+        var plan = (await stateFactory.GetState()).Current.state.Repositories.Plans[planId];
+
         return await UpsertPlan(new(
             planId,
             name,
-            specialNotes,
+            string.IsNullOrWhiteSpace(specialNotes) ? null : specialNotes,
             parentPlanId switch
             {
                 -1 => null,
                 _ => parentPlanId,
             },
-            null));
+            plan.ExpectedFinancialActivity));
     }
 
     [KernelFunction("clear_plan_expected_activity")]
