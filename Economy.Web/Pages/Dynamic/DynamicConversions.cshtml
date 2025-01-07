@@ -15,7 +15,7 @@
               ConversionsModel.ConversionsOrdering.Id => x.Id,
               ConversionsModel.ConversionsOrdering.IdDesc => -x.Id,
               ConversionsModel.ConversionsOrdering.DateAndTime => x.DateAndTime,
-             ConversionsModel.ConversionsOrdering.DateAndTimeDesc => DateTime.MaxValue - x.DateAndTime,
+              ConversionsModel.ConversionsOrdering.DateAndTimeDesc => DateTime.MaxValue - x.DateAndTime,
               _ => throw new ArgumentOutOfRangeException()
           }))
 {

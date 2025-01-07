@@ -1,0 +1,30 @@
+﻿@model (Economy.Web.Pages.PlansModel model, int depth, Plan plan)
+@using Economy.Memory.Models.State.Root
+@using Economy.Implementation.Factories
+@using Economy.Memory.Containers.State
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IReadOnlyStateFactory<State> StateFactory
+
+@{
+    var state = await StateFactory.GetState();
+    var plan = Model.plan;
+}
+
+<tr>
+    <td style="padding-left:@(Model.depth * 20)px;">
+
+        @(plan.Id). @plan.Name
+        @if (plan.SpecialNotes != null)
+        {
+            <div>@plan.SpecialNotes</div>
+        }
+    </td>
+    <td>@plan.ExpectedFinancialActivity?.ToDetails(state.Repositories)</td>
+    <td>
+        <a asp-page="/PlanRecords" asp-all-route-data='new Dictionary<string, string> { { "PlanId", plan.Id.ToString() } }'>View</a>
+    </td>
+</tr>
+@foreach (var child in state.Repositories.Plans.GetChildren(plan.Id).OrderBy(Model.model.OrderingFunction))
+{
+    <partial name="Dynamic/DynamicPlans.Plan" model="(Model.model, Model.depth + 1, child)" />
+}

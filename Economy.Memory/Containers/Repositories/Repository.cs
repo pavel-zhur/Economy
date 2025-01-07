@@ -55,6 +55,8 @@ public class Repository<T>(Repositories repositories) : IRepository where T : En
         {
             repositories.AddForeignKey(entity.GetFullId(), foreignKey);
         }
+
+        OnAdded(entity);
     }
 
     internal void Update(T entity)
@@ -85,6 +87,8 @@ public class Repository<T>(Repositories repositories) : IRepository where T : En
         {
             repositories.AddForeignKey(entity.GetFullId(), addTo);
         }
+
+        OnUpdated(oldEntity, entity);
     }
 
     void IRepository.Delete(int id)
@@ -96,10 +100,13 @@ public class Repository<T>(Repositories repositories) : IRepository where T : En
             throw new InvalidOperationException($"Entity with id {id} has incoming foreign keys from: {string.Join(", ", repositories.GetIncomingForeignKeysTo(entityFullId))}.");
         }
 
-        if (!_entities.Remove(id))
+        var entity = _entities.GetValueOrDefault(id);
+        if (entity == null)
         {
             throw new InvalidOperationException($"Entity with id {id} does not exist.");
         }
+
+        _entities.Remove(id);
 
         foreach (var to in repositories.GetOutgoingForeignKeysFrom(entityFullId).ToList())
         {
@@ -107,6 +114,8 @@ public class Repository<T>(Repositories repositories) : IRepository where T : En
         }
 
         _deletedCount++;
+
+        OnDeleted(entity);
     }
 
     void IRepository.AddFromWithoutValidation(IRepository repository)
@@ -123,6 +132,11 @@ public class Repository<T>(Repositories repositories) : IRepository where T : En
 
         _entities.AddRange(another._entities.Select(x => (x.Key, x.Value)), false);
         _deletedCount = another._deletedCount;
+
+        foreach (var entity in another._entities)
+        {
+            OnAdded(entity.Value);
+        }
     }
 
     protected virtual void ValidateUpdate(T oldEntity, T newEntity)
@@ -138,4 +152,16 @@ public class Repository<T>(Repositories repositories) : IRepository where T : En
     EntityBase? IRepository.TryGetById(int id) => TryGetById(id);
 
     EntityBase IRepository.GetById(int id) => this[id];
+
+    protected virtual void OnAdded(T entity)
+    {
+    }
+
+    protected virtual void OnUpdated(T oldEntity, T newEntity)
+    {
+    }
+
+    protected virtual void OnDeleted(T entity)
+    {
+    }
 }
