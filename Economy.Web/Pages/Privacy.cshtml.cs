@@ -39,4 +39,28 @@ public class PrivacyModel(ILogger<PrivacyModel> logger, IStateFactory<States> st
         await userDataStorage.UploadUserDataFromFile();
         return Redirect("/Privacy");
     }
+
+    public async Task<FileResult> OnPostDownloadUserData()
+    {
+        var data = await userDataStorage.GetUserData();
+        if (data == null)
+        {
+            throw new("User data not exists.");
+        }
+
+        return File(data, "application/octet-stream", "ai-economy user data.json");
+    }
+
+    public async Task<IActionResult> OnPostUploadUserData(IFormFile file)
+    {
+        if (file == null)
+        {
+            throw new("No file uploaded.");
+        }
+
+        await using var stream = new MemoryStream();
+        await file.CopyToAsync(stream);
+        await userDataStorage.SaveUserData(stream.ToArray());
+        return Redirect("/Privacy");
+    }
 }
