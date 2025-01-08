@@ -9,11 +9,33 @@
     let isRecording = false;
     let shouldSend = false;
 
-    const micStartButton = document.getElementById('micStartButton');
-    const micCancelButton = document.getElementById('micCancelButton');
-    const micSubmitButton = document.getElementById('micSubmitButton');
+    const micStartButton = document.getElementById('micStartButton'); // hotkey: M
+    const micCancelButton = document.getElementById('micCancelButton'); // hotkey: esc
+    const micSubmitButton = document.getElementById('micSubmitButton'); // hotkey: enter
     const silenceProgress = document.getElementById('silenceProgress');
     const micButtonsContainer = document.getElementById('micButtonsContainer');
+
+    document.addEventListener('keydown', function (event) {
+        if (!document.activeElement.matches('input, textarea') || isRecording) {
+            if (event.key === 'm' || event.key === 'M') {
+                micStartButton.click();
+                event.preventDefault();
+            } else if (event.key === 'Escape') {
+                micCancelButton.click();
+                event.preventDefault();
+            } else if (event.key === 'Enter') {
+                micSubmitButton.click();
+                event.preventDefault();
+            } else if (event.key >= 0 && event.key <= 9) {
+                const index = parseInt(event.key);
+                const chatMessage = document.querySelector(`button[hotKey="${index}"]`);
+                if (chatMessage) {
+                    chatMessage.click();
+                    event.preventDefault();
+                }
+            }
+        }
+    });
 
     micStartButton.addEventListener('click', () => {
         if (isRecording) {

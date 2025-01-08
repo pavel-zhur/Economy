@@ -12,10 +12,12 @@
 }
 
 <input type="hidden" id="default-chat-id" value="@Model.Where(x => x.Status is ChatStatus.Error or ChatStatus.Ready or ChatStatus.Success).WithIndices().OrderByDescending(x => x.x.Messages.Any()).ThenByDescending(x => x.i).AsNullable().FirstOrDefault()?.x.ChatId" />
-@foreach (var chat in Model)
+@foreach (var (chat, i) in Model.WithIndices())
 {
+    var hotKey = i == Model.Count - 1 ? 0 : i > 8 ? (int?)null : i + 1;
     <div id="chat-@chat.ChatId">
-        <button class="btn @GetChatButtonClass(chat) chat-button toggle-chat-button" type="button" id="toggleChatOffcanvas-@chat.ChatId" data-bs-toggle="offcanvas" data-bs-target="#chatOffcanvas-@chat.ChatId">
+        <button class="btn @GetChatButtonClass(chat) chat-button toggle-chat-button" type="button" id="toggleChatOffcanvas-@chat.ChatId" data-bs-toggle="offcanvas" data-bs-target="#chatOffcanvas-@chat.ChatId" hotKey="@hotKey">
+            <span class="hotkey">@hotKey</span>
             <i class="fa-regular @(chat.Messages.Any() ? "fa-comment" : "fas fa-comment-medical")"></i>
         </button>
         <div class="offcanvas offcanvas-chat offcanvas-end" tabindex="-1" id="chatOffcanvas-@chat.ChatId" aria-labelledby="chatOffcanvasLabel-@chat.ChatId" data-bs-scroll="true" data-bs-backdrop="false" aria-modal="true" role="dialog">
