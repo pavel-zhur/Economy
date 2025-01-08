@@ -1,13 +1,10 @@
 ﻿@page
 @using Microsoft.AspNetCore.Mvc.TagHelpers
-@model PrivacyModel
+@model GoogleDriveModel
 @inject IHostEnvironment HostEnvironment
 @{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Google Drive";
 }
-<h1>@ViewData["Title"]</h1>
-
-<p>Use this page to detail your site's privacy policy.</p>
 
 <form method="post" asp-page-handler="Save" class="form">
     <button type="submit" class="btn btn-primary">Save state</button>
