@@ -42,6 +42,14 @@ public record Conversion(
     public override string ToReferenceTitle()
         => $"[{Id}]";
 
-    public override string ToDetails(IHistory repositories)
-        => $"{Id} {repositories.GetReferenceTitle(FromWalletId, EntityType.Wallet)} {FromAmount.ToDetails(repositories)} -> {repositories.GetReferenceTitle(ToWalletId, EntityType.Wallet)} {ToAmount.ToDetails(repositories)}";
+    public override Details ToDetails()
+        => new(GetEntityType())
+        {
+            ["Id"] = Id,
+            ["FromWalletId"] = FromWalletId,
+            ["FromAmount"] = FromAmount.ToDetails(),
+            ["ToWalletId"] = ToWalletId,
+            ["ToAmount"] = ToAmount.ToDetails(),
+            ["DateAndTime"] = DateAndTime,
+        };
 }

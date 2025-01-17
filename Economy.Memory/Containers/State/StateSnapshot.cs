@@ -9,12 +9,12 @@ namespace Economy.Memory.Containers.State;
 
 internal readonly struct StateSnapshot(State state, int revision) : IHistory
 {
-    public string? GetReferenceTitle(int? entityFullId, EntityType entityType)
+    public string? GetReferenceTitle(int? entityId, EntityType entityType)
     {
         var revisionSnapshot = revision;
-        return !entityFullId.HasValue
+        return !entityId.HasValue
             ? null
-            : state.GetEventsByEntityFullId(new(entityType, entityFullId.Value))
+            : state.GetEventsByEntityFullId(new(entityType, entityId.Value))
                     .TakeWhile(e => e.Revision < revisionSnapshot)
                     .Last() switch
                 {
@@ -47,6 +47,6 @@ internal readonly struct StateSnapshot(State state, int revision) : IHistory
                 Creation creation => creation.Entity,
                 Update update => update.Entity,
                 _ => throw new ArgumentOutOfRangeException()
-            }).ToDetails(this);
+            }).ToDetails().ToString(this);
     }
 }

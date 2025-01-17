@@ -21,7 +21,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<St
     {
         var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref currency, out var verb));
-        logger.LogInformation("{verb} currency {Currency}", verb, currency.ToDetails(state.Current.state.Repositories));
+        logger.LogInformation("{verb} currency {Currency}", verb, currency.ToDetails().ToString(state.Current.state.Repositories));
         return currency;
     }
 
@@ -32,7 +32,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<St
     {
         var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref wallet, out var verb));
-        logger.LogInformation("{verb} wallet {Wallet}", verb, wallet.ToDetails(state.Current.state.Repositories));
+        logger.LogInformation("{verb} wallet {Wallet}", verb, wallet.ToDetails().ToString(state.Current.state.Repositories));
         return wallet;
     }
 
@@ -43,7 +43,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<St
     {
         var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref @event, out var verb));
-        logger.LogInformation("{verb} event {Event}", verb, @event.ToDetails(state.Current.state.Repositories));
+        logger.LogInformation("{verb} event {Event}", verb, @event.ToDetails().ToString(state.Current.state.Repositories));
         return @event;
     }
 
@@ -54,7 +54,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<St
     {
         var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref category, out var verb));
-        logger.LogInformation("{verb} category {Category}", verb, category.ToDetails(state.Current.state.Repositories));
+        logger.LogInformation("{verb} category {Category}", verb, category.ToDetails().ToString(state.Current.state.Repositories));
         return category;
     }
 
@@ -65,7 +65,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<St
     {
         var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref walletAudit, out var verb));
-        logger.LogInformation("{verb} wallet audit {WalletAudit}", verb, walletAudit.ToDetails(state.Current.state.Repositories));
+        logger.LogInformation("{verb} wallet audit {WalletAudit}", verb, walletAudit.ToDetails().ToString(state.Current.state.Repositories));
         return walletAudit;
     }
 
@@ -73,7 +73,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<St
     {
         var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref plan, out var verb));
-        logger.LogInformation("{verb} plan {Plan}", verb, plan.ToDetails(state.Current.state.Repositories));
+        logger.LogInformation("{verb} plan {Plan}", verb, plan.ToDetails().ToString(state.Current.state.Repositories));
         return plan;
     }
 
@@ -214,7 +214,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<St
     {
         var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref transaction, out var verb));
-        logger.LogInformation("{verb} transaction {Transaction}", verb, transaction.ToDetails(state.Current.state.Repositories));
+        logger.LogInformation("{verb} transaction {Transaction}", verb, transaction.ToDetails().ToString(state.Current.state.Repositories));
         return transaction;
     }
 
@@ -225,7 +225,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<St
     {
         var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref conversion, out var verb));
-        logger.LogInformation("{verb} conversion {Conversion}", verb, conversion.ToDetails(state.Current.state.Repositories));
+        logger.LogInformation("{verb} conversion {Conversion}", verb, conversion.ToDetails().ToString(state.Current.state.Repositories));
         return conversion;
     }
 
@@ -236,7 +236,7 @@ internal class FinancialPlugin(ILogger<FinancialPlugin> logger, IStateFactory<St
     {
         var state = await stateFactory.GetState();
         state.Apply(PrepareForUpsert(state, ref transfer, out var verb));
-        logger.LogInformation("{verb} transfer {Transfer}", verb, transfer.ToDetails(state.Current.state.Repositories));
+        logger.LogInformation("{verb} transfer {Transfer}", verb, transfer.ToDetails().ToString(state.Current.state.Repositories));
         return transfer;
     }
 

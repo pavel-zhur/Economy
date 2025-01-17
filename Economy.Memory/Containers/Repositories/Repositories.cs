@@ -66,15 +66,15 @@ public class Repositories : IHistory
 
     public EntityBase? TryGetById(EntityFullId entityFullId) => GetRepository(entityFullId.Type).TryGetById(entityFullId.Id);
 
-    [return: NotNullIfNotNull(nameof(entityFullId))]
-    public string? GetReferenceTitle(int? entityFullId, EntityType entityType) => entityFullId == null ? null : GetRepository(entityType).GetById(entityFullId.Value).ToReferenceTitle();
+    [return: NotNullIfNotNull(nameof(entityId))]
+    public string? GetReferenceTitle(int? entityId, EntityType entityType) => entityId == null ? null : GetRepository(entityType).GetById(entityId.Value).ToReferenceTitle();
 
     (CurrencyCustomDisplayUnit? currencyCustomDisplayUnit, string abbreviation) IHistory.GetCurrencyTitles(
         int currencyId)
         => (Currencies[currencyId].CustomDisplayUnit, Currencies[currencyId].Abbreviation);
 
     public string GetDetails(EntityFullId entityFullId) =>
-        GetRepository(entityFullId.Type).GetById(entityFullId.Id).ToDetails(this);
+        GetRepository(entityFullId.Type).GetById(entityFullId.Id).ToDetails().ToString(this);
 
     internal void AddForeignKey(EntityFullId from, EntityFullId to)
     {

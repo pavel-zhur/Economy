@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Containers.State;
+using Economy.Memory.Tools;
 
 namespace Economy.Memory.Models.State.Base;
 
@@ -15,7 +16,7 @@ public abstract record EntityBase(int Id)
 
     public abstract string ToReferenceTitle();
 
-    public abstract string ToDetails(IHistory repositories);
+    public abstract Details ToDetails();
 
     public EntityType GetEntityType() => GetType().GetCustomAttribute<EntityTypeAttribute>()!.EntityType;
 

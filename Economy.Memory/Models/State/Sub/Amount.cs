@@ -1,7 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Containers.State;
+using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Enums;
+using Economy.Memory.Tools;
 
 namespace Economy.Memory.Models.State.Sub;
 
@@ -26,23 +28,10 @@ public record struct Amount(int CurrencyId, decimal Value)
         }
     }
 
-    public string ToDetails(IHistory repositories)
-    {
-        var (currencyCustomDisplayUnit, abbreviation) = repositories.GetCurrencyTitles(CurrencyId);
-        var value = Value;
-        string? prefix = null;
-        switch (currencyCustomDisplayUnit)
+    public Details ToDetails()
+        => new()
         {
-            case CurrencyCustomDisplayUnit.Thousands:
-                value /= 1000;
-                prefix = "k";
-                break;
-            case CurrencyCustomDisplayUnit.Millions:
-                value /= 1_000_000;
-                prefix = "m";
-                break;
-        }
-
-        return $"{value} {prefix}{abbreviation}";
-    }
+            [EntityType.Currency] = CurrencyId,
+            [Details.CurrencyAmount] = Value,
+        };
 }

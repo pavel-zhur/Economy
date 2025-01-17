@@ -2,6 +2,7 @@
 using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Base;
+using Economy.Memory.Tools;
 
 namespace Economy.Memory.Models.State.Root;
 
@@ -20,6 +21,10 @@ public record Wallet(int Id, string Name) : EntityBase(Id)
     public override string ToReferenceTitle()
         => $"[{Id} {Name}]";
 
-    public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name}";
+    public override Details ToDetails()
+        => new(GetEntityType())
+        {
+            ["Id"] = Id,
+            ["Name"] = Name,
+        };
 }

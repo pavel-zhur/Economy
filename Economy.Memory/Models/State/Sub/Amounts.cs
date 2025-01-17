@@ -1,6 +1,7 @@
 ﻿using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Base;
+using Economy.Memory.Tools;
 using OneShelf.Common;
 
 namespace Economy.Memory.Models.State.Sub;
@@ -27,8 +28,11 @@ public class Amounts : List<Amount>
         }
     }
 
-    public string ToDetails(IHistory repositories)
-        => string.Join(", ", this.Select(a => a.ToDetails(repositories)));
+    public Details ToDetails()
+        => new()
+        {
+            [Details.CurrencyAmount] = this.Select(x => x.ToDetails()).ToList()
+        };
 
     [Obsolete("Refactor")] // todo: think
     public void Add(Amounts other, bool subtract = false, int multiplication = 1)
