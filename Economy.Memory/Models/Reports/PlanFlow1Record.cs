@@ -1,6 +1,7 @@
 ﻿using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Sub;
+using Economy.Memory.Tools;
 
 namespace Economy.Memory.Models.Reports;
 
@@ -13,14 +14,14 @@ public record PlanFlow1Record(
 {
     public override IReadOnlyList<(int? planId, bool reverse)> PlanIds => [(MainPlanId, false)];
 
-    public override string ToDetails(Repositories repositories, int? viewFromPlanId)
-        => string.Join(", ", new[]
+    public override Details ToDetails(int? viewFromPlanId)
+        => new()
         {
-            Date.ToString(),
-            Flow?.ToString(),
-            Type.ToString(),
-            viewFromPlanId.HasValue 
+            ["Date"] = Date.ToString(),
+            ["Flow"] = Flow,
+            ["Type"] = Type,
+            [EntityType.Plan] = viewFromPlanId.HasValue
                 ? null
-                : repositories.GetReferenceTitle(MainPlanId, EntityType.Plan),
-        }.Where(x => x != null));
+                : MainPlanId,
+        };
 }

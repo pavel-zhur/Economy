@@ -34,14 +34,14 @@
                   }))
         {
             <tr>
-                <td>@wallet.ToDetails(state.Repositories)</td>
-                <td class="data-record">@(audit?.Amounts.ToDetails(state.Repositories))</td>
+                <td>@wallet.ToDetails().ToString(state.Repositories)</td>
+                <td class="data-record">@(audit?.Amounts.ToDetails().ToString(state.Repositories))</td>
                 <td class="data-record">@(audit?.Amounts.ToEquivalentAmount(state.Repositories).ToDetails())</td>
             </tr>
         }
         <tr>
             <td><strong>Total</strong></td>
-            <td class="data-record">@Model.Total.ToDetails(state.Repositories)</td>
+            <td class="data-record">@Model.Total.ToDetails().ToString(state.Repositories)</td>
             <td class="data-record">@Model.Total.ToEquivalentAmount(state.Repositories).ToDetails()</td>
         </tr>
         </tbody>

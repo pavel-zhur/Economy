@@ -3,6 +3,7 @@ using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Enums;
+using Economy.Memory.Tools;
 
 namespace Economy.Memory.Models.State.Root;
 
@@ -28,9 +29,13 @@ public record Currency(int Id, string LongName, string Abbreviation, string Curr
         }
     }
 
-    public override string ToReferenceTitle()
-        => $"[{Id} {Abbreviation}]";
-
-    public override string ToDetails(IHistory repositories)
-        => $"{Id} {LongName} ({Abbreviation}, {CurrencySymbol}) {CustomDisplayUnit}";
+    public override Details ToDetails()
+        => new(GetEntityType(), "Abbreviation")
+        {
+            [Details.IdProperty] = Id,
+            ["LongName"] = LongName,
+            ["Abbreviation"] = Abbreviation,
+            ["CurrencySymbol"] = CurrencySymbol,
+            ["CustomDisplayUnit"] = CustomDisplayUnit,
+        };
 }

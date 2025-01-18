@@ -1,4 +1,6 @@
-﻿namespace Economy.Memory.Models.State.Sub;
+﻿using Economy.Memory.Tools;
+
+namespace Economy.Memory.Models.State.Sub;
 
 public readonly record struct Period(Date StartDate, Date EndDate)
 {
@@ -13,5 +15,9 @@ public readonly record struct Period(Date StartDate, Date EndDate)
         }
     }
 
-    public string ToDetails() => $"[{StartDate} - {EndDate}]";
+    public Details ToDetails() => new()
+    {
+        ["StartDate"] = StartDate.ToString(),
+        ["EndDate"] = EndDate.ToString(),
+    };
 }

@@ -41,17 +41,17 @@
                     <td class="data-record">
                         @if (transaction.Type == TransactionType.Income)
                         {
-                            <span>@transaction.Amounts.ToDetails(Model.State.Repositories)</span>
+                            <span>@transaction.Amounts.ToDetails().ToString(Model.State.Repositories)</span>
                         }
                     </td>
                     <td class="data-record">
                         @if (transaction.Type == TransactionType.Expense)
                         {
-                            <span>@transaction.Amounts.ToDetails(Model.State.Repositories)</span>
+                            <span>@transaction.Amounts.ToDetails().ToString(Model.State.Repositories)</span>
                         }
                     </td>
                     <td class="data-info">
-                        @transaction.ToDetailsNoAmountsOrType(Model.State.Repositories)
+                        @transaction.ToDetails().ToString(Model.State.Repositories, nameof(transaction.DateAndTime), nameof(transaction.Amounts), nameof(transaction.PlanScheduleDate), nameof(transaction.PlanSchedulePeriod))
                     </td>
                     <td class="data-record">@transaction.Amounts.ToEquivalentAmount(Model.State.Repositories).ToDetails()</td>
                     <td class="data-record">

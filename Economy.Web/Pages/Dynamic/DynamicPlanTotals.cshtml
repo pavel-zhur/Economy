@@ -44,7 +44,7 @@ else
                   }))            {
                 <tr>
                     <td class="data-info">@date</td>
-                    <td class="data-info">@record.ToDetails(state.Repositories, Model.PlanId)</td>
+                    <td class="data-info">@record.ToDetails(Model.PlanId).ToString(state)</td>
                     <td class="data-record">@balance</td>
                 </tr>
             }

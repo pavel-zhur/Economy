@@ -11,9 +11,14 @@ public class State
     private readonly Dictionary<EntityFullId, List<EventBase>> _eventsByEntityFullId = new();
     private readonly List<EventBase> _events = new();
 
+    public State()
+    {
+        Repositories = new(this);
+    }
+
     public IReadOnlyList<EventBase> Events => _events;
 
-    public Repositories Repositories { get; } = new();
+    public Repositories Repositories { get; }
 
     public IReadOnlyList<EventBase> GetEventsByEntityFullId(EntityFullId entityFullId) => _eventsByEntityFullId[entityFullId];
 

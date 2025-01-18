@@ -1,4 +1,5 @@
 ﻿using Economy.Memory.Models.State.Enums;
+using Economy.Memory.Tools;
 
 namespace Economy.Memory.Models.State.Sub;
 
@@ -12,5 +13,11 @@ public record PlanExpectedFinancialActivityRecurringDates(
         Period.Validate();
     }
 
-    public string ToDetails() => $"[{Interval} {Behavior} {Period.ToDetails()}]";
+    public Details ToDetails()
+        => new()
+        {
+            ["Period"] = Period.ToDetails(),
+            ["Interval"] = Interval,
+            ["Behavior"] = Behavior,
+        };
 }

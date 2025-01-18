@@ -38,9 +38,13 @@ public record Transfer(
         }
     }
 
-    public override string ToReferenceTitle()
-        => $"[{Id}]";
-
-    public override string ToDetails(IHistory repositories)
-        => $"{Id} {repositories.GetReferenceTitle(FromPlanId, EntityType.Plan)} -> {repositories.GetReferenceTitle(ToPlanId, EntityType.Plan)} {Amount.ToDetails(repositories)} {Date}";
+    public override Details ToDetails()
+        => new(GetEntityType())
+        {
+            [Details.IdProperty] = Id,
+            [EntityType.Plan, "From"] = FromPlanId,
+            [EntityType.Plan, "To"] = ToPlanId,
+            ["Amount"] = Amount.ToDetails(),
+            ["Date"] = Date.ToString(),
+        };
 }

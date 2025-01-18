@@ -1,6 +1,6 @@
-﻿using Economy.Memory.Containers.State;
-using Economy.Memory.Models.State.Base;
+﻿using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Enums;
+using Economy.Memory.Tools;
 
 namespace Economy.Memory.Models.State.Sub;
 
@@ -29,8 +29,14 @@ public record PlanExpectedFinancialActivity(
         }
     }
 
-    public string ToDetails(IHistory repositories)
-        => $"{Type} {Amounts.ToDetails(repositories)} d:[{PlannedRecurringDates?.ToDetails()}{PlannedDate}]";
+    public Details ToDetails()
+        => new()
+        {
+            ["Type"] = Type,
+            ["Amounts"] = Amounts.ToDetails(),
+            ["PlannedRecurringDates"] = PlannedRecurringDates?.ToDetails(),
+            ["PlannedDate"] = PlannedDate?.ToString(),
+        };
 
     public IEnumerable<EntityFullId?> GetForeignKeysDirty()
         => Amounts.GetForeignKeysDirty();

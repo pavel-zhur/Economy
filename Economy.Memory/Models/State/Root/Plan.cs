@@ -39,9 +39,13 @@ public record Plan(
         ExpectedFinancialActivity?.Validate();
     }
 
-    public override string ToReferenceTitle()
-        => $"[{Id} {Name}]";
-
-    public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")} p:{repositories.GetReferenceTitle(ParentPlanId, EntityType.Plan)} {ExpectedFinancialActivity?.ToDetails(repositories)}";
+    public override Details ToDetails()
+    => new(GetEntityType(), "Name")
+    {
+        [Details.IdProperty] = Id,
+        ["Name"] = Name,
+        ["SpecialNotes"] = SpecialNotes,
+        [EntityType.Plan, "Parent Plan"] = ParentPlanId,
+        ["ExpectedFinancialActivity"] = ExpectedFinancialActivity?.ToDetails(),
+    };
 }

@@ -48,12 +48,17 @@ public record Transaction(
         }
     }
 
-    public override string ToReferenceTitle()
-        => $"[T-{Id}]";
-
-    public string ToDetailsNoAmountsOrType(Repositories repositories)
-        => $"{Id} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
-
-    public override string ToDetails(IHistory repositories)
-        => $"{Id} {repositories.GetReferenceTitle(PlanId, EntityType.Plan)} {Name} {(SpecialNotes == null ? null : $" n:({SpecialNotes})")} {Type} {Amounts.ToDetails(repositories)} r:[{PlanSchedulePeriod?.ToDetails()}{PlanScheduleDate}]";
+    public override Details ToDetails()
+        => new(GetEntityType(), "Name")
+        {
+            [Details.IdProperty] = Id,
+            ["Name"] = Name,
+            ["SpecialNotes"] = SpecialNotes,
+            ["Type"] = Type,
+            ["DateAndTime"] = DateAndTime,
+            ["Amounts"] = Amounts.ToDetails(),
+            [EntityType.Plan] = PlanId,
+            ["PlanSchedulePeriod"] = PlanSchedulePeriod?.ToDetails(),
+            ["PlanScheduleDate"] = PlanScheduleDate?.ToString(),
+        };
 }

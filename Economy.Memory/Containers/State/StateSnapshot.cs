@@ -3,26 +3,14 @@ using Economy.Memory.Models.State;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Enums;
 using Economy.Memory.Models.State.Root;
+using Economy.Memory.Tools;
 using OneShelf.Common;
 
 namespace Economy.Memory.Containers.State;
 
 internal readonly struct StateSnapshot(State state, int revision) : IHistory
 {
-    public string? GetReferenceTitle(int? entityFullId, EntityType entityType)
-    {
-        var revisionSnapshot = revision;
-        return !entityFullId.HasValue
-            ? null
-            : state.GetEventsByEntityFullId(new(entityType, entityFullId.Value))
-                    .TakeWhile(e => e.Revision < revisionSnapshot)
-                    .Last() switch
-                {
-                    Creation creation => creation.Entity.ToReferenceTitle(),
-                    Update update => update.Entity.ToReferenceTitle(),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-    }
+    public int Revision => revision;
 
     public (CurrencyCustomDisplayUnit? currencyCustomDisplayUnit, string abbreviation) GetCurrencyTitles(int currencyId)
     {
@@ -37,7 +25,7 @@ internal readonly struct StateSnapshot(State state, int revision) : IHistory
             }).SelectSingle(x => (x.CustomDisplayUnit, x.Abbreviation));
     }
 
-    public string GetDetails(EntityFullId entityFullId)
+    public Details GetDetails(EntityFullId entityFullId)
     {
         var revisionSnapshot = revision;
         return (state.GetEventsByEntityFullId(entityFullId)
@@ -47,6 +35,6 @@ internal readonly struct StateSnapshot(State state, int revision) : IHistory
                 Creation creation => creation.Entity,
                 Update update => update.Entity,
                 _ => throw new ArgumentOutOfRangeException()
-            }).ToDetails(this);
+            }).ToDetails();
     }
 }

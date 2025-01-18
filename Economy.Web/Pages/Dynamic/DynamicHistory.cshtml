@@ -93,7 +93,7 @@
                     <li class="record @(isCurrent ? "current" : null)">
                         @if (@event != null)
                         {
-                            <span>@(@event.Revision). @(@event.ToDetails(state))</span>
+                            <span>@(@event.Revision). @(@event.ToDetails().ToString(state))</span>
                         }
                         else if (hiddenEvents.HasValue)
                         {

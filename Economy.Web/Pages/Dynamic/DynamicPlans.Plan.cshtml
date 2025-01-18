@@ -18,7 +18,7 @@
             <div>@plan.SpecialNotes</div>
         }
     </td>
-    <td>@plan.ExpectedFinancialActivity?.ToDetails(state.Repositories)</td>
+    <td>@plan.ExpectedFinancialActivity?.ToDetails().ToString(state.Repositories)</td>
     <td>
         <a asp-page="/PlanRecords" asp-all-route-data='new Dictionary<string, string> { { "PlanId", plan.Id.ToString() } }'>View</a>
     </td>

@@ -2,6 +2,7 @@
 using Economy.Memory.Containers.Repositories;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models.State.Base;
+using Economy.Memory.Tools;
 
 namespace Economy.Memory.Models.State.Root;
 
@@ -22,9 +23,11 @@ public record Category(int Id, string Name, string? SpecialNotes) : EntityBase(I
         }
     }
 
-    public override string ToReferenceTitle()
-        => $"[{Id} {Name}]";
-
-    public override string ToDetails(IHistory repositories)
-        => $"{Id} {Name}{(SpecialNotes == null ? null : $" n:({SpecialNotes})")}";
+    public override Details ToDetails()
+        => new(GetEntityType(), "Name")
+        {
+            [Details.IdProperty] = Id,
+            ["Name"] = Name,
+            ["SpecialNotes"] = SpecialNotes,
+        };
 }

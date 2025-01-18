@@ -20,9 +20,12 @@ public record WalletAudit(int Id, int WalletId, DateTime CheckDateAndTime, Amoun
         CheckDateAndTime.Validate();
     }
 
-    public override string ToReferenceTitle()
-        => $"[{Id}]";
-
-    public override string ToDetails(IHistory repositories)
-        => $"{Id} {repositories.GetReferenceTitle(WalletId, EntityType.Wallet)} {CheckDateAndTime} [{Amounts.ToDetails(repositories)}]";
+    public override Details ToDetails()
+        => new(GetEntityType())
+        {
+            [Details.IdProperty] = Id,
+            [EntityType.Wallet] = WalletId,
+            ["CheckDateAndTime"] = CheckDateAndTime,
+            ["Amounts"] = Amounts.ToDetails(),
+        };
 }

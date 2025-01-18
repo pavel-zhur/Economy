@@ -33,6 +33,6 @@ else
                   _ => throw new ArgumentOutOfRangeException()
               }))
     {
-        <p>@record.ToDetails(state.Repositories, null)</p>
+        <p>@record.ToDetails(null).ToString(state)</p>
     }
 </div>

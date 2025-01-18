@@ -1,22 +1,25 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Economy.Memory.Containers.State;
 using Economy.Memory.Models;
 using Economy.Memory.Models.State.Base;
 using Economy.Memory.Models.State.Enums;
 using Economy.Memory.Models.State.Root;
+using Economy.Memory.Tools;
 using OneShelf.Common;
 
 namespace Economy.Memory.Containers.Repositories;
 
 public class Repositories : IHistory
 {
+    private readonly State.State _state;
     private readonly HashSet<(EntityFullId from, EntityFullId to)> _foreignKeys = new();
     private readonly Dictionary<EntityFullId, HashSet<EntityFullId>> _incomingForeignKeysTo = new();
     private readonly Dictionary<EntityFullId, HashSet<EntityFullId>> _outgoingForeignKeysFrom = new();
 
-    public Repositories()
+    internal Repositories(State.State state)
     {
+        _state = state;
+
         Currencies = new(this);
         Wallets = new(this);
         WalletAudits = new(this);
@@ -55,6 +58,8 @@ public class Repositories : IHistory
     public IReadOnlyDictionary<Type, IRepository> AllByType { get; }
     public IReadOnlyDictionary<EntityType, IRepository> AllByEntityType { get; }
 
+    public int Revision => _state.Events.Count;
+
     public IReadOnlySet<(EntityFullId from, EntityFullId to)> ForeignKeys => _foreignKeys;
     public IEnumerable<EntityFullId> GetIncomingForeignKeysTo(EntityFullId to) => _incomingForeignKeysTo.GetValueOrDefault(to) ?? Enumerable.Empty<EntityFullId>();
     public IEnumerable<EntityFullId> GetOutgoingForeignKeysFrom(EntityFullId from) => _outgoingForeignKeysFrom.GetValueOrDefault(from) ?? Enumerable.Empty<EntityFullId>();
@@ -66,15 +71,12 @@ public class Repositories : IHistory
 
     public EntityBase? TryGetById(EntityFullId entityFullId) => GetRepository(entityFullId.Type).TryGetById(entityFullId.Id);
 
-    [return: NotNullIfNotNull(nameof(entityFullId))]
-    public string? GetReferenceTitle(int? entityFullId, EntityType entityType) => entityFullId == null ? null : GetRepository(entityType).GetById(entityFullId.Value).ToReferenceTitle();
-
     (CurrencyCustomDisplayUnit? currencyCustomDisplayUnit, string abbreviation) IHistory.GetCurrencyTitles(
         int currencyId)
         => (Currencies[currencyId].CustomDisplayUnit, Currencies[currencyId].Abbreviation);
 
-    public string GetDetails(EntityFullId entityFullId) =>
-        GetRepository(entityFullId.Type).GetById(entityFullId.Id).ToDetails(this);
+    public Details GetDetails(EntityFullId entityFullId) =>
+        GetRepository(entityFullId.Type).GetById(entityFullId.Id).ToDetails();
 
     internal void AddForeignKey(EntityFullId from, EntityFullId to)
     {
