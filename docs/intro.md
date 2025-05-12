@@ -41,13 +41,12 @@ I'm creating a personal budget tracker with the following components:
 ## Reporting
 - Different kinds of reports based on the data
 - Ability to view the structured data source
-- Easy export and synchronization with Google Sheets is crucial
+- Easy export and synchronization (one way) into Google Sheets is crucial
 
 ## Technical Stack
 - Docker
 - Python
 - Microservices
-- PostgreSQL
 - Modern web frontend
 - Grafana with logs (Loki)
 - Dashboards injectable into the web frontend where needed
