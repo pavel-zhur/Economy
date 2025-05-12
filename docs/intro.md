@@ -114,3 +114,6 @@ I'm creating a personal budget tracker with the following components:
   - Let users selectively apply or reject changes to previously committed data
 - All migrations and reinterpretations must be non-destructive, allowing rollback
 - The storage layer must preserve both the original AI interpretation and any subsequent versions
+
+## Storage & Versioning Principle
+The system MUST retain all prior interpretations and schema states, support user-approved immutability, and enable safe regeneration under new AI logic.  Whether this is achieved via Git-style branching, an event log, or record-level versioning is an implementation detail.
