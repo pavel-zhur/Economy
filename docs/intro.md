@@ -60,15 +60,30 @@ I'm creating a personal budget tracker with the following components:
 - Different users may have different kinds of entities
 - The application should be domain-agnostic from a code perspective
 - Users can manage what they want and adjust the schema to their needs
+- Users define and modify schemas only through natural language interaction with the AI
+- Schema definition happens via the Telegram bot (in a separate thread or forum) or through the web UI
+- All schema modifications are done by communicating to the AI in text/voice/images
 
 ## User-Specific AI Training
 - Each user should be able to adjust the AI to understand their specific language
 - Users can iteratively adjust the AI until it reliably understands them
 - Each user can have their own reports
 - Users can save their configuration "presets" and modify them
+- AI training happens through natural dialog with the user
+- Users should immediately see the consequences of their instructions to the AI
+- Users can modify AI instructions in text form
+- The AI should help users manage these instructions
+- Users may want to manually edit instructions in some cases
 
 ## Schema Evolution
 - Users need to be able to retrain/adjust AI instructions and schema while preserving existing data
 - The schema should be flexible and modifiable during the system's lifetime
 - Existing data must be preserved when schema changes occur
 - Users should not lose data when making schema adjustments
+
+## Three-Layer Architecture
+- The system has a clear separation between schema layer, AI instructions layer, and data layer
+- Users have full control and observability across all three layers
+- Users can review, approve, or reject reprocessing results
+- Users can revert changes to the schema, AI instructions, or the data itself
+- The system provides visibility into all changes and their impacts

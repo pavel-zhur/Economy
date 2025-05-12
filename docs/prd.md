@@ -13,6 +13,8 @@ Individuals managing personal finances who prefer natural language communication
 - Generate useful financial reports and insights
 - Customize the system to their specific needs and terminology
 - Modify the schema and AI understanding over time without losing data
+- Maintain full control over how the AI interprets their communications
+- Have complete visibility into all system changes and their effects
 
 ## 4. Core Components
 
@@ -23,6 +25,7 @@ Individuals managing personal finances who prefer natural language communication
 - **Data Types**: Support for text messages, voice messages, and images (receipts/bills)
 - **Silent Observer**: Bot doesn't interact with the user, only collects data
 - **Storage**: Secure storage of all raw messages for later processing
+- **Structured Communication**: Support for forums or threads to organize different types of communication (e.g., separating schema definitions from regular entries)
 
 ### 4.2 AI Processing Engine
 - **Natural Language Processing**: Interpret activities from casual language
@@ -34,15 +37,22 @@ Individuals managing personal finances who prefer natural language communication
 - **Reprocessing Capability**: Ability to reprocess individual messages or entire history
 - **Continuous Learning**: Improve accuracy based on user feedback
 - **Configuration Presets**: Allow users to save and modify AI configuration presets
+- **Dialog-Based Training**: AI learns through natural conversation with users
+- **Immediate Feedback**: Users see the immediate effects of their instructions
+- **Text-Based Instructions**: Support for direct text-based AI instruction modification
+- **AI-Assisted Configuration**: AI helps users manage and improve their instructions
 
 ### 4.3 User Interface
 - **Web Dashboard**: Primary interface for viewing and managing data
 - **Message Review**: View original messages alongside their interpreted structured data
 - **Correction Mechanism**: Ability to correct AI interpretations and add details
 - **AI Instruction Management**: Interface to modify/update instructions for the AI processor
-- **Schema Management**: Interface to define and modify the user's data schema
+- **Schema Management**: Interface to define and modify the user's data schema through natural language
 - **Report Generation**: Create and customize reports specific to each user
 - **Mobile & Desktop Support**: Responsive design for all device types
+- **Reprocessing Review**: Interface to review, approve, or reject reprocessing results
+- **Change History**: Visibility into all changes made to schema, AI instructions, and data
+- **Rollback Capabilities**: Ability to revert changes at any level of the system
 
 ### 4.4 Data Management
 - **Multi-Tenant Database**: Separate schema for each user
@@ -51,6 +61,9 @@ Individuals managing personal finances who prefer natural language communication
 - **Event Sourcing**: Track changes and maintain data integrity
 - **Reprocessing Infrastructure**: Support for regenerating structured data from raw messages
 - **Version Control**: Track changes to AI interpretations, user corrections, and schema evolution
+- **Three-Layer Architecture**: Clear separation between schema layer, AI instructions layer, and data layer
+- **Layer Synchronization**: Maintain consistency across the three layers during changes
+- **Change Transparency**: Provide visibility into how changes in one layer affect the others
 
 ## 5. Functional Requirements
 
@@ -60,6 +73,7 @@ Individuals managing personal finances who prefer natural language communication
 - Bot must operate silently without responding to messages
 - Bot must provide users with login links to the web frontend
 - System must maintain separation between different users' data
+- Bot must support forums or threads for organizing different types of communication
 
 ### 5.2 AI Processing
 - System must convert raw messages into structured data according to user-defined schemas
@@ -68,15 +82,23 @@ Individuals managing personal finances who prefer natural language communication
 - System must improve accuracy over time based on user corrections
 - System must support user-specific modification of AI processing instructions
 - System must allow users to save and load AI configuration presets
+- System must enable schema definition and modification solely through natural language interaction
+- System must provide immediate feedback on how AI instruction changes affect interpretations
+- System must support both AI-assisted and manual editing of instructions
+- System must maintain a history of instruction changes and their effects
 
 ### 5.3 User Interface
 - Users must be able to view original messages and their structured interpretations
 - Users must be able to correct interpretations or add details
-- Users must be able to define and modify their data schema
+- Users must be able to define and modify their data schema through natural language interactions
 - Users must be able to view data in various user-defined report formats
 - Interface must be accessible on both mobile and desktop devices
 - Users must be able to modify AI processing instructions
 - Users must be able to trigger reprocessing of messages
+- Users must be able to review, approve, or reject reprocessing results before they're applied
+- Users must have visibility into the system's three-layer architecture (schema, instructions, data)
+- Users must be able to revert changes to any layer of the system
+- Interface must clearly show the relationship between original messages and structured data
 
 ### 5.4 Data Management
 - System must maintain integrity of raw message data
@@ -85,6 +107,9 @@ Individuals managing personal finances who prefer natural language communication
 - System must preserve existing data during schema changes
 - System must support flexible, user-defined schemas
 - System must provide data migration capabilities when schemas evolve
+- System must maintain clear separation between schema layer, AI instructions layer, and data layer
+- System must provide full audit trail of changes across all three layers
+- System must support reverting changes to any layer while maintaining consistency
 
 ### 5.5 Testing Requirements
 - System must have comprehensive unit tests for all microservices
@@ -100,6 +125,8 @@ Individuals managing personal finances who prefer natural language communication
 - Web interface must be responsive with minimal load times
 - System must handle large message histories efficiently
 - System must support multiple concurrent users
+- Reprocessing jobs must be efficiently parallelized
+- UI must remain responsive during reprocessing operations
 
 ### 6.2 Security
 - All user data must be securely stored and isolated from other users
@@ -113,6 +140,8 @@ Individuals managing personal finances who prefer natural language communication
 - Error handling for failed processing attempts
 - Graceful handling of schema migrations
 - Automated testing to ensure system stability
+- Protection against conflicting concurrent changes
+- Ability to rollback to previous states in case of failures
 
 ### 6.4 Scalability
 - Architecture must support growing message history
@@ -151,6 +180,8 @@ Individuals managing personal finances who prefer natural language communication
 - Schema changes preserve existing data integrity
 - Multiple users can use the system concurrently without interference
 - All automated tests pass in the CI/CD pipeline
+- Users can successfully control and observe all three system layers
+- Users can confidently revert changes when needed
 
 ## 9. Future Considerations
 - Integration with other messaging platforms
