@@ -29,9 +29,19 @@ I'm creating a personal budget tracker with the following components:
 - I want to be able to modify instructions to the AI interpreter and regenerate structured outputs for my message history (entire or partial)
 - I want to iterate multiple times until results are stable with minimal errors
 
+## Data Storage Challenges
+- I'm concerned about data storage, schema flexibility, and evolution
+- The system needs excellent observability
+- Reports and views must be easy to maintain when schema evolves
+- It should be very easy to revert changes when needed
+- I want a storage solution that is extremely flexible and minimizes struggles for users
+- The solution must be open source and deployable via Docker (no cloud-native services)
+- Users are not necessarily technical people, so the experience must be intuitive
+
 ## Reporting
 - Different kinds of reports based on the data
 - Ability to view the structured data source
+- Easy export and synchronization with Google Sheets is crucial
 
 ## Technical Stack
 - Docker
@@ -44,6 +54,7 @@ I'm creating a personal budget tracker with the following components:
 - Desktop and mobile friendly
 - Azure DevOps Pipeline for building
 - Azure hosting
+- Open source storage solutions only (no cloud-native services)
 
 ## Testing
 - Unit and integration tests to ensure project stability
@@ -63,6 +74,7 @@ I'm creating a personal budget tracker with the following components:
 - Users define and modify schemas only through natural language interaction with the AI
 - Schema definition happens via the Telegram bot (in a separate thread or forum) or through the web UI
 - All schema modifications are done by communicating to the AI in text/voice/images
+- Schema changes must be painless - users should never struggle with migrations or compatibility issues
 
 ## User-Specific AI Training
 - Each user should be able to adjust the AI to understand their specific language
@@ -80,6 +92,7 @@ I'm creating a personal budget tracker with the following components:
 - The schema should be flexible and modifiable during the system's lifetime
 - Existing data must be preserved when schema changes occur
 - Users should not lose data when making schema adjustments
+- Schema evolution should be effortless for non-technical users
 
 ## Three-Layer Architecture
 - The system has a clear separation between schema layer, AI instructions layer, and data layer
