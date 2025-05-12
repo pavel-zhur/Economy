@@ -99,3 +99,18 @@ I'm creating a personal budget tracker with the following components:
 - Users can review, approve, or reject reprocessing results
 - Users can revert changes to the schema, AI instructions, or the data itself
 - The system provides visibility into all changes and their impacts
+
+## Managing AI Interpretations
+- The system must balance evolution with stability for AI-generated interpretations
+- User-approved/committed interpretations must be protected from unintended reinterpretation
+- At the same time, some interpretations need to evolve when:
+  - The user's schema is updated
+  - AI instructions are refined
+  - The underlying AI model is improved
+- The system needs a clear mechanism to:
+  - Track which interpretations are "locked" (approved by user) vs "fluid" (still being refined)
+  - Allow partial reinterpretation of locked data during schema migrations
+  - Provide clear diffs when AI interpretations change
+  - Let users selectively apply or reject changes to previously committed data
+- All migrations and reinterpretations must be non-destructive, allowing rollback
+- The storage layer must preserve both the original AI interpretation and any subsequent versions
