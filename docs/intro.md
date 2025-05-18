@@ -116,4 +116,12 @@ I'm creating a personal budget tracker with the following components:
 - The storage layer must preserve both the original AI interpretation and any subsequent versions
 
 ## Storage & Versioning Principle
-The system MUST retain all prior interpretations and schema states, support user-approved immutability, and enable safe regeneration under new AI logic.  Whether this is achieved via Git-style branching, an event log, or record-level versioning is an implementation detail.
+The system MUST retain all prior interpretations and schema states, support user-approved immutability, and enable safe regeneration under new AI logic. Whether this is achieved via Git-style branching, an event log, or record-level versioning is an implementation detail.
+
+## Contextual Continuity During Reinterpretation
+- Previous interpretations MUST be available to the AI during any reinterpretation process
+- Reinterpreted results should maintain contextual continuity with previous interpretations when appropriate
+- This includes preserving entity names, visual attributes (colors, shapes), hierarchical decisions, and other context elements that users have become familiar with
+- The AI should attempt to maintain consistency in arbitrary decisions that previous interpretations made
+- Users should be able to control the degree of continuity (strict adherence vs. complete freedom to reinterpret)
+- This preservation of context is crucial for user orientation and comfort within the system
