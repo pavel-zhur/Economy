@@ -19,11 +19,14 @@ I'm creating a personal budget tracker with the following components:
 - I want to be able to add more details to messages (in the chat by replying to them or in the GUI)
 
 ## User Interface
-- A web frontend where I can see and manage everything
+- A dynamic web frontend that generates views based on user conversation with AI
+- Users describe their preferred "glance angles" and the AI builds appropriate UI components
+- No fixed templates - interfaces are generated on demand (tables, charts, forms, reports)
+- Multiple representations of the same data based on user's mental model and current needs
 
 ## Database & Architecture
-- A database with appropriate entities
-- Possibly event sourcing or another appropriate pattern
+- Simple, reliable data storage for structured interpretations (schema changes will be rare and mostly compatible)
+- AI layer handles the complexity of interpretation, UI generation, and context preservation
 - Freedom to reapply or add more details to messages is important, as AI will initially interpret them incorrectly
 - I want to indicate which results I like and which I don't, and apply fixes by adding details in natural language/voice
 - I want to be able to modify instructions to the AI interpreter and regenerate structured outputs for my message history (entire or partial)
@@ -112,9 +115,10 @@ I'm creating a personal budget tracker with the following components:
 - The goal is to preserve working elements while adapting to new schema/instruction changes
 - This prevents unnecessary breakage of interpretations that users had already accepted
 
-## Contextual Continuity During Reinterpretation
+## Contextual Continuity During Reinterpretation  
 - Previous interpretations are available to the AI during reinterpretation to provide context
 - The AI should maintain consistency in entity names, visual attributes, hierarchical decisions
 - Arbitrary but consistent decisions from previous interpretations should be preserved when possible
-- The system balances evolution with stability - adapting to changes without breaking what works
+- Users can talk to the AI about context preservation vs evolution preferences
+- The AI generates multiple views of the same data based on user's mental model and comfort level
 - This context-awareness is crucial for user trust and system reliability
