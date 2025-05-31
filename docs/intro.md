@@ -101,27 +101,20 @@ I'm creating a personal budget tracker with the following components:
 - The system provides visibility into all changes and their impacts
 
 ## Managing AI Interpretations
-- The system must balance evolution with stability for AI-generated interpretations
-- User-approved/committed interpretations must be protected from unintended reinterpretation
-- At the same time, some interpretations need to evolve when:
-  - The user's schema is updated
-  - AI instructions are refined
-  - The underlying AI model is improved
-- The system needs a clear mechanism to:
-  - Track which interpretations are "locked" (approved by user) vs "fluid" (still being refined)
-  - Allow partial reinterpretation of locked data during schema migrations
-  - Provide clear diffs when AI interpretations change
-  - Let users selectively apply or reject changes to previously committed data
-- All migrations and reinterpretations must be non-destructive, allowing rollback
-- The storage layer must preserve both the original AI interpretation and any subsequent versions
+- Users iterate with the AI until interpretations become good enough to leave alone
+- Users don't explicitly mark interpretations as "good" or "bad" - they simply stop fixing ones that work
+- When schema changes or AI instructions are updated, previously working interpretations may break
+- The system should be context-aware during reinterpretation to preserve what was working
 
-## Storage & Versioning Principle
-The system MUST retain all prior interpretations and schema states, support user-approved immutability, and enable safe regeneration under new AI logic. Whether this is achieved via Git-style branching, an event log, or record-level versioning is an implementation detail.
+## Smart Reinterpretation Approach
+- The AI should know what the previous interpretation looked like before making a new one
+- Previous interpretations serve as context to maintain continuity rather than starting from scratch
+- The goal is to preserve working elements while adapting to new schema/instruction changes
+- This prevents unnecessary breakage of interpretations that users had already accepted
 
 ## Contextual Continuity During Reinterpretation
-- Previous interpretations MUST be available to the AI during any reinterpretation process
-- Reinterpreted results should maintain contextual continuity with previous interpretations when appropriate
-- This includes preserving entity names, visual attributes (colors, shapes), hierarchical decisions, and other context elements that users have become familiar with
-- The AI should attempt to maintain consistency in arbitrary decisions that previous interpretations made
-- Users should be able to control the degree of continuity (strict adherence vs. complete freedom to reinterpret)
-- This preservation of context is crucial for user orientation and comfort within the system
+- Previous interpretations are available to the AI during reinterpretation to provide context
+- The AI should maintain consistency in entity names, visual attributes, hierarchical decisions
+- Arbitrary but consistent decisions from previous interpretations should be preserved when possible
+- The system balances evolution with stability - adapting to changes without breaking what works
+- This context-awareness is crucial for user trust and system reliability
