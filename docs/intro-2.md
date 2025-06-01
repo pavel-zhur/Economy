@@ -72,37 +72,35 @@ This document contains detailed clarifications gathered through Q&A sessions to 
 - No archiving or compression of old interpretations needed
 - Real-time processing and view updates expected
 
-## Dynamic AI Team Management System
-- Users manage their own virtual AI company with personalized agent team
-- Main manager agent has initial personality, routes users to specialist agents
-- Manager assigns roles based on understanding and conversation with user
-- Users can request new agent roles and system creates them after discussion
-- Specialist agents start with manager-assigned roles but can evolve
+## Conversational Roles & Contexts System
+- Users organize conversations by topics and roles rather than separate AI agents
+- Single AI personality adapts behavior, context awareness, and conversation style per thread
+- AI maintains different levels of context and specialization for different conversation topics
+- Users can request new conversation roles and AI adapts its behavior accordingly
 
-## Agent Lifecycle & Customization  
-- Users can rename agents and assign personalities ("make expense tracker more strict")
-- Agents can be "fired" and replaced if user is unsatisfied
-- Agents remember full conversation history but compact memory over time
-- Agents can suggest their own role changes based on observed user patterns
-- Role evolution through discussion - agents may argue but ultimately obey user
+## Role Customization & Evolution
+- Users can customize AI behavior for specific roles ("be more strict about expenses", "focus on investment details")
+- AI remembers conversation patterns and preferences for each role/context
+- Role definitions evolve through natural conversation rather than explicit configuration
+- AI maintains consistent personality while adapting expertise and focus per role
 
-## Agent Communication & Transparency
-- All agent-to-agent communication visible to users for full transparency
-- When agents disagree or need coordination, discussions happen openly
-- Users have access to all agent logs - simple but comprehensive logging system
-- Agent conversations and decisions are part of the user experience
+## Transparent Conversation Management
+- All AI reasoning and context switching visible to users through comprehensive logging
+- AI explains its role adaptations and context changes when switching between topics
+- Users can observe how AI maintains different conversation styles across roles
+- Full transparency in how AI manages context and applies role-specific behavior
 
 ## Telegram Thread Organization
-- Each agent typically gets own Telegram thread for specialized communication
-- Users can create additional threads and assign existing agents to them
-- Manager agent decides thread routing and agent assignment
-- Users can override and reorganize agent-thread assignments as needed
+- Different threads for different conversation topics/roles (expenses, reports, planning, etc.)
+- Users create threads and AI naturally adapts to the intended purpose
+- AI recognizes thread context and adjusts behavior accordingly
+- Users can explicitly guide AI on thread purpose and preferred interaction style
 
-## Agent Coordination Technical Details
-- Parallel processing across users (complete isolation)
-- No rate limiting on message processing or AI requests
-- Agent collaboration and handoffs managed dynamically
-- Context and learning shared within user's agent team
+## Context Management Technical Details
+- Single AI maintains separate context windows for different roles/threads
+- No background processing required - AI responds when engaged
+- Context isolation between different conversation topics
+- Real-time adaptation to user preferences within each conversational context
 
 ## Authentication & Security
 - Persistent login sessions from bot-provided links to web UI
