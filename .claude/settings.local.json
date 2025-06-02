@@ -4,7 +4,10 @@
       "Bash(mkdir:*)",
       "WebFetch(domain:blog.sshh.io)",
       "Bash(rm:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(PYTHONPATH=src python3 -m economy_a5.console.main status)",
+      "Bash(PYTHONPATH=src python3:*)"
     ],
     "deny": []
   }
