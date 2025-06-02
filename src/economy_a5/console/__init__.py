@@ -1,0 +1,1 @@
+"""Console application for the POC."""

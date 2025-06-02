@@ -1,0 +1,1 @@
+"""Economy A5 - Personal Budget Tracker with AI-driven schema evolution."""
