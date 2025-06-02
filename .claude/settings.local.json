@@ -7,7 +7,10 @@
       "Bash(pip install:*)",
       "Bash(python:*)",
       "Bash(PYTHONPATH=src python3 -m economy_a5.console.main status)",
-      "Bash(PYTHONPATH=src python3:*)"
+      "Bash(PYTHONPATH=src python3:*)",
+      "Bash(source:*)",
+      "Bash(PYTHONPATH=src python -m economy_a5.console.main status)",
+      "Bash(PYTHONPATH=src python -m economy_a5.console.main feed-mode)"
     ],
     "deny": []
   }

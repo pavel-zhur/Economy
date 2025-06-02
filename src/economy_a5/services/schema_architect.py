@@ -26,6 +26,7 @@ class SchemaArchitectService:
         self._instructions = architect_instructions
         self._conversation_history: list[dict[str, str]] = []
         self._proposed_schema_system: Optional[SchemaSystem] = None
+        self._schema_context: str = ""
     
     def start_migration_session(
         self,
@@ -48,9 +49,8 @@ class SchemaArchitectService:
             for interp in current_interpretations[:10]  # Limit to first 10
         ])
         
-        initial_prompt = f"""
-{self._instructions}
-
+        # Store schema context for all conversation turns
+        self._schema_context = f"""
 CURRENT SCHEMA:
 {json.dumps(current_schema_system.schema.schema_json, indent=2)}
 
@@ -62,11 +62,18 @@ SAMPLE MESSAGES:
 
 SAMPLE CURRENT INTERPRETATIONS:
 {sample_interpretations_text}
-
-I'm ready to help you evolve your schema. What changes would you like to make?
 """
         
-        response = self._call_openai_conversation([{"role": "user", "content": initial_prompt}])
+        # Build system prompt with schema context
+        system_prompt = f"{self._instructions}\n\n{self._schema_context}"
+        
+        initial_user_message = "I'm ready to help you evolve your schema. What changes would you like to make?"
+        
+        response = self._call_openai_conversation([
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": initial_user_message}
+        ])
+        
         self._conversation_history.append({"role": "assistant", "content": response})
         
         return response
@@ -76,8 +83,9 @@ I'm ready to help you evolve your schema. What changes would you like to make?
         
         self._conversation_history.append({"role": "user", "content": user_input})
         
-        # Build full conversation context
-        messages = [{"role": "system", "content": self._instructions}] + self._conversation_history
+        # Build full conversation context with schema information
+        system_prompt = f"{self._instructions}\n\n{self._schema_context}"
+        messages = [{"role": "system", "content": system_prompt}] + self._conversation_history
         
         response = self._call_openai_conversation(messages)
         self._conversation_history.append({"role": "assistant", "content": response})
@@ -95,6 +103,7 @@ I'm ready to help you evolve your schema. What changes would you like to make?
         """Reset the current migration session."""
         self._conversation_history = []
         self._proposed_schema_system = None
+        self._schema_context = ""
     
     def _call_openai_conversation(self, messages: list[dict[str, str]]) -> str:
         """Call OpenAI API with conversation messages."""
