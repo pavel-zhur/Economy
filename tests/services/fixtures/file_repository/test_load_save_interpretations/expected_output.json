@@ -1,0 +1,12 @@
+{
+  "loaded_interpretations_count": 2,
+  "first_interpretation": {
+    "message_id": "MSG_0",
+    "amount": 4.5,
+    "category": "food"
+  },
+  "saved_interpretation": {
+    "message_id": "MSG_2",
+    "amount": 25.0
+  }
+}

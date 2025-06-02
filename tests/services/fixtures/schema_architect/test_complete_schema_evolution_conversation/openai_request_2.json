@@ -1,0 +1,19 @@
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Schema Architect AI that helps users evolve their data schemas.\nYou understand their current data structure and help design improvements while maintaining continuity.\nAlways provide concrete examples and explain your reasoning. When you propose a schema, \ninclude it in a JSON code block for easy extraction.\n\n\nCURRENT SCHEMA:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"description\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"amount\"\n  ]\n}\n\nCURRENT COOKBOOK:\n# Basic expense tracking\nTrack amount and optional description\n\nSAMPLE MESSAGES:\nMSG_0: Coffee $4.50\nMSG_1: Lunch at subway $12\nMSG_2: Gas station $45\nMSG_3: Groceries at Safeway $67.89\n\nSAMPLE CURRENT INTERPRETATIONS:\nMSG_0: {\"amount\": 4.5, \"description\": \"Coffee\"}\nMSG_1: {\"amount\": 12.0, \"description\": \"Lunch at subway\"}\nMSG_2: {\"amount\": 45.0, \"description\": \"Gas station\"}\nMSG_3: {\"amount\": 67.89, \"description\": \"Groceries at Safeway\"}\n"
+    },
+    {
+      "role": "assistant",
+      "content": "To enhance the current schema for expense tracking, we could introduce a few improvements to better capture the context of each expense. Here are some suggestions:\n\n1. **Date**: Adding a date property would help track when each expense occurred. This is crucial for budgeting and expense analysis over time.\n\n2. **Category**: Including a category field can help classify expenses (e.g., Food, Transportation, Utilities). This can provide insights into spending habits.\n\n3. **Payment Method**: Adding a payment method field (e.g., Cash, Credit Card, Debit Card) would allow users to track how they paid for their expenses.\n\n4. **Location**: Including a location field can provide context to where the expense took place, which can be useful for understanding spending patterns.\n\nHere’s how the new schema could look:\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"description\": {\n      \"type\": \"string\"\n    },\n    \"date\": {\n      \"type\": \"string\",\n      \"format\": \"date\"\n    },\n    \"category\": {\n      \"type\": \"string\"\n    },\n    \"payment_method\": {\n      \"type\": \"string\"\n    },\n    \"location\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"amount\",\n    \"date\"\n  ]\n}\n```\n\n### Reasoning:\n- **Date**: Essential for tracking when expenses occur.\n- **Category**: Helps in analyzing spending habits by grouping similar expenses.\n- **Payment Method**: Provides insight into how expenses are handled financially.\n- **Location**: Adds contextual information, useful for understanding where money is spent.\n\n### Example Interpretations with New Schema:\nFor MSG_0: \"Coffee $4.50 on 2023-10-01 at Starbucks, paid by Credit Card\":\n```json\n{\n  \"amount\": 4.5,\n  \"description\": \"Coffee\",\n  \"date\": \"2023-10-01\",\n  \"category\": \"Food\",\n  \"payment_method\": \"Credit Card\",\n  \"location\": \"Starbucks\"\n}\n```\n\nThis evolution not only retains the existing functionality but also adds valuable context for better expense management."
+    },
+    {
+      "role": "user",
+      "content": "I want to add categories to better organize my expenses. I see I have food, transport, and groceries. Can you help me design a better schema?"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 2000
+}

@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "amount": {
+      "type": "number"
+    },
+    "category": {
+      "type": "string"
+    }
+  }
+}

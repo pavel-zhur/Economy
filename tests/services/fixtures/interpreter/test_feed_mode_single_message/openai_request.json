@@ -1,0 +1,11 @@
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "user",
+      "content": "\nParse single messages\n\nCURRENT SCHEMA:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"item\": {\n      \"type\": \"string\"\n    }\n  }\n}\n\nINTERPRETATION COOKBOOK:\n# Simple tracking\n\nMESSAGES TO PROCESS:\nMSG_0: Quick coffee $3\n\nPlease process these messages and return your response in the following JSON format:\n{\n    \"interpretations\": [\n        {\n            \"message_id\": \"string\",\n            \"structured_data\": { /* data conforming to schema */ }\n        }\n    ],\n    \"feedback\": [\n        {\n            \"message_id\": \"string\", \n            \"confidence_level\": \"high|medium|low\",\n            \"warnings\": [\"warning1\", \"warning2\"],\n            \"notes\": \"specific notes about this message\"\n        }\n    ],\n    \"overall_feedback\": \"overall thoughts and concerns\"\n}\n"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 2000
+}

@@ -1,0 +1,17 @@
+{
+  "id": "chatcmpl-Be1dpGT82M1SRZr2VUcizY5wwngEh",
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n    \"interpretations\": [\n        {\n            \"message_id\": \"MSG_MSG_0\",\n            \"structured_data\": {\n                \"transaction_type\": \"expense\",\n                \"amount\": 4.50,\n                \"category\": \"food_dining\",\n                \"merchant\": \"Starbucks\",\n                \"description\": \"Bought coffee\",\n                \"date\": \"2023-10-25\" // Assuming today's date for the sake of example\n            }\n        },\n        {\n            \"message_id\": \"MSG_MSG_1\",\n            \"structured_data\": {\n                \"transaction_type\": \"expense\",\n                \"amount\": 1200,\n                \"category\": \"housing\",\n                \"merchant\": \"Landlord\", // Assuming a generic merchant as it's not specified\n                \"description\": \"Paid monthly rent\",\n                \"date\": \"2023-10-25\" // Assuming today's date for the sake of example\n            }\n        }\n    ],\n    \"feedback\": [\n        {\n            \"message_id\": \"MSG_MSG_0\", \n            \"confidence_level\": \"high\",\n            \"warnings\": [],\n            \"notes\": \"Transaction type and category accurately identified.\"\n        },\n        {\n            \"message_id\": \"MSG_MSG_1\", \n            \"confidence_level\": \"high\",\n            \"warnings\": [],\n            \"notes\": \"Transaction type and category accurately identified.\"\n        }\n    ],\n    \"overall_feedback\": \"All transactions were interpreted accurately with high confidence.\"\n}"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "total_tokens": 796
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "interpretations": [
+    {
+      "message_id": "MSG_0",
+      "structured_data": {
+        "transaction_type": "expense",
+        "amount": 4.5,
+        "category": "food_dining",
+        "merchant": "Starbucks",
+        "account": "checking",
+        "description": "Bought coffee",
+        "date": "2023-10-31"
+      },
+      "schema_version": "1.0"
+    },
+    {
+      "message_id": "MSG_1",
+      "structured_data": {
+        "transaction_type": "expense",
+        "amount": 1200,
+        "category": "housing",
+        "merchant": null,
+        "account": "checking",
+        "description": "Paid rent for January",
+        "date": "2023-10-31"
+      },
+      "schema_version": "1.0"
+    },
+    {
+      "message_id": "MSG_2",
+      "structured_data": {
+        "transaction_type": "expense",
+        "amount": 67.89,
+        "category": "groceries",
+        "merchant": "Safeway",
+        "account": "checking",
+        "description": "Grocery shopping",
+        "date": "2023-10-31"
+      },
+      "schema_version": "1.0"
+    }
+  ],
+  "feedback": [
+    {
+      "message_id": "MSG_0",
+      "confidence_level": "high",
+      "warnings": [],
+      "overall_notes": "Transaction details are clear and match the schema."
+    },
+    {
+      "message_id": "MSG_1",
+      "confidence_level": "high",
+      "warnings": [],
+      "overall_notes": "Transaction is classified as an expense for housing."
+    },
+    {
+      "message_id": "MSG_2",
+      "confidence_level": "high",
+      "warnings": [],
+      "overall_notes": "Transaction is classified correctly as grocery shopping."
+    }
+  ],
+  "overall_feedback": "All messages were accurately interpreted and structured according to the provided schema."
+}

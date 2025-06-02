@@ -1,0 +1,17 @@
+{
+  "id": "chatcmpl-Be7QGSXcHEntJCpJyZsX6HNUibb3e",
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n    \"interpretations\": [\n        {\n            \"message_id\": \"MSG_0\",\n            \"structured_data\": {\n                \"transaction_type\": \"purchase\",\n                \"amount\": 4.5,\n                \"category\": \"food\",\n                \"subcategory\": \"beverage\",\n                \"merchant\": \"Coffee Shop\",\n                \"description\": \"Coffee\"\n            }\n        },\n        {\n            \"message_id\": \"MSG_1\",\n            \"structured_data\": {\n                \"transaction_type\": \"purchase\",\n                \"amount\": 12.0,\n                \"category\": \"food\",\n                \"subcategory\": \"meal\",\n                \"merchant\": \"Restaurant\",\n                \"description\": \"Lunch\"\n            }\n        }\n    ],\n    \"feedback\": [\n        {\n            \"message_id\": \"MSG_0\",\n            \"confidence_level\": \"high\",\n            \"warnings\": [],\n            \"notes\": \"Subcategory and merchant inferred from context.\"\n        },\n        {\n            \"message_id\": \"MSG_1\",\n            \"confidence_level\": \"high\",\n            \"warnings\": [],\n            \"notes\": \"Subcategory and merchant inferred from context.\"\n        }\n    ],\n    \"overall_feedback\": \"The migration to the new schema has been successful with clear mappings from the old interpretations. All necessary fields have been filled based on contextual understanding, and there are no significant issues.\"\n}"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "total_tokens": 719
+  }
+}

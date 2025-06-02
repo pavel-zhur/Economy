@@ -1,0 +1,43 @@
+{
+  "interpretations": [
+    {
+      "message_id": "MSG_0",
+      "structured_data": {
+        "transaction_type": "purchase",
+        "amount": 4.5,
+        "category": "food",
+        "subcategory": "beverage",
+        "merchant": "Coffee Shop",
+        "description": "Coffee"
+      },
+      "schema_version": "2.0"
+    },
+    {
+      "message_id": "MSG_1",
+      "structured_data": {
+        "transaction_type": "purchase",
+        "amount": 12.0,
+        "category": "food",
+        "subcategory": "meal",
+        "merchant": "Restaurant",
+        "description": "Lunch"
+      },
+      "schema_version": "2.0"
+    }
+  ],
+  "feedback": [
+    {
+      "message_id": "MSG_0",
+      "confidence_level": "high",
+      "warnings": [],
+      "overall_notes": "Subcategory and merchant inferred from context."
+    },
+    {
+      "message_id": "MSG_1",
+      "confidence_level": "high",
+      "warnings": [],
+      "overall_notes": "Subcategory and merchant inferred from context."
+    }
+  ],
+  "overall_feedback": "The migration to the new schema has been successful with clear mappings from the old interpretations. All necessary fields have been filled based on contextual understanding, and there are no significant issues."
+}

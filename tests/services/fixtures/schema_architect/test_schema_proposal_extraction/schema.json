@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "amount": {
+      "type": "number"
+    },
+    "note": {
+      "type": "string"
+    }
+  }
+}

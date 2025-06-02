@@ -1,0 +1,15 @@
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a helpful schema architect. Always include proposed schemas in JSON code blocks.\n\n\nCURRENT SCHEMA:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"note\": {\n      \"type\": \"string\"\n    }\n  }\n}\n\nCURRENT COOKBOOK:\n# Simple tracking\n\nSAMPLE MESSAGES:\nMSG_0: Coffee $5\n\nSAMPLE CURRENT INTERPRETATIONS:\nMSG_0: {\"amount\": 5.0, \"note\": \"Coffee\"}\n"
+    },
+    {
+      "role": "user",
+      "content": "I'm ready to help you evolve your schema. What changes would you like to make?"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 2000
+}

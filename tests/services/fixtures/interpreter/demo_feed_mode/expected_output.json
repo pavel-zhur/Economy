@@ -1,0 +1,39 @@
+{
+  "interpretations": [
+    {
+      "message_id": "MSG_0",
+      "structured_data": {
+        "transaction_type": "expense",
+        "amount": 4.5,
+        "category": "food_dining",
+        "description": "Coffee at Starbucks"
+      },
+      "schema_version": "1.0"
+    },
+    {
+      "message_id": "MSG_1",
+      "structured_data": {
+        "transaction_type": "expense",
+        "amount": 12.0,
+        "category": "food_dining",
+        "description": "Lunch at work cafeteria"
+      },
+      "schema_version": "1.0"
+    }
+  ],
+  "feedback": [
+    {
+      "message_id": "MSG_0",
+      "confidence_level": "high",
+      "warnings": [],
+      "overall_notes": "Clear transaction with amount and merchant"
+    },
+    {
+      "message_id": "MSG_1",
+      "confidence_level": "high",
+      "warnings": [],
+      "overall_notes": "Standard work lunch expense"
+    }
+  ],
+  "overall_feedback": "Successfully parsed both transactions with high confidence"
+}

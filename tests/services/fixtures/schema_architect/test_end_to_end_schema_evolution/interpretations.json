@@ -1,0 +1,50 @@
+[
+  {
+    "message_id": "MSG_0",
+    "structured_data": {
+      "expense": "Starbucks coffee",
+      "cost": 5.25
+    },
+    "schema_version": "1.0"
+  },
+  {
+    "message_id": "MSG_1",
+    "structured_data": {
+      "expense": "Whole Foods groceries",
+      "cost": 134.56
+    },
+    "schema_version": "1.0"
+  },
+  {
+    "message_id": "MSG_2",
+    "structured_data": {
+      "expense": "Shell gas",
+      "cost": 45.0
+    },
+    "schema_version": "1.0"
+  },
+  {
+    "message_id": "MSG_3",
+    "structured_data": {
+      "expense": "Amazon Prime",
+      "cost": 14.99
+    },
+    "schema_version": "1.0"
+  },
+  {
+    "message_id": "MSG_4",
+    "structured_data": {
+      "expense": "Local lunch place",
+      "cost": 12.5
+    },
+    "schema_version": "1.0"
+  },
+  {
+    "message_id": "MSG_5",
+    "structured_data": {
+      "expense": "CVS pharmacy",
+      "cost": 23.75
+    },
+    "schema_version": "1.0"
+  }
+]

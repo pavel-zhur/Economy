@@ -1,0 +1,30 @@
+{
+  "original_schema": {
+    "type": "object",
+    "properties": {
+      "amount": {
+        "type": "number"
+      },
+      "category": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "amount",
+      "category"
+    ]
+  },
+  "original_cookbook_lines": 1,
+  "updated_schema": {
+    "type": "object",
+    "properties": {
+      "test": {
+        "type": "string"
+      }
+    }
+  },
+  "updated_cookbook": "# Updated cookbook"
+}

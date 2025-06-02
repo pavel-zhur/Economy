@@ -1,0 +1,38 @@
+[
+  {
+    "message_id": "MSG_0",
+    "structured_data": {
+      "item": "groceries",
+      "cost": 67.5,
+      "date": "2024-01-15"
+    },
+    "schema_version": "1.0"
+  },
+  {
+    "message_id": "MSG_1",
+    "structured_data": {
+      "item": "coffee",
+      "cost": 4.25,
+      "date": "2024-01-15"
+    },
+    "schema_version": "1.0"
+  },
+  {
+    "message_id": "MSG_2",
+    "structured_data": {
+      "item": "gas",
+      "cost": 42.0,
+      "date": "2024-01-16"
+    },
+    "schema_version": "1.0"
+  },
+  {
+    "message_id": "MSG_3",
+    "structured_data": {
+      "item": "lunch",
+      "cost": 8.75,
+      "date": "2024-01-16"
+    },
+    "schema_version": "1.0"
+  }
+]

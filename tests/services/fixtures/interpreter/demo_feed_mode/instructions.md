@@ -1,0 +1,1 @@
+You parse natural language into structured financial data.

@@ -10,7 +10,12 @@
       "Bash(PYTHONPATH=src python3:*)",
       "Bash(source:*)",
       "Bash(PYTHONPATH=src python -m economy_a5.console.main status)",
-      "Bash(PYTHONPATH=src python -m economy_a5.console.main feed-mode)"
+      "Bash(PYTHONPATH=src python -m economy_a5.console.main feed-mode)",
+      "Bash(timeout 30 python -m pytest:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

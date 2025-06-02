@@ -1,0 +1,21 @@
+{
+  "interpretations": [
+    {
+      "message_id": "MSG_0",
+      "structured_data": {
+        "amount": 3,
+        "item": "Quick coffee"
+      },
+      "schema_version": "1.0"
+    }
+  ],
+  "feedback": [
+    {
+      "message_id": "MSG_0",
+      "confidence_level": "high",
+      "warnings": [],
+      "overall_notes": "The amount and item were successfully extracted from the message."
+    }
+  ],
+  "overall_feedback": "The message was clear and straightforward, allowing for accurate parsing and interpretation."
+}

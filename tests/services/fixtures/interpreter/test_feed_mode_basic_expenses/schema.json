@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "properties": {
+    "transaction_type": {
+      "type": "string",
+      "enum": [
+        "expense",
+        "income",
+        "transfer"
+      ]
+    },
+    "amount": {
+      "type": "number"
+    },
+    "category": {
+      "type": "string"
+    },
+    "merchant": {
+      "type": "string"
+    },
+    "account": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "transaction_type",
+    "amount",
+    "category",
+    "description"
+  ]
+}

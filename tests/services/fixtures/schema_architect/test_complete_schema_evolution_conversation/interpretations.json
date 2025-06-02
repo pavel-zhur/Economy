@@ -1,0 +1,34 @@
+[
+  {
+    "message_id": "MSG_0",
+    "structured_data": {
+      "amount": 4.5,
+      "description": "Coffee"
+    },
+    "schema_version": "1.0"
+  },
+  {
+    "message_id": "MSG_1",
+    "structured_data": {
+      "amount": 12.0,
+      "description": "Lunch at subway"
+    },
+    "schema_version": "1.0"
+  },
+  {
+    "message_id": "MSG_2",
+    "structured_data": {
+      "amount": 45.0,
+      "description": "Gas station"
+    },
+    "schema_version": "1.0"
+  },
+  {
+    "message_id": "MSG_3",
+    "structured_data": {
+      "amount": 67.89,
+      "description": "Groceries at Safeway"
+    },
+    "schema_version": "1.0"
+  }
+]

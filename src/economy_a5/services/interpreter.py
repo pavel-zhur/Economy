@@ -56,7 +56,7 @@ class InterpreterService:
     def _build_feed_mode_prompt(self, messages: list[Message], schema_system: SchemaSystem) -> str:
         """Build prompt for feed mode processing."""
         
-        messages_text = "\n".join([f"MSG_{msg.message_id}: {msg.content}" for msg in messages])
+        messages_text = "\n".join([f"{msg.message_id}: {msg.content}" for msg in messages])
         
         return f"""
 {self._instructions}
@@ -99,7 +99,7 @@ Please process these messages and return your response in the following JSON for
     ) -> str:
         """Build prompt for reprocessing mode."""
         
-        messages_text = "\n".join([f"MSG_{msg.message_id}: {msg.content}" for msg in messages])
+        messages_text = "\n".join([f"{msg.message_id}: {msg.content}" for msg in messages])
         old_interpretations_text = "\n".join([
             f"MSG_{interp.message_id}: {json.dumps(interp.structured_data)}"
             for interp in old_interpretations
@@ -174,8 +174,25 @@ the old interpretations. Return response in JSON format:
     ) -> InterpreterResult:
         """Parse the JSON response from the interpreter."""
         
+        # Extract JSON from markdown if wrapped
+        json_content = response.strip()
+        if json_content.startswith("```json"):
+            # Extract content between ```json and ```
+            lines = json_content.split("\n")
+            start_idx = 0
+            end_idx = len(lines)
+            
+            for i, line in enumerate(lines):
+                if line.strip() == "```json":
+                    start_idx = i + 1
+                elif line.strip() == "```" and i > start_idx:
+                    end_idx = i
+                    break
+            
+            json_content = "\n".join(lines[start_idx:end_idx])
+        
         try:
-            data = json.loads(response)
+            data = json.loads(json_content)
         except json.JSONDecodeError as e:
             # Fallback: create empty result with error feedback
             return InterpreterResult(

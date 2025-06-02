@@ -1,0 +1,14 @@
+{
+  "interpretations": [],
+  "feedback": [
+    {
+      "message_id": "MSG_0",
+      "confidence_level": "low",
+      "warnings": [
+        "Failed to parse AI response: Expecting value: line 1 column 1 (char 0)"
+      ],
+      "overall_notes": "JSON parsing error"
+    }
+  ],
+  "overall_feedback": "Failed to parse interpreter response: Expecting value: line 1 column 1 (char 0)"
+}

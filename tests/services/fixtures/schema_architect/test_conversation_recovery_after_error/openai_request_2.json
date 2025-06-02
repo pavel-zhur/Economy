@@ -1,0 +1,19 @@
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Schema Architect AI for expense tracking systems.\nYou help users evolve their schemas while maintaining helpful conversation even when users\nprovide unclear or problematic input. Always try to understand user intent and guide them back\nto productive schema discussions.\n\n\nCURRENT SCHEMA:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"transaction\": {\n      \"type\": \"string\"\n    },\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"category\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"transaction\",\n    \"amount\"\n  ]\n}\n\nCURRENT COOKBOOK:\n# Expense Tracking\nTrack transactions with amounts and categories\n\nSAMPLE MESSAGES:\nMSG_0: Lunch at Chipotle $8.50\nMSG_1: Target shopping $67.23\n\nSAMPLE CURRENT INTERPRETATIONS:\nMSG_0: {\"transaction\": \"Lunch at Chipotle\", \"amount\": 8.5, \"category\": \"food\"}\nMSG_1: {\"transaction\": \"Target shopping\", \"amount\": 67.23, \"category\": \"shopping\"}\n"
+    },
+    {
+      "role": "assistant",
+      "content": "Thank you for your willingness to help evolve the schema! Here are a few suggestions for enhancements that could make the schema more robust:\n\n1. **Add a Date Property**: Including a date for each transaction can help in tracking expenses over time. \n   - Example: `\"date\": { \"type\": \"string\", \"format\": \"date\" }`\n\n2. **Add a Payment Method**: Allowing users to specify how they paid (e.g., credit card, cash, etc.) could provide more insights into spending habits.\n   - Example: `\"paymentMethod\": { \"type\": \"string\" }`\n\n3. **Add a Notes Field**: A notes field could give users the ability to add additional context for each transaction.\n   - Example: `\"notes\": { \"type\": \"string\" }`\n\n4. **Enhance Category Options**: Instead of a simple string for category, consider using an enum to limit the categories to predefined options, which can help with data consistency.\n   - Example: `\"category\": { \"type\": \"string\", \"enum\": [\"food\", \"shopping\", \"transport\", \"utilities\", \"entertainment\"] }`\n\n5. **Add a Currency Field**: If users are tracking expenses in different currencies, this field would be helpful.\n   - Example: `\"currency\": { \"type\": \"string\", \"default\": \"USD\" }`\n\nWould you like to discuss any of these suggestions further or explore other potential changes?"
+    },
+    {
+      "role": "user",
+      "content": "I'd like to add more detailed categorization to my expense tracking. Can you suggest some improvements?"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 2000
+}

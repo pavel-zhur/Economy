@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "expense": {
+      "type": "string"
+    },
+    "cost": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "expense",
+    "cost"
+  ]
+}

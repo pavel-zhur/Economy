@@ -1,0 +1,22 @@
+{
+  "interpretations": [],
+  "feedback": [
+    {
+      "message_id": "MSG_0",
+      "confidence_level": "low",
+      "warnings": [
+        "Failed to parse AI response: Expecting ',' delimiter: line 11 column 38 (char 357)"
+      ],
+      "overall_notes": "JSON parsing error"
+    },
+    {
+      "message_id": "MSG_1",
+      "confidence_level": "low",
+      "warnings": [
+        "Failed to parse AI response: Expecting ',' delimiter: line 11 column 38 (char 357)"
+      ],
+      "overall_notes": "JSON parsing error"
+    }
+  ],
+  "overall_feedback": "Failed to parse interpreter response: Expecting ',' delimiter: line 11 column 38 (char 357)"
+}

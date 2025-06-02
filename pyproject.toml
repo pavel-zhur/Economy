@@ -53,3 +53,8 @@ ignore = ["ANN101", "ANN102"]  # Skip self and cls annotations
 
 [project.scripts]
 economy-poc = "economy_a5.console.main:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-v --tb=short"

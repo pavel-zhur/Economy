@@ -40,12 +40,12 @@ class SchemaArchitectService:
         self._proposed_schema_system = None
         
         sample_messages_text = "\n".join([
-            f"MSG_{msg.message_id}: {msg.content}" 
+            f"{msg.message_id}: {msg.content}" 
             for msg in sample_messages[:10]  # Limit to first 10 for context
         ])
         
         sample_interpretations_text = "\n".join([
-            f"MSG_{interp.message_id}: {json.dumps(interp.structured_data)}"
+            f"{interp.message_id}: {json.dumps(interp.structured_data)}"
             for interp in current_interpretations[:10]  # Limit to first 10
         ])
         

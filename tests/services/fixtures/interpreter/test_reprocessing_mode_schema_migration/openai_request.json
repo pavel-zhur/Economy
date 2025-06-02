@@ -1,0 +1,11 @@
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "user",
+      "content": "\nYou are reprocessing messages with a new schema.\nMaintain continuity with previous interpretations while adapting to new structure.\n\nMIGRATION CONTEXT:\nYou are reprocessing existing messages with a new schema. Maintain contextual continuity \nwhere possible (entity names, consistent decisions) to keep the user oriented.\n\nOLD SCHEMA:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"category\": {\n      \"type\": \"string\"\n    }\n  }\n}\n\nOLD COOKBOOK:\n# Old cookbook - simple categories\n\nOLD INTERPRETATIONS:\nMSG_MSG_0: {\"amount\": 4.5, \"category\": \"food\"}\nMSG_MSG_1: {\"amount\": 12.0, \"category\": \"food\"}\n\nNEW SCHEMA:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"transaction_type\": {\n      \"type\": \"string\"\n    },\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"category\": {\n      \"type\": \"string\"\n    },\n    \"subcategory\": {\n      \"type\": \"string\"\n    },\n    \"merchant\": {\n      \"type\": \"string\"\n    },\n    \"description\": {\n      \"type\": \"string\"\n    }\n  }\n}\n\nNEW COOKBOOK:\n# New cookbook - detailed categorization with subcategories\n\nMESSAGES TO REPROCESS:\nMSG_0: Coffee $4.50\nMSG_1: Lunch $12.00\n\nPlease reprocess these messages with the new schema while maintaining continuity with \nthe old interpretations. Return response in JSON format:\n{\n    \"interpretations\": [\n        {\n            \"message_id\": \"string\",\n            \"structured_data\": { /* data conforming to NEW schema */ }\n        }\n    ],\n    \"feedback\": [\n        {\n            \"message_id\": \"string\",\n            \"confidence_level\": \"high|medium|low\", \n            \"warnings\": [\"warning1\", \"warning2\"],\n            \"notes\": \"migration-specific notes\"\n        }\n    ],\n    \"overall_feedback\": \"thoughts on the migration and any issues\"\n}\n"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 2000
+}

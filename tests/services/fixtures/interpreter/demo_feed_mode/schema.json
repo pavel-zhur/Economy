@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "properties": {
+    "transaction_type": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "category": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  }
+}
