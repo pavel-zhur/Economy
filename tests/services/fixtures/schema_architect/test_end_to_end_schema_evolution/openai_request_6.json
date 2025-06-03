@@ -36,6 +36,23 @@
     {
       "role": "user",
       "content": "Perfect! Can you submit the first proposal based on our discussion?"
+    },
+    {
+      "role": "assistant",
+      "content": "[Function call: propose_schema]"
+    },
+    {
+      "role": "function",
+      "name": "propose_schema",
+      "content": "Schema proposal version 2.0 created successfully and is ready for preview."
+    },
+    {
+      "role": "assistant",
+      "content": "I've proposed a new schema (version 2.0). Schema proposal version 2.0 created successfully and is ready for preview."
+    },
+    {
+      "role": "user",
+      "content": "That looks good, but can you create a more advanced version that also includes payment methods? Submit a second proposal."
     }
   ],
   "tools": [

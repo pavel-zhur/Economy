@@ -7,7 +7,7 @@
     },
     {
       "role": "assistant",
-      "content": "Thank you for your willingness to help evolve the schema! Here are a few suggestions for enhancements that could make the schema more robust:\n\n1. **Add a Date Property**: Including a date for each transaction can help in tracking expenses over time. \n   - Example: `\"date\": { \"type\": \"string\", \"format\": \"date\" }`\n\n2. **Add a Payment Method**: Allowing users to specify how they paid (e.g., credit card, cash, etc.) could provide more insights into spending habits.\n   - Example: `\"paymentMethod\": { \"type\": \"string\" }`\n\n3. **Add a Notes Field**: A notes field could give users the ability to add additional context for each transaction.\n   - Example: `\"notes\": { \"type\": \"string\" }`\n\n4. **Enhance Category Options**: Instead of a simple string for category, consider using an enum to limit the categories to predefined options, which can help with data consistency.\n   - Example: `\"category\": { \"type\": \"string\", \"enum\": [\"food\", \"shopping\", \"transport\", \"utilities\", \"entertainment\"] }`\n\n5. **Add a Currency Field**: If users are tracking expenses in different currencies, this field would be helpful.\n   - Example: `\"currency\": { \"type\": \"string\", \"default\": \"USD\" }`\n\nWould you like to discuss any of these suggestions further or explore other potential changes?"
+      "content": "Absolutely! Let's take a closer look at your current schema and consider some enhancements.\n\nYour current schema includes:\n- **transaction**: A description of the expense.\n- **amount**: The cost of the transaction.\n- **category**: The type of expense (though it's not marked as required).\n\nHere are a few suggestions for potential enhancements:\n\n1. **Add Required Fields**: If categorizing expenses is important for your tracking, consider making the `category` field required. This ensures every transaction is classified.\n\n2. **Date Field**: Adding a date field can help you track when each transaction occurred, making it easier to analyze spending over time.\n\n3. **Payment Method**: Including a payment method (e.g., cash, credit card, PayPal) can provide more insights into your spending habits.\n\n4. **Notes or Description Field**: A field for additional notes can help provide context for transactions, especially for larger or unusual expenses.\n\n5. **Currency Field**: If you plan to track expenses in multiple currencies, adding a currency field could be useful.\n\n6. **Recurring Transactions**: Consider adding support for indicating whether a transaction is recurring, which could help in budgeting.\n\nWould you like to explore any of these enhancements further or propose changes to the schema?"
     },
     {
       "role": "user",
@@ -15,11 +15,37 @@
     },
     {
       "role": "assistant",
-      "content": "Absolutely! More detailed categorization can enhance your expense tracking by providing clearer insights into spending habits. Here are a few suggestions for improvements:\n\n1. **Subcategories**: Introduce a subcategory system that allows for more granular classification of expenses. For example:\n   - `\"category\": { \"type\": \"string\", \"enum\": [\"food\", \"shopping\", \"transport\", \"utilities\", \"entertainment\"] }`\n   - `\"subcategory\": { \"type\": \"string\" }` (where users can specify details like \"groceries\" under \"food\" or \"clothing\" under \"shopping\")\n\n2. **Hierarchical Categories**: Consider a structure that allows for parent-child relationships in categories. This could be implemented using an array of categories:\n   - Example: `\"categories\": [{ \"name\": \"food\", \"subcategories\": [\"groceries\", \"dining out\", \"snacks\"] }, { \"name\": \"shopping\", \"subcategories\": [\"clothing\", \"electronics\", \"household\"] }]`\n\n3. **Custom Categories**: Allow users to create custom categories or subcategories, giving them flexibility in how they choose to classify their expenses. You might include:\n   - Example: `\"customCategories\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } }`\n\n4. **Recurring Expense Flag**: Adding a flag to indicate if an expense is recurring can help users identify regular payments like subscriptions.\n   - Example: `\"isRecurring\": { \"type\": \"boolean\" }`\n\n5. **Tags**: Allow users to add tags to transactions for additional categorization. Tags can be versatile and used for various purposes.\n   - Example: `\"tags\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } }`\n\nWould you like to incorporate any of these suggestions into your schema? Or perhaps focus on a specific aspect of categorization?"
+      "content": "Certainly! Improving categorization can help you analyze your expenses more effectively. Here are some suggestions for enhancing the categorization in your schema:\n\n1. **Subcategories**: Instead of a single category, you could implement a hierarchical structure. For example, a primary category like \"Food\" could have subcategories like \"Groceries,\" \"Dining Out,\" and \"Snacks.\" This allows for more granular tracking.\n\n2. **Predefined Categories**: Consider adding a set of predefined categories to maintain consistency. This could include common categories such as:\n   - Food\n   - Transportation\n   - Housing\n   - Entertainment\n   - Health\n   - Utilities\n   - Shopping\n\n3. **Custom Categories**: Allow users to create their own custom categories and subcategories. This flexibility can help users tailor the system to their specific needs.\n\n4. **Category Tags**: Instead of a single category, you could allow multiple tags for each transaction. For example, a dinner could be tagged as both \"Food\" and \"Entertainment.\" \n\n5. **Category Budgets**: If you want to introduce budgeting features, consider adding a way to define budget limits per category. This could help users manage their spending more effectively.\n\n6. **Category Descriptions**: Adding descriptions for each category/subcategory can provide clarity, especially for users who are new to expense tracking.\n\nWould you like to implement any of these ideas into your schema? If so, I can help you draft the updated schema and cookbook content!"
     },
     {
       "role": "user",
       "content": "zzz this is confusing I don't understand schemas at all maybe I should just give up and use excel instead???"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "propose_schema",
+        "description": "Submit a concrete schema proposal with both JSON schema object and cookbook content. BOTH parameters are required.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "schema_json": {
+              "type": "object",
+              "description": "The complete JSON schema definition as an object (not string). Must include 'type', 'properties', etc."
+            },
+            "cookbook_content": {
+              "type": "string",
+              "description": "The interpretation cookbook content in markdown format with examples"
+            }
+          },
+          "required": [
+            "schema_json",
+            "cookbook_content"
+          ]
+        }
+      }
     }
   ],
   "temperature": 0.7,

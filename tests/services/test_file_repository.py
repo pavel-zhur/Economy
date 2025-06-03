@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-import pytest
+from tests.utils.fixture_manager import FixtureManager
 
 from economy_a5.services.file_repository import FileRepository
 from economy_a5.models.core import (
@@ -19,7 +19,7 @@ from economy_a5.models.core import (
 class TestFileRepository:
     """Integration tests for FileRepository file operations."""
     
-    def test_load_save_messages(self, temp_data_dir, fixture_manager):
+    def test_load_save_messages(self, temp_data_dir: Path, fixture_manager: FixtureManager) -> None:
         """Test loading and saving messages."""
         # Arrange
         file_config = FileConfig(
@@ -64,7 +64,7 @@ class TestFileRepository:
         }
         fixture_manager.validate_output("expected_output.json", result_data)
     
-    def test_load_save_schema_system(self, temp_data_dir, fixture_manager):
+    def test_load_save_schema_system(self, temp_data_dir: Path, fixture_manager: FixtureManager) -> None:
         """Test loading and saving schema system."""
         # Arrange
         file_config = FileConfig(
@@ -141,7 +141,7 @@ class TestFileRepository:
         }
         fixture_manager.validate_output("expected_output.json", result_data)
     
-    def test_load_save_interpretations(self, temp_data_dir, fixture_manager):
+    def test_load_save_interpretations(self, temp_data_dir: Path, fixture_manager: FixtureManager) -> None:
         """Test loading and saving interpretations."""
         # Arrange
         file_config = FileConfig(
@@ -215,7 +215,7 @@ class TestFileRepository:
         }
         fixture_manager.validate_output("expected_output.json", result_data)
     
-    def test_load_instructions(self, temp_data_dir, fixture_manager):
+    def test_load_instructions(self, temp_data_dir: Path, fixture_manager: FixtureManager) -> None:
         """Test loading AI instruction files."""
         # Arrange
         file_config = FileConfig(
@@ -285,7 +285,7 @@ You interpret natural language messages into structured data.
         }
         fixture_manager.validate_output("expected_output.json", result_data)
     
-    def test_empty_files_handling(self, temp_data_dir, fixture_manager):
+    def test_empty_files_handling(self, temp_data_dir: Path, fixture_manager: FixtureManager) -> None:
         """Test handling of empty or missing files."""
         # Arrange
         file_config = FileConfig(

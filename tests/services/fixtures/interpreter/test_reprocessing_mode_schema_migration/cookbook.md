@@ -1,1 +1,0 @@
-# New cookbook - detailed categorization with subcategories

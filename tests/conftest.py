@@ -9,7 +9,7 @@ from tests.utils.test_config import test_config
 
 
 @pytest.fixture
-def openai_mock(request):
+def openai_mock(request: pytest.FixtureRequest) -> OpenAIMock:
     """Provide OpenAI mock for tests."""
     # Extract service and test names from test location
     test_file = Path(request.fspath)
@@ -20,7 +20,7 @@ def openai_mock(request):
 
 
 @pytest.fixture
-def fixture_manager(request):
+def fixture_manager(request: pytest.FixtureRequest) -> FixtureManager:
     """Provide fixture manager for tests."""
     # Extract service and test names from test location
     test_file = Path(request.fspath)
@@ -31,7 +31,7 @@ def fixture_manager(request):
 
 
 @pytest.fixture
-def temp_data_dir(tmp_path):
+def temp_data_dir(tmp_path: Path) -> Path:
     """Provide temporary data directory for tests."""
     data_dir = tmp_path / "test_data"
     data_dir.mkdir()
@@ -48,7 +48,7 @@ def temp_data_dir(tmp_path):
 
 
 @pytest.fixture(autouse=True)
-def setup_test_environment():
+def setup_test_environment() -> None:
     """Set up test environment for each test."""
     # Ensure test configuration is loaded
     assert test_config is not None

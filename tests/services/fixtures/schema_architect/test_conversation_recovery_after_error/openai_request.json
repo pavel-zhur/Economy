@@ -7,7 +7,33 @@
     },
     {
       "role": "user",
-      "content": "I'm ready to help you evolve your schema. What changes would you like to make?"
+      "content": "Hi! I'm looking at my current schema and thinking about making some improvements. Can you help me understand what might be enhanced?"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "propose_schema",
+        "description": "Submit a concrete schema proposal with both JSON schema object and cookbook content. BOTH parameters are required.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "schema_json": {
+              "type": "object",
+              "description": "The complete JSON schema definition as an object (not string). Must include 'type', 'properties', etc."
+            },
+            "cookbook_content": {
+              "type": "string",
+              "description": "The interpretation cookbook content in markdown format with examples"
+            }
+          },
+          "required": [
+            "schema_json",
+            "cookbook_content"
+          ]
+        }
+      }
     }
   ],
   "temperature": 0.7,

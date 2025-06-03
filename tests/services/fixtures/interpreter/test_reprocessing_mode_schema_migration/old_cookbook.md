@@ -1,1 +1,0 @@
-# Old cookbook - simple categories

@@ -1,7 +1,7 @@
 """Schema architect service implementation."""
 
 import json
-from typing import Optional
+from typing import Any, Optional
 
 from openai import OpenAI
 
@@ -11,6 +11,7 @@ from ..models.core import (
     Schema,
     Cookbook,
     SchemaSystem,
+    SchemaProposal,
     Interpretation,
 )
 
@@ -25,19 +26,24 @@ class SchemaArchitectService:
         self._max_tokens = openai_config.max_tokens
         self._instructions = architect_instructions
         self._conversation_history: list[dict[str, str]] = []
-        self._proposed_schema_system: Optional[SchemaSystem] = None
+        self._current_proposal: Optional[SchemaProposal] = None
         self._schema_context: str = ""
+        self._base_version: str = "1.0"
+        self._proposal_counter: int = 0
     
     def start_migration_session(
         self,
         current_schema_system: SchemaSystem,
         sample_messages: list[Message],
         current_interpretations: list[Interpretation],
+        user_message: str,
     ) -> str:
         """Start a migration session and return initial response."""
         
         self._conversation_history = []
-        self._proposed_schema_system = None
+        self._current_proposal = None
+        self._base_version = current_schema_system.schema.version
+        self._proposal_counter = 0
         
         sample_messages_text = "\n".join([
             f"{msg.message_id}: {msg.content}" 
@@ -67,11 +73,9 @@ SAMPLE CURRENT INTERPRETATIONS:
         # Build system prompt with schema context
         system_prompt = f"{self._instructions}\n\n{self._schema_context}"
         
-        initial_user_message = "I'm ready to help you evolve your schema. What changes would you like to make?"
-        
-        response = self._call_openai_conversation([
+        response = self._call_openai_conversation_with_tools([
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": initial_user_message}
+            {"role": "user", "content": user_message}
         ])
         
         self._conversation_history.append({"role": "assistant", "content": response})
@@ -87,91 +91,130 @@ SAMPLE CURRENT INTERPRETATIONS:
         system_prompt = f"{self._instructions}\n\n{self._schema_context}"
         messages = [{"role": "system", "content": system_prompt}] + self._conversation_history
         
-        response = self._call_openai_conversation(messages)
+        response = self._call_openai_conversation_with_tools(messages)
         self._conversation_history.append({"role": "assistant", "content": response})
-        
-        # Try to extract proposed schema from response if present
-        self._try_extract_proposed_schema(response)
         
         return response
     
-    def get_proposed_schema_system(self) -> Optional[SchemaSystem]:
-        """Get the currently proposed schema system, if any."""
-        return self._proposed_schema_system
+    def get_current_proposal(self) -> Optional[SchemaProposal]:
+        """Get the current schema proposal, if any."""
+        return self._current_proposal
     
     def reset_session(self) -> None:
         """Reset the current migration session."""
         self._conversation_history = []
-        self._proposed_schema_system = None
+        self._current_proposal = None
         self._schema_context = ""
+        self._proposal_counter = 0
     
-    def _call_openai_conversation(self, messages: list[dict[str, str]]) -> str:
-        """Call OpenAI API with conversation messages."""
+    
+    def _call_openai_conversation_with_tools(self, messages: list[dict[str, str]]) -> str:
+        """Call OpenAI API with conversation messages and function tools."""
+        
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "propose_schema",
+                    "description": "Submit a concrete schema proposal with both JSON schema object and cookbook content. BOTH parameters are required.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "schema_json": {
+                                "type": "object",
+                                "description": "The complete JSON schema definition as an object (not string). Must include 'type', 'properties', etc."
+                            },
+                            "cookbook_content": {
+                                "type": "string",
+                                "description": "The interpretation cookbook content in markdown format with examples"
+                            }
+                        },
+                        "required": ["schema_json", "cookbook_content"]
+                    }
+                }
+            }
+        ]
         
         response = self._client.chat.completions.create(
             model=self._model,
             messages=messages,
+            tools=tools,
             temperature=self._temperature,
             max_tokens=self._max_tokens,
         )
         
-        if not response.choices or not response.choices[0].message.content:
+        if not response.choices:
             raise RuntimeError("No response from OpenAI")
         
-        return response.choices[0].message.content
-    
-    def _try_extract_proposed_schema(self, response: str) -> None:
-        """Try to extract a proposed schema from the response."""
+        choice = response.choices[0]
         
-        # Look for JSON blocks in the response that might contain schema
-        lines = response.split("\n")
-        json_lines: list[str] = []
-        in_json_block = False
-        
-        for line in lines:
-            if line.strip().startswith("```json") or line.strip().startswith("```"):
-                in_json_block = True
-                continue
-            elif line.strip() == "```" and in_json_block:
-                in_json_block = False
-                # Try to parse accumulated JSON
-                if json_lines:
+        # Handle function calls
+        if choice.message.tool_calls:
+            for tool_call in choice.message.tool_calls:
+                if tool_call.function.name == "propose_schema":
                     try:
-                        json_text = "\n".join(json_lines)
-                        data = json.loads(json_text)
-                        
-                        # Check if this looks like a schema
-                        if isinstance(data, dict) and ("type" in data or "properties" in data):
-                            # Assume we need to extract cookbook from the response text
-                            cookbook_content = self._extract_cookbook_from_response(response)
-                            
-                            schema = Schema(schema_json=data, version="2.0")
-                            cookbook = Cookbook(content=cookbook_content, version="2.0") 
-                            self._proposed_schema_system = SchemaSystem(schema=schema, cookbook=cookbook)
-                            return
-                    except json.JSONDecodeError:
-                        pass
-                    finally:
-                        json_lines = []
-            elif in_json_block:
-                json_lines.append(line)
+                        args = json.loads(tool_call.function.arguments)
+                        if "schema_json" not in args:
+                            result = "Error: Missing 'schema_json' parameter. You must provide both schema_json (the JSON schema object) and cookbook_content (markdown text) in the same function call."
+                        elif "cookbook_content" not in args:
+                            result = "Error: Missing 'cookbook_content' parameter. You must provide both schema_json (the JSON schema object) and cookbook_content (markdown text) in the same function call."
+                        else:
+                            result = self._handle_propose_schema(args["schema_json"], args["cookbook_content"])
+                    except json.JSONDecodeError as e:
+                        result = f"JSON parsing error: {e}. Please ensure function arguments are valid JSON."
+                    
+                    # Add function call and result to conversation history
+                    self._conversation_history.append({
+                        "role": "assistant", 
+                        "content": f"[Function call: propose_schema]"
+                    })
+                    self._conversation_history.append({
+                        "role": "function",
+                        "name": "propose_schema",
+                        "content": result
+                    })
+                    
+                    return f"I've proposed a new schema (version {self._current_proposal.version if self._current_proposal else 'unknown'}). {result}"
+        
+        if not choice.message.content:
+            raise RuntimeError("No content in OpenAI response")
+        
+        return choice.message.content
     
-    def _extract_cookbook_from_response(self, response: str) -> str:
-        """Extract cookbook content from response."""
+    def _handle_propose_schema(self, schema_json: dict[str, Any], cookbook_content: str) -> str:
+        """Handle the propose_schema function call."""
         
-        # Simple heuristic: look for markdown sections that might be cookbook content
-        lines = response.split("\n")
-        cookbook_lines: list[str] = []
+        # Validate inputs
+        validation_errors = []
         
-        # Look for sections with interpretation guidance
-        for i, line in enumerate(lines):
-            if any(keyword in line.lower() for keyword in ["cookbook", "interpretation", "guide", "instructions"]):
-                # Take the next several lines as potential cookbook content
-                for j in range(i + 1, min(i + 20, len(lines))):
-                    if lines[j].strip() and not lines[j].startswith("```"):
-                        cookbook_lines.append(lines[j])
-                    elif lines[j].startswith("```") or not lines[j].strip():
-                        break
-                break
+        if not isinstance(schema_json, dict):
+            validation_errors.append("Schema must be a valid JSON object")
+        elif not schema_json.get("type") and not schema_json.get("properties"):
+            validation_errors.append("Schema must have 'type' or 'properties' field")
         
-        return "\n".join(cookbook_lines) if cookbook_lines else "# Interpretation Guide\n\nGenerated from conversation."
+        if not cookbook_content or not cookbook_content.strip():
+            validation_errors.append("Cookbook content cannot be empty")
+        elif len(cookbook_content.strip()) < 10:
+            validation_errors.append("Cookbook content is too short")
+        
+        # Generate new version
+        self._proposal_counter += 1
+        new_version = f"{int(float(self._base_version)) + self._proposal_counter}.0"
+        
+        # Create proposal
+        schema = Schema(schema_json=schema_json, version=new_version)
+        cookbook = Cookbook(content=cookbook_content, version=new_version)
+        schema_system = SchemaSystem(schema=schema, cookbook=cookbook)
+        
+        self._current_proposal = SchemaProposal(
+            schema_system=schema_system,
+            version=new_version,
+            validation_errors=validation_errors,
+            is_valid=len(validation_errors) == 0
+        )
+        
+        if validation_errors:
+            return f"Schema proposal validation failed: {'; '.join(validation_errors)}"
+        else:
+            return f"Schema proposal version {new_version} created successfully and is ready for preview."
+    

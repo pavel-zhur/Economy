@@ -1,7 +1,6 @@
 """AI interpreter service implementation."""
 
 import json
-from typing import Any
 
 from openai import OpenAI
 

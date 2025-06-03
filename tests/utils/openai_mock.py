@@ -1,13 +1,13 @@
 """OpenAI client mock for dual-mode testing."""
 
-import json
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 from unittest.mock import MagicMock
 
 from openai import OpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
+from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall
+from openai.types.chat.chat_completion_message_tool_call import Function as ToolCallFunction
 
 from economy_a5.config.settings import OpenAIConfig
 from tests.utils.test_config import test_config
@@ -167,6 +167,14 @@ class CompletionsMock:
                     f"current={current.get(field)}, recorded={recorded.get(field)}"
                 )
         
+        # Compare tools presence (function calling)
+        current_has_tools = "tools" in current and current["tools"] is not None
+        recorded_has_tools = "tools" in recorded and recorded["tools"] is not None
+        if current_has_tools != recorded_has_tools:
+            raise AssertionError(
+                f"Tools usage mismatch: current has tools={current_has_tools}, recorded has tools={recorded_has_tools}"
+            )
+        
         # Compare message count
         current_msgs = current.get("messages", [])
         recorded_msgs = recorded.get("messages", [])
@@ -209,20 +217,37 @@ class CompletionsMock:
     
     def _serialize_response(self, response: ChatCompletion) -> Dict[str, Any]:
         """Serialize ChatCompletion to JSON-serializable dict."""
+        choices_data = []
+        for choice in response.choices:
+            choice_data = {
+                "index": choice.index,
+                "message": {
+                    "role": choice.message.role,
+                    "content": choice.message.content
+                },
+                "finish_reason": choice.finish_reason
+            }
+            
+            # Handle tool calls if present
+            if hasattr(choice.message, 'tool_calls') and choice.message.tool_calls:
+                choice_data["message"]["tool_calls"] = [
+                    {
+                        "id": tool_call.id,
+                        "type": tool_call.type,
+                        "function": {
+                            "name": tool_call.function.name,
+                            "arguments": tool_call.function.arguments
+                        }
+                    }
+                    for tool_call in choice.message.tool_calls
+                ]
+            
+            choices_data.append(choice_data)
+        
         return {
             "id": response.id,
             "model": response.model,
-            "choices": [
-                {
-                    "index": choice.index,
-                    "message": {
-                        "role": choice.message.role,
-                        "content": choice.message.content
-                    },
-                    "finish_reason": choice.finish_reason
-                }
-                for choice in response.choices
-            ],
+            "choices": choices_data,
             "usage": {
                 "total_tokens": getattr(response.usage, "total_tokens", 0) if response.usage else 0
             }
@@ -232,10 +257,30 @@ class CompletionsMock:
         """Deserialize dict back to ChatCompletion."""
         choices = []
         for choice_data in data["choices"]:
+            message_data = choice_data["message"]
+            
+            # Handle tool calls if present
+            tool_calls = None
+            if "tool_calls" in message_data:
+                tool_calls = []
+                for tc_data in message_data["tool_calls"]:
+                    function = ToolCallFunction(
+                        name=tc_data["function"]["name"],
+                        arguments=tc_data["function"]["arguments"]
+                    )
+                    tool_call = ChatCompletionMessageToolCall(
+                        id=tc_data["id"],
+                        type=tc_data["type"],
+                        function=function
+                    )
+                    tool_calls.append(tool_call)
+            
             message = ChatCompletionMessage(
-                role=choice_data["message"]["role"],
-                content=choice_data["message"]["content"]
+                role=message_data["role"],
+                content=message_data["content"],
+                tool_calls=tool_calls
             )
+            
             choice = Choice(
                 index=choice_data["index"],
                 message=message,

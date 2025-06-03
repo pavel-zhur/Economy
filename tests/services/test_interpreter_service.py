@@ -1,10 +1,7 @@
 """Integration tests for InterpreterService."""
 
-import json
-from pathlib import Path
-from unittest.mock import patch
-
-import pytest
+from tests.utils.fixture_manager import FixtureManager
+from tests.utils.openai_mock import OpenAIMock
 
 from economy_a5.services.interpreter import InterpreterService
 from economy_a5.models.core import (
@@ -13,14 +10,13 @@ from economy_a5.models.core import (
     Cookbook,
     SchemaSystem,
     Interpretation,
-    Feedback,
 )
 
 
 class TestInterpreterService:
     """Integration tests for InterpreterService."""
     
-    def test_feed_mode_basic_expenses(self, openai_mock, fixture_manager):
+    def test_feed_mode_basic_expenses(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test feed mode processing with basic expense messages."""
         # Arrange - Set up test data
         messages = [
@@ -97,11 +93,6 @@ Be consistent and accurate in your interpretations."""
             assert feedback.confidence_level in ["high", "medium", "low"]
             assert isinstance(feedback.warnings, list)
             
-        # Save test fixtures for validation
-        fixture_manager.save_messages(messages)
-        fixture_manager.save_schema_system(schema_system)
-        fixture_manager.save_instructions(instructions)
-        
         # Convert result to dict for fixture validation
         result_data = {
             "interpretations": [
@@ -126,7 +117,7 @@ Be consistent and accurate in your interpretations."""
         
         fixture_manager.validate_output("expected_output.json", result_data)
     
-    def test_feed_mode_empty_messages(self, openai_mock, fixture_manager):
+    def test_feed_mode_empty_messages(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test feed mode with empty message list."""
         # Arrange
         messages = []
@@ -155,7 +146,7 @@ Be consistent and accurate in your interpretations."""
         }
         fixture_manager.validate_output("expected_output.json", result_data)
     
-    def test_reprocessing_mode_schema_migration(self, openai_mock, fixture_manager):
+    def test_reprocessing_mode_schema_migration(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test reprocessing mode with schema migration."""
         # Arrange - Original data
         messages = [
@@ -229,16 +220,6 @@ Maintain continuity with previous interpretations while adapting to new structur
             assert interpretation.schema_version == "2.0"
             assert "amount" in interpretation.structured_data  # Continuity
             
-        # Save fixtures for this test
-        fixture_manager.save_messages(messages)
-        fixture_manager.save_schema_system(new_schema_system)
-        fixture_manager.save_interpretations(old_interpretations)
-        fixture_manager.save_instructions(instructions)
-        
-        # Also save old schema for migration context
-        fixture_manager.save_json("old_schema.json", old_schema_system.schema.schema_json)
-        fixture_manager.save_text("old_cookbook.md", old_schema_system.cookbook.content)
-        
         result_data = {
             "interpretations": [
                 {
@@ -262,7 +243,7 @@ Maintain continuity with previous interpretations while adapting to new structur
         
         fixture_manager.validate_output("expected_output.json", result_data)
     
-    def test_invalid_json_response_handling(self, openai_mock, fixture_manager):
+    def test_invalid_json_response_handling(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test handling of invalid JSON response from AI."""
         # Arrange
         messages = [Message(content="Test message", message_id="MSG_0")]
@@ -305,7 +286,7 @@ Maintain continuity with previous interpretations while adapting to new structur
         }
         fixture_manager.validate_output("expected_output.json", result_data)
     
-    def test_feed_mode_single_message(self, openai_mock, fixture_manager):
+    def test_feed_mode_single_message(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test feed mode with single message - boundary condition."""
         # Arrange
         messages = [Message(content="Quick coffee $3", message_id="MSG_0")]
@@ -332,11 +313,6 @@ Maintain continuity with previous interpretations while adapting to new structur
         assert len(result.feedback) == 1
         assert result.interpretations[0].message_id == "MSG_0"
         assert result.feedback[0].message_id == "MSG_0"
-        
-        # Save fixtures
-        fixture_manager.save_messages(messages)
-        fixture_manager.save_schema_system(schema_system)
-        fixture_manager.save_instructions(instructions)
         
         result_data = {
             "interpretations": [

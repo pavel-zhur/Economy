@@ -1,9 +1,33 @@
 {
-  "user_request": "Can you propose a better schema that includes categories and merchant tracking? Please provide the schema in a JSON code block.",
-  "ai_response": "Certainly! To incorporate categories and merchant tracking into the schema, we can add the following properties:\n\n1. **category**: To classify the type of transaction (e.g., food, entertainment, utilities).\n2. **merchant**: To specify the merchant or vendor associated with the transaction.\n3. **transactionId**: To uniquely identify each transaction.\n4. **date**: To record the date of the transaction.\n5. **currency**: To specify the currency used in the transaction.\n\nHere’s the proposed schema in JSON format:\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"note\": {\n      \"type\": \"string\"\n    },\n    \"date\": {\n      \"type\": \"string\",\n      \"format\": \"date\"\n    },\n    \"category\": {\n      \"type\": \"string\"\n    },\n    \"merchant\": {\n      \"type\": \"string\"\n    },\n    \"transactionId\": {\n      \"type\": \"string\"\n    },\n    \"currency\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\"amount\", \"note\", \"date\", \"category\", \"merchant\", \"transactionId\"]\n}\n```\n\n### Explanation of the Proposed Schema:\n- **amount**: The monetary value of the transaction.\n- **note**: A brief description of the transaction.\n- **date**: The date when the transaction occurred, formatted as a date string.\n- **category**: The type of transaction (e.g., groceries, dining, entertainment).\n- **merchant**: The name of the merchant or vendor where the transaction took place.\n- **transactionId**: A unique identifier for this specific transaction.\n- **currency**: The currency in which the transaction was made (e.g., USD, EUR).\n\nThis schema offers a comprehensive structure for tracking transactions while including relevant details like categories and merchants, facilitating better expense management and analysis.",
-  "schema_extracted": false,
-  "proposed_schema": null,
-  "proposed_cookbook": null,
-  "schema_version": null,
-  "conversation_turns": 3
+  "user_request": "Can you propose a better schema that includes categories and merchant tracking?",
+  "ai_response": "I've proposed a new schema (version 2.0). Schema proposal version 2.0 created successfully and is ready for preview.",
+  "schema_extracted": true,
+  "proposed_schema": {
+    "type": "object",
+    "properties": {
+      "amount": {
+        "type": "number"
+      },
+      "note": {
+        "type": "string"
+      },
+      "category": {
+        "type": "string",
+        "enum": [
+          "Food & Drink",
+          "Groceries",
+          "Entertainment",
+          "Transportation",
+          "Utilities",
+          "Personal Care"
+        ]
+      },
+      "merchant": {
+        "type": "string"
+      }
+    }
+  },
+  "proposed_cookbook": "# Enhanced tracking with categories and merchants\n\n## Sample Messages:\n- MSG_0: Coffee at Starbucks $5\n- MSG_1: Groceries at Walmart $50\n\n## Sample Interpretations:\n- MSG_0: {\"amount\": 5.0, \"note\": \"Coffee\", \"category\": \"Food & Drink\", \"merchant\": \"Starbucks\"}\n- MSG_1: {\"amount\": 50.0, \"note\": \"Groceries\", \"category\": \"Groceries\", \"merchant\": \"Walmart\"}\n\n### Categories Enum Values:\n- Food & Drink\n- Groceries\n- Entertainment\n- Transportation\n- Utilities\n- Personal Care",
+  "schema_version": "2.0",
+  "conversation_turns": 5
 }

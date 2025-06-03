@@ -1,17 +1,35 @@
 {
-  "id": "chatcmpl-Be7S0XbjKAJOLlLAZr9OijgehlUM7",
+  "id": "chatcmpl-BeOom9iBNLJ1ZT724aU18rjZHWsMj",
   "model": "gpt-4o-mini-2024-07-18",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Certainly! Here’s the complete proposed schema that incorporates all the improvements we've discussed, including the tracking of amounts, descriptions, dates, categories, subcategories, payment methods, locations, and merchants:\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"description\": {\n      \"type\": \"string\"\n    },\n    \"date\": {\n      \"type\": \"string\",\n      \"format\": \"date\"\n    },\n    \"category\": {\n      \"type\": \"string\",\n      \"enum\": [\"Food\", \"Transport\", \"Groceries\", \"Utilities\", \"Entertainment\", \"Health\", \"Other\"]\n    },\n    \"subcategory\": {\n      \"type\": \"string\",\n      \"enum\": [\"Dining\", \"Takeout\", \"Public Transport\", \"Fuel\", \"Grocery Store\", \"Other\"]\n    },\n    \"payment_method\": {\n      \"type\": \"string\"\n    },\n    \"location\": {\n      \"type\": \"string\"\n    },\n    \"merchant\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"amount\",\n    \"date\",\n    \"category\",\n    \"merchant\"\n  ]\n}\n```\n\n### Breakdown of the Schema:\n- **amount**: A numeric value representing the expense amount.\n- **description**: A string providing a brief description of the expense.\n- **date**: A string formatted as a date, indicating when the expense occurred.\n- **category**: An enumerated string that classifies the expense (e.g., Food, Transport).\n- **subcategory**: An optional enumerated string for more granular classification (e.g., Dining, Fuel).\n- **payment_method**: A string indicating how the expense was paid (e.g., Cash, Credit Card).\n- **location**: A string denoting the location of the transaction.\n- **merchant**: A string that specifies the store or business where the expense was incurred.\n\n### Required Fields:\n- **amount**: Mandatory for every entry to ensure tracking of expenses.\n- **date**: Required for tracking the timing of expenses.\n- **category**: Necessary to classify the type of expense.\n- **merchant**: Essential to identify where the expense took place.\n\nThis structured schema will allow for comprehensive tracking and analysis of expenses while ensuring consistency and clarity in the data recorded."
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_J1R1Tp74NZkcntrruTwIw5My",
+            "type": "function",
+            "function": {
+              "name": "propose_schema",
+              "arguments": "{\"schema_json\": {\"type\": \"object\", \"properties\": {\"amount\": {\"type\": \"number\"}, \"description\": {\"type\": \"string\"}, \"category\": {\"type\": \"string\", \"enum\": [\"food\", \"transport\", \"groceries\"]}, \"merchant\": {\"type\": \"string\"}}, \"required\": [\"amount\", \"category\", \"merchant\"]}, \"cookbook_content\": \"# Enhanced Expense Tracking\\nTrack amount, category, merchant, and optional description.\\n\\n## Sample Messages:\\n- Coffee at Starbucks $4.50, category: food\\n- Subway lunch $12, category: food\\n- Gas station fill-up $45, category: transport\\n- Groceries at Safeway $67.89, category: groceries\\n\\n## Sample Interpretations:\\n- MSG_0: {\\\"amount\\\": 4.5, \\\"description\\\": \\\"Coffee at Starbucks\\\", \\\"category\\\": \\\"food\\\", \\\"merchant\\\": \\\"Starbucks\\\"}\\n- MSG_1: {\\\"amount\\\": 12.0, \\\"description\\\": \\\"Subway lunch\\\", \\\"category\\\": \\\"food\\\", \\\"merchant\\\": \\\"Subway\\\"}\\n- MSG_2: {\\\"amount\\\": 45.0, \\\"description\\\": \\\"Gas station fill-up\\\", \\\"category\\\": \\\"transport\\\", \\\"merchant\\\": \\\"Gas station\\\"}\\n- MSG_3: {\\\"amount\\\": 67.89, \\\"description\\\": \\\"Groceries at Safeway\\\", \\\"category\\\": \\\"groceries\\\", \\\"merchant\\\": \\\"Safeway\\\"}\"}"
+            }
+          },
+          {
+            "id": "call_uEt61st5uG9BMnhKR0P1Kfhv",
+            "type": "function",
+            "function": {
+              "name": "propose_schema",
+              "arguments": "{\"schema_json\": {\"type\": \"object\", \"properties\": {\"amount\": {\"type\": \"number\"}, \"description\": {\"type\": \"string\"}, \"category\": {\"type\": \"string\", \"enum\": [\"food\", \"transport\", \"groceries\"]}, \"merchant\": {\"type\": \"string\"}}, \"required\": [\"amount\", \"category\", \"merchant\"]}, \"cookbook_content\": \"# Enhanced Expense Tracking\\nTrack amount, category, merchant, and optional description.\\n\\n## Sample Messages:\\n- Coffee at Starbucks $4.50, category: food\\n- Subway lunch $12, category: food\\n- Gas station fill-up $45, category: transport\\n- Groceries at Safeway $67.89, category: groceries\\n\\n## Sample Interpretations:\\n- MSG_0: {\\\"amount\\\": 4.5, \\\"description\\\": \\\"Coffee at Starbucks\\\", \\\"category\\\": \\\"food\\\", \\\"merchant\\\": \\\"Starbucks\\\"}\\n- MSG_1: {\\\"amount\\\": 12.0, \\\"description\\\": \\\"Subway lunch\\\", \\\"category\\\": \\\"food\\\", \\\"merchant\\\": \\\"Subway\\\"}\\n- MSG_2: {\\\"amount\\\": 45.0, \\\"description\\\": \\\"Gas station fill-up\\\", \\\"category\\\": \\\"transport\\\", \\\"merchant\\\": \\\"Gas station\\\"}\\n- MSG_3: {\\\"amount\\\": 67.89, \\\"description\\\": \\\"Groceries at Safeway\\\", \\\"category\\\": \\\"groceries\\\", \\\"merchant\\\": \\\"Safeway\\\"}\"}"
+            }
+          }
+        ]
       },
-      "finish_reason": "stop"
+      "finish_reason": "tool_calls"
     }
   ],
   "usage": {
-    "total_tokens": 2530
+    "total_tokens": 1763
   }
 }

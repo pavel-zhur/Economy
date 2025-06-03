@@ -1,1 +1,0 @@
-# Simple expense tracking\nBasic categories only

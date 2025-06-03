@@ -1,5 +1,6 @@
 """Main console application entry point."""
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -153,38 +154,77 @@ def migration_session(
             border_style="blue",
         ))
         
-        # Start migration session
+        # Get initial user message to start the session
+        initial_user_message = Prompt.ask("\n[bold]What would you like to discuss about your schema?[/bold]")
+        
+        # Start migration session with user's actual message
         session_log = "# Migration Session Log\n\n"
-        initial_response = architect.start_migration_session(schema_system, messages, interpretations)
+        session_log += f"**User:** {initial_user_message}\n\n"
+        
+        initial_response = architect.start_migration_session(schema_system, messages, interpretations, initial_user_message)
         
         console.print(Panel(initial_response, title="Schema Architect", border_style="cyan"))
         session_log += f"**Schema Architect:** {initial_response}\n\n"
         
         # Interactive conversation loop
         while True:
-            user_input = Prompt.ask("\n[bold]Your response[/bold] (or 'quit' to exit, 'preview' to test current proposal)")
+            # Check if we have a proposal and show status
+            current_proposal = architect.get_current_proposal()
+            if current_proposal:
+                if current_proposal.is_valid:
+                    prompt_text = f"\n[bold]Your response[/bold] (or 'quit', 'preview-schema', 'preview-reinterpretations', 'commit') [green]Schema v{current_proposal.version} ready[/green]"
+                else:
+                    prompt_text = f"\n[bold]Your response[/bold] (or 'quit') [red]Schema v{current_proposal.version} has validation errors[/red]"
+            else:
+                prompt_text = "\n[bold]Your response[/bold] (or 'quit' to exit)"
+            
+            user_input = Prompt.ask(prompt_text)
             
             if user_input.lower() == "quit":
                 break
-            elif user_input.lower() == "preview":
-                proposed_schema = architect.get_proposed_schema_system()
-                if not proposed_schema:
+            elif user_input.lower() == "preview-schema":
+                if not current_proposal:
                     console.print("[yellow]No schema proposal available yet.[/yellow]")
                     continue
                 
-                console.print("[green]Running preview with proposed schema...[/green]")
+                console.print(Panel(
+                    f"Version: {current_proposal.version}\n"
+                    f"Valid: {'✓' if current_proposal.is_valid else '✗'}\n\n"
+                    f"Schema:\n{json.dumps(current_proposal.schema_system.schema.schema_json, indent=2)}\n\n"
+                    f"Cookbook:\n{current_proposal.schema_system.cookbook.content}",
+                    title=f"Schema Proposal v{current_proposal.version}",
+                    border_style="blue",
+                ))
+                
+                if current_proposal.validation_errors:
+                    console.print(f"[red]Validation errors: {', '.join(current_proposal.validation_errors)}[/red]")
+                    
+            elif user_input.lower() == "preview-reinterpretations":
+                if not current_proposal or not current_proposal.is_valid:
+                    console.print("[yellow]No valid schema proposal available for reinterpretation preview.[/yellow]")
+                    continue
+                
+                console.print("[green]Running reinterpretation preview...[/green]")
                 
                 # Run reprocessing mode
                 preview_result = interpreter.process_reprocessing_mode(
-                    messages, proposed_schema, schema_system, interpretations
+                    messages, current_proposal.schema_system, schema_system, interpretations
+                )
+                
+                # Save versioned preview interpretations
+                repository.save_versioned_interpretations(
+                    preview_result.interpretations, 
+                    current_proposal.version, 
+                    prefix="_preview"
                 )
                 
                 console.print(Panel(
-                    f"Preview Results:\n"
+                    f"Reinterpretation Results:\n"
                     f"- Processed {len(preview_result.interpretations)} interpretations\n"
-                    f"- Generated {len(preview_result.feedback)} feedback items\n\n"
+                    f"- Generated {len(preview_result.feedback)} feedback items\n"
+                    f"- Saved preview to: interpretations_preview_v{current_proposal.version}.json\n\n"
                     f"Overall feedback: {preview_result.overall_feedback}",
-                    title="Migration Preview",
+                    title=f"Migration Preview v{current_proposal.version}",
                     border_style="yellow",
                 ))
                 
@@ -198,21 +238,38 @@ def migration_session(
                             if feedback.warnings:
                                 console.print(f"MSG_{feedback.message_id}: {', '.join(feedback.warnings)}")
                 
-                # Ask if user wants to commit
-                commit = Confirm.ask("Commit this schema change?")
-                if commit:
-                    repository.save_schema_system(proposed_schema)
-                    repository.save_interpretations(preview_result.interpretations)
-                    console.print("[green]Schema migration committed successfully![/green]")
-                    break
-                else:
+            elif user_input.lower() == "commit":
+                if not current_proposal or not current_proposal.is_valid:
+                    console.print("[yellow]No valid schema proposal available to commit.[/yellow]")
                     continue
+                    
+                # Run reinterpretation if not done already
+                console.print("[green]Running final reinterpretation for commit...[/green]")
+                preview_result = interpreter.process_reprocessing_mode(
+                    messages, current_proposal.schema_system, schema_system, interpretations
+                )
+                
+                # Save final versioned interpretations
+                repository.save_versioned_interpretations(preview_result.interpretations, current_proposal.version)
+                
+                # Commit the changes
+                repository.save_schema_system(current_proposal.schema_system)
+                repository.save_interpretations(preview_result.interpretations)
+                console.print(f"[green]Schema v{current_proposal.version} committed successfully![/green]")
+                console.print(f"[green]Saved versioned files: schema_v{current_proposal.version}.json, cookbook_v{current_proposal.version}.md, interpretations_v{current_proposal.version}.json[/green]")
+                break
+                
             else:
                 session_log += f"**User:** {user_input}\n\n"
                 
                 response = architect.continue_conversation(user_input)
                 console.print(Panel(response, title="Schema Architect", border_style="cyan"))
                 session_log += f"**Schema Architect:** {response}\n\n"
+                
+                # Save versioned files if a new proposal was created
+                current_proposal = architect.get_current_proposal()
+                if current_proposal and current_proposal.is_valid:
+                    repository.save_versioned_schema_system(current_proposal.schema_system)
         
         # Save session log
         repository.save_migration_session(session_log)

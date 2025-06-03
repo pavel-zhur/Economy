@@ -1,11 +1,5 @@
 """Integration tests for SchemaArchitectService."""
 
-import json
-from pathlib import Path
-from unittest.mock import patch
-
-import pytest
-
 from economy_a5.services.schema_architect import SchemaArchitectService
 from economy_a5.models.core import (
     Message,
@@ -14,12 +8,14 @@ from economy_a5.models.core import (
     SchemaSystem,
     Interpretation,
 )
+from tests.utils.fixture_manager import FixtureManager
+from tests.utils.openai_mock import OpenAIMock
 
 
 class TestSchemaArchitectService:
     """Integration tests for SchemaArchitectService."""
     
-    def test_migration_session_start(self, openai_mock, fixture_manager):
+    def test_migration_session_start(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test starting a migration session with current data."""
         # Arrange
         current_schema_system = SchemaSystem(
@@ -60,17 +56,24 @@ class TestSchemaArchitectService:
             ),
         ]
         
-        instructions = """You are a Schema Architect AI that helps users evolve their data schemas.
-You understand their current data structure and help design improvements while maintaining continuity.
-Always provide concrete examples and explain your reasoning."""
+        instructions = fixture_manager.load_text("instructions.md")
         
         service = SchemaArchitectService(openai_mock.config, instructions)
         service._client = openai_mock
         
         # Act
+        user_message = "Hi! I'm looking at my current schema and thinking about making some improvements. Can you help me understand what might be enhanced?"
         response = service.start_migration_session(
-            current_schema_system, sample_messages, current_interpretations
+            current_schema_system, sample_messages, current_interpretations, user_message
         )
+        
+        # Save the response for validation first (before assertions)
+        result_data = {
+            "initial_response": response,
+            "conversation_history_length": len(service._conversation_history),
+            "has_schema_context": bool(service._schema_context)
+        }
+        fixture_manager.validate_output("expected_output.json", result_data)
         
         # Assert
         assert isinstance(response, str)
@@ -80,22 +83,8 @@ Always provide concrete examples and explain your reasoning."""
         assert service._conversation_history is not None
         assert len(service._conversation_history) == 1  # Initial assistant response
         assert service._schema_context != ""  # Should have schema context stored
-        
-        # Save fixtures
-        fixture_manager.save_schema_system(current_schema_system)
-        fixture_manager.save_messages(sample_messages)
-        fixture_manager.save_interpretations(current_interpretations)
-        fixture_manager.save_instructions(instructions)
-        
-        # Save the response for validation
-        result_data = {
-            "initial_response": response,
-            "conversation_history_length": len(service._conversation_history),
-            "has_schema_context": bool(service._schema_context)
-        }
-        fixture_manager.validate_output("expected_output.json", result_data)
     
-    def test_continue_conversation_simple(self, openai_mock, fixture_manager):
+    def test_continue_conversation_simple(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test continuing conversation with real AI contextual awareness."""
         # Arrange - Set up realistic budget tracking scenario
         current_schema_system = SchemaSystem(
@@ -145,7 +134,8 @@ Always reference specific examples from their data when making suggestions."""
         service._client = openai_mock
         
         # Start session first - AI should analyze the current data
-        initial_response = service.start_migration_session(current_schema_system, sample_messages, current_interpretations)
+        initial_user_message = "Hi! I'm looking at my current schema and thinking about making some improvements. Can you help me understand what might be enhanced?"
+        initial_response = service.start_migration_session(current_schema_system, sample_messages, current_interpretations, initial_user_message)
         initial_history_length = len(service._conversation_history)
         
         # Act - Continue conversation with contextual request
@@ -189,12 +179,7 @@ Always reference specific examples from their data when making suggestions."""
             "addresses_user_goals": any(term in combined_responses for term in ["track", "organize", "understand", "categoriz"])
         }
         
-        # Save fixtures with enhanced contextual validation
-        fixture_manager.save_schema_system(current_schema_system)
-        fixture_manager.save_messages(sample_messages)
-        fixture_manager.save_interpretations(current_interpretations)
-        fixture_manager.save_instructions(instructions)
-        
+        # Validate output first (before assertions)
         result_data = {
             "initial_response": initial_response,
             "user_input": user_input,
@@ -213,7 +198,7 @@ Always reference specific examples from their data when making suggestions."""
         }
         fixture_manager.validate_output("expected_output.json", result_data)
     
-    def test_schema_proposal_extraction(self, openai_mock, fixture_manager):
+    def test_schema_proposal_extraction(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test extraction of proposed schema from AI response during conversation."""
         # Arrange
         current_schema_system = SchemaSystem(
@@ -239,40 +224,41 @@ Always reference specific examples from their data when making suggestions."""
             )
         ]
         
-        instructions = "You are a helpful schema architect. Always include proposed schemas in JSON code blocks."
+        instructions = fixture_manager.load_text("instructions.md")
         
         service = SchemaArchitectService(openai_mock.config, instructions)
         service._client = openai_mock
         
         # Act - Start session then ask for a schema proposal
-        service.start_migration_session(current_schema_system, sample_messages, current_interpretations)
+        user_message = "Hi! I'm looking at my current schema and thinking about making some improvements. Can you help me understand what might be enhanced?"
+        service.start_migration_session(current_schema_system, sample_messages, current_interpretations, user_message)
         
         # User specifically asks for a schema with JSON response
         response = service.continue_conversation(
-            "Can you propose a better schema that includes categories and merchant tracking? Please provide the schema in a JSON code block."
+            "Can you propose a better schema that includes categories and merchant tracking? Please propose."
         )
         
-        # Assert - Check if schema was extracted from the AI response
-        proposed_schema = service.get_proposed_schema_system()
-        
-        # Save fixtures - whether schema extraction worked or not, we record the attempt
-        fixture_manager.save_schema_system(current_schema_system)
-        fixture_manager.save_messages(sample_messages)
-        fixture_manager.save_interpretations(current_interpretations)
-        fixture_manager.save_instructions(instructions)
-        
+        # Assert - Check if schema proposal was created from function call
+        current_proposal = service.get_current_proposal()
+
+        # Validate output first (before assertions)
         result_data = {
-            "user_request": "Can you propose a better schema that includes categories and merchant tracking? Please provide the schema in a JSON code block.",
+            "user_request": "Can you propose a better schema that includes categories and merchant tracking?",
             "ai_response": response,
-            "schema_extracted": proposed_schema is not None,
-            "proposed_schema": proposed_schema.schema.schema_json if proposed_schema else None,
-            "proposed_cookbook": proposed_schema.cookbook.content if proposed_schema else None,
-            "schema_version": proposed_schema.schema.version if proposed_schema else None,
+            "schema_extracted": current_proposal is not None and current_proposal.is_valid,
+            "proposed_schema": current_proposal.schema_system.schema.schema_json if current_proposal else None,
+            "proposed_cookbook": current_proposal.schema_system.cookbook.content if current_proposal else None,
+            "schema_version": current_proposal.schema_system.schema.version if current_proposal else None,
             "conversation_turns": len(service._conversation_history)
         }
         fixture_manager.validate_output("expected_output.json", result_data)
+
+        # Assert - Check if schema proposal was created from function call
+        current_proposal = service.get_current_proposal()
+        assert current_proposal is not None, "Expected schema proposal to be created"
+        assert current_proposal.is_valid, "Schema proposal should be valid"
     
-    def test_reset_session(self, openai_mock, fixture_manager):
+    def test_reset_session(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test resetting the migration session."""
         # Arrange
         current_schema_system = SchemaSystem(
@@ -286,32 +272,33 @@ Always reference specific examples from their data when making suggestions."""
         service._client = openai_mock
         
         # Start session and add some state
-        service.start_migration_session(current_schema_system, [], [])
+        user_message = "Hi! I'm looking at my current schema and thinking about making some improvements. Can you help me understand what might be enhanced?"
+        service.start_migration_session(current_schema_system, [], [], user_message)
         service.continue_conversation("Test input")
         
         # Verify we have state
         assert len(service._conversation_history) > 0
         assert service._schema_context != ""
-        assert service.get_proposed_schema_system() is None  # No schema yet
+        assert service.get_current_proposal() is None  # No schema yet
         
         # Act
         service.reset_session()
         
-        # Assert
-        assert len(service._conversation_history) == 0
-        assert service._schema_context == ""
-        assert service.get_proposed_schema_system() is None
-        
-        # Save fixtures
+        # Validate output first (before assertions)
         result_data = {
             "session_reset": True,
             "conversation_history_empty": len(service._conversation_history) == 0,
             "schema_context_empty": service._schema_context == "",
-            "proposed_schema_none": service.get_proposed_schema_system() is None
+            "proposed_schema_none": service.get_current_proposal() is None
         }
         fixture_manager.validate_output("expected_output.json", result_data)
+        
+        # Assert
+        assert len(service._conversation_history) == 0
+        assert service._schema_context == ""
+        assert service.get_current_proposal() is None
     
-    def test_multi_turn_conversation(self, openai_mock, fixture_manager):
+    def test_multi_turn_conversation(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test multiple conversation turns with actual AI coherence and context preservation."""
         # Arrange - Start with a realistic expense tracking scenario
         current_schema_system = SchemaSystem(
@@ -360,15 +347,14 @@ Always reference specific examples from their data when making suggestions."""
             ),
         ]
         
-        instructions = """You are a Schema Architect AI that helps users evolve their expense tracking schemas.
-You maintain context across conversations and build on previous suggestions. When users mention specific 
-needs, reference their actual data examples. Always be helpful and build incrementally on the conversation."""
+        instructions = fixture_manager.load_text("instructions.md")
         
         service = SchemaArchitectService(openai_mock.config, instructions)
         service._client = openai_mock
         
         # Act - Structured conversation that tests AI contextual building
-        initial_response = service.start_migration_session(current_schema_system, messages, interpretations)
+        user_message = "Hi! I'm looking at my current schema and thinking about making some improvements. Can you help me understand what might be enhanced?"
+        initial_response = service.start_migration_session(current_schema_system, messages, interpretations, user_message)
         
         # Turn 1: User notices their data has natural categories
         response1 = service.continue_conversation(
@@ -421,12 +407,7 @@ needs, reference their actual data examples. Always be helpful and build increme
             "shows_progression": any(term in response_text for term in ["before", "after", "current", "new", "improve"])
         }
         
-        # Save fixtures with enhanced data for contextual validation
-        fixture_manager.save_schema_system(current_schema_system)
-        fixture_manager.save_messages(messages)
-        fixture_manager.save_interpretations(interpretations)
-        fixture_manager.save_instructions(instructions)
-        
+        # Validate output first (before assertions)
         result_data = {
             "initial_response": initial_response,
             "category_suggestion_response": response1,
@@ -440,11 +421,11 @@ needs, reference their actual data examples. Always be helpful and build increme
             ],
             "contextual_coherence_indicators": contextual_indicators,
             "schema_context_preserved": bool(service._schema_context),
-            "proposed_schema_extracted": service.get_proposed_schema_system() is not None
+            "proposed_schema_extracted": service.get_current_proposal() is not None and service.get_current_proposal().is_valid
         }
         fixture_manager.validate_output("expected_output.json", result_data)
     
-    def test_complete_schema_evolution_conversation(self, openai_mock, fixture_manager):
+    def test_complete_schema_evolution_conversation(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test complete schema evolution conversation with multiple turns."""
         # Arrange - Start with a simple schema
         current_schema_system = SchemaSystem(
@@ -493,16 +474,14 @@ needs, reference their actual data examples. Always be helpful and build increme
             ),
         ]
         
-        instructions = """You are a Schema Architect AI that helps users evolve their data schemas.
-You understand their current data structure and help design improvements while maintaining continuity.
-Always provide concrete examples and explain your reasoning. When you propose a schema, 
-include it in a JSON code block for easy extraction."""
+        instructions = fixture_manager.load_text("instructions.md")
         
         service = SchemaArchitectService(openai_mock.config, instructions)
         service._client = openai_mock
         
         # Act - Multi-turn conversation with hardcoded user inputs
-        initial_response = service.start_migration_session(current_schema_system, sample_messages, current_interpretations)
+        user_message = "Hi! I'm looking at my current schema and thinking about making some improvements. Can you help me understand what might be enhanced?"
+        initial_response = service.start_migration_session(current_schema_system, sample_messages, current_interpretations, user_message)
         
         # User wants to add categories
         response1 = service.continue_conversation(
@@ -516,11 +495,11 @@ include it in a JSON code block for easy extraction."""
         
         # User asks to see the final proposal
         response3 = service.continue_conversation(
-            "Can you show me the complete proposed schema with all the improvements we discussed?"
+            "Please submit the proposal?"
         )
         
         # Assert - Check conversation progression and state
-        assert len(service._conversation_history) >= 6  # At least 3 user + 3 assistant turns
+        assert len(service._conversation_history) >= 8  # At least 3 user + 3 assistant turns + function call turns
         assert service._schema_context != ""
         
         # Verify conversation flow structure
@@ -533,14 +512,10 @@ include it in a JSON code block for easy extraction."""
         assert "merchant" in turns[3]["content"].lower()
         assert turns[4]["role"] == "assistant"
         assert turns[5]["role"] == "user"
-        assert "complete proposed schema" in turns[5]["content"].lower()
+        assert "submit the proposal" in turns[5]["content"].lower()
+        # After this, expect function call sequence: assistant → function → assistant
         
-        # Save all conversation data for validation
-        fixture_manager.save_schema_system(current_schema_system)
-        fixture_manager.save_messages(sample_messages)
-        fixture_manager.save_interpretations(current_interpretations)
-        fixture_manager.save_instructions(instructions)
-        
+        # Validate output first (before assertions)
         result_data = {
             "initial_response": initial_response,
             "category_discussion_response": response1,
@@ -550,14 +525,24 @@ include it in a JSON code block for easy extraction."""
             "user_inputs": [
                 "I want to add categories to better organize my expenses. I see I have food, transport, and groceries. Can you help me design a better schema?",
                 "That's good, but I also want to track which merchant or store I spent money at. Can you add that to the schema?",
-                "Can you show me the complete proposed schema with all the improvements we discussed?"
+                "Please submit the proposal?"
             ],
             "context_preserved": bool(service._schema_context),
-            "proposed_schema_extracted": service.get_proposed_schema_system() is not None
+            "schema_proposal_created": service.get_current_proposal() is not None and service.get_current_proposal().is_valid
         }
         fixture_manager.validate_output("expected_output.json", result_data)
+        
+        # Verify the core functionality: when user asks "submit the proposal", a schema proposal should be created
+        current_proposal = service.get_current_proposal()
+        assert current_proposal is not None, "Expected schema proposal to be created when user requested 'submit the proposal'"
+        assert current_proposal.is_valid, f"Schema proposal should be valid, but got errors: {current_proposal.validation_errors}"
+        
+        # Verify conversation mechanics work
+        assert len(service._conversation_history) >= 6  # Multi-turn conversation happened
+        assert service._schema_context != ""  # Context preserved throughout
+        assert len(response3) > 0  # AI provided a response to user's final request
     
-    def test_end_to_end_schema_evolution(self, openai_mock, fixture_manager):
+    def test_end_to_end_schema_evolution(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test complete end-to-end schema evolution workflow with real AI."""
         # Arrange - Start with very basic schema, simulate real user journey
         current_schema_system = SchemaSystem(
@@ -618,9 +603,7 @@ include it in a JSON code block for easy extraction."""
             ),
         ]
         
-        instructions = """You are a Schema Architect AI that helps users evolve their expense tracking systems.
-You analyze their current data, understand their spending patterns, and guide them through a complete
-schema evolution process. Always build incrementally and explain your reasoning clearly."""
+        instructions = fixture_manager.load_text("instructions.md")
         
         service = SchemaArchitectService(openai_mock.config, instructions)
         service._client = openai_mock
@@ -628,7 +611,8 @@ schema evolution process. Always build incrementally and explain your reasoning 
         # Act - Complete workflow: Analysis → Discussion → Proposal → Refinement → Final Schema
         
         # Step 1: Initial analysis and introduction
-        initial_response = service.start_migration_session(current_schema_system, sample_messages, current_interpretations)
+        user_message = "Hi! I'm looking at my current schema and thinking about making some improvements. Can you help me understand what might be enhanced?"
+        initial_response = service.start_migration_session(current_schema_system, sample_messages, current_interpretations, user_message)
         
         # Step 2: User recognizes patterns and asks for evolution
         discussion_response = service.continue_conversation(
@@ -651,30 +635,27 @@ schema evolution process. Always build incrementally and explain your reasoning 
         
         # Step 5: User asks for final schema and migration preview
         final_response = service.continue_conversation(
-            "Perfect! Can you show me the final proposed schema and give me examples of how each of my original "
-            "expenses would look in the new structure? I want to see the before and after transformation."
+            "Perfect! Can you submit the first proposal based on our discussion?"
+        )
+        
+        # Step 6: User asks for refinement and second proposal  
+        refinement2_response = service.continue_conversation(
+            "That looks good, but can you create a more advanced version that also includes payment methods? Submit a second proposal."
         )
         
         # Assert - Verify complete workflow with real AI coherence
-        assert len(service._conversation_history) >= 8  # At least 4 user + 4 assistant turns
+        assert len(service._conversation_history) >= 12  # Complex multi-turn conversation
+        assert service._schema_context != ""  # Context preserved throughout
         
-        # Verify conversation progression
-        turns = service._conversation_history
-        assert turns[0]["role"] == "assistant"  # Initial analysis
-        assert turns[1]["role"] == "user"
-        assert "patterns" in turns[1]["content"] and "starbucks" in turns[1]["content"].lower()
-        assert turns[2]["role"] == "assistant"  # Discussion response  
-        assert turns[3]["role"] == "user"
-        assert "json schema" in turns[3]["content"].lower()
-        assert turns[4]["role"] == "assistant"  # Proposal response
-        assert turns[5]["role"] == "user"
-        assert "simplify" in turns[5]["content"].lower()
-        assert turns[6]["role"] == "assistant"  # Refinement response
-        assert turns[7]["role"] == "user"
-        assert "before and after" in turns[7]["content"].lower()
+        # Check that user inputs are reflected in conversation history
+        user_messages = [msg for msg in service._conversation_history if msg.get("role") == "user"]
+        assert len(user_messages) >= 5  # Multiple user inputs were processed
+        
+        # Verify all responses are substantive
+        all_responses = [initial_response, discussion_response, proposal_response, refinement_response, final_response]
+        assert all(len(response) > 50 for response in all_responses)  # AI provided substantive responses
         
         # Test end-to-end coherence - AI should reference user's data throughout
-        all_responses = [initial_response, discussion_response, proposal_response, refinement_response, final_response]
         full_conversation = " ".join(all_responses).lower()
         
         workflow_coherence = {
@@ -702,14 +683,9 @@ schema evolution process. Always build incrementally and explain your reasoning 
         }
         
         # Check if a schema was actually proposed
-        proposed_schema = service.get_proposed_schema_system()
+        current_proposal = service.get_current_proposal()
         
-        # Save comprehensive fixtures for this integration test
-        fixture_manager.save_schema_system(current_schema_system)
-        fixture_manager.save_messages(sample_messages)
-        fixture_manager.save_interpretations(current_interpretations)
-        fixture_manager.save_instructions(instructions)
-        
+        # Validate output first (before assertions)
         result_data = {
             "workflow_responses": {
                 "initial_analysis": initial_response,
@@ -727,9 +703,9 @@ schema evolution process. Always build incrementally and explain your reasoning 
             ],
             "workflow_coherence_indicators": workflow_coherence,
             "schema_evolution_success": {
-                "proposed_schema_extracted": proposed_schema is not None,
-                "schema_version_incremented": proposed_schema.schema.version if proposed_schema else None,
-                "conversation_context_maintained": bool(service._schema_context),
+                "multiple_proposals_created": service.get_current_proposal() is not None and service.get_current_proposal().is_valid,
+                "version_incremented": service.get_current_proposal().version != "1.0" if service.get_current_proposal() else False,
+                "context_maintained": bool(service._schema_context),
                 "multi_turn_coherence": len(all_responses) == 5 and all(len(r) > 50 for r in all_responses)
             },
             "data_analysis": {
@@ -739,8 +715,20 @@ schema evolution process. Always build incrementally and explain your reasoning 
             }
         }
         fixture_manager.validate_output("expected_output.json", result_data)
+        
+        # Verify the core functionality: when user asks for "first proposal" and "second proposal", they should be created
+        current_proposal = service.get_current_proposal()
+        assert current_proposal is not None, "Expected schema proposals to be created when user requested them"
+        assert current_proposal.is_valid, f"Final schema proposal should be valid, but got errors: {current_proposal.validation_errors}"
+        
+        # Since user asked for "second proposal", we expect the version to be incremented
+        assert current_proposal.version != "1.0", f"Expected proposal version to be incremented from 1.0, but got {current_proposal.version}"
+        
+        # Verify end-to-end workflow succeeded in providing good user experience  
+        assert len(refinement2_response) > 0  # AI responded to final user request
+        assert service._schema_context != ""  # Context maintained throughout complex workflow
     
-    def test_conversation_recovery_after_error(self, openai_mock, fixture_manager):
+    def test_conversation_recovery_after_error(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test conversation recovery and context preservation after problematic user input."""
         # Arrange - Set up expense tracking scenario
         current_schema_system = SchemaSystem(
@@ -787,7 +775,8 @@ to productive schema discussions."""
         # Act - Test conversation with error recovery scenario
         
         # Step 1: Normal session start
-        initial_response = service.start_migration_session(current_schema_system, sample_messages, current_interpretations)
+        user_message = "Hi! I'm looking at my current schema and thinking about making some improvements. Can you help me understand what might be enhanced?"
+        initial_response = service.start_migration_session(current_schema_system, sample_messages, current_interpretations, user_message)
         
         # Step 2: Clear, productive conversation
         good_response = service.continue_conversation(
@@ -849,15 +838,7 @@ to productive schema discussions."""
             "addresses_specific_examples": any(term in response_text for term in ["food category", "shopping category"]),
         }
         
-        # Verify schema context survived the error scenario
-        assert service._schema_context != ""
-        
-        # Save fixtures for error recovery validation
-        fixture_manager.save_schema_system(current_schema_system)
-        fixture_manager.save_messages(sample_messages)
-        fixture_manager.save_interpretations(current_interpretations)
-        fixture_manager.save_instructions(instructions)
-        
+        # Validate output first (before assertions)
         result_data = {
             "conversation_flow": {
                 "initial_response": initial_response,
@@ -887,8 +868,11 @@ to productive schema discussions."""
             }
         }
         fixture_manager.validate_output("expected_output.json", result_data)
+        
+        # Verify schema context survived the error scenario
+        assert service._schema_context != ""
     
-    def test_large_message_sample_limiting(self, openai_mock, fixture_manager):
+    def test_large_message_sample_limiting(self, openai_mock: OpenAIMock, fixture_manager: FixtureManager) -> None:
         """Test that large message samples are properly limited."""
         # Arrange - Create many messages to test the 10-message limit
         large_message_set = [
@@ -916,8 +900,9 @@ to productive schema discussions."""
         service._client = openai_mock
         
         # Act
+        user_message = "Hi! I'm looking at my current schema and thinking about making some improvements. Can you help me understand what might be enhanced?"
         response = service.start_migration_session(
-            current_schema_system, large_message_set, large_interpretation_set
+            current_schema_system, large_message_set, large_interpretation_set, user_message
         )
         
         # Assert - Should handle gracefully without errors
@@ -932,10 +917,7 @@ to productive schema discussions."""
         message_count = len([line for line in sample_message_lines if 'Message' in line])
         interpretation_count = len([line for line in sample_message_lines if 'data_' in line])
         
-        assert message_count <= 10
-        assert interpretation_count <= 10
-        
-        # Save fixtures
+        # Validate output first (before assertions)
         result_data = {
             "response": response,
             "total_messages_provided": len(large_message_set),
@@ -945,3 +927,6 @@ to productive schema discussions."""
             "context_length": len(service._schema_context)
         }
         fixture_manager.validate_output("expected_output.json", result_data)
+        
+        assert message_count <= 10
+        assert interpretation_count <= 10

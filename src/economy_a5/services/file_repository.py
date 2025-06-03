@@ -101,6 +101,33 @@ class FileRepository:
         """Save migration session conversation log."""
         self._save_text_file(self._config.migration_session_file, session_log)
     
+    def save_versioned_schema_system(self, schema_system: SchemaSystem) -> None:
+        """Save versioned schema and cookbook files."""
+        version = schema_system.schema.version
+        
+        # Save versioned schema file
+        schema_file = self._config.schema_file.parent / f"schema_v{version}.json"
+        self._save_json_file(schema_file, schema_system.schema.schema_json)
+        
+        # Save versioned cookbook file
+        cookbook_file = self._config.cookbook_file.parent / f"cookbook_v{version}.md"
+        self._save_text_file(cookbook_file, schema_system.cookbook.content)
+    
+    def save_versioned_interpretations(self, interpretations: list[Interpretation], version: str, prefix: str = "") -> None:
+        """Save versioned interpretations file."""
+        filename = f"interpretations{prefix}_v{version}.json" if prefix else f"interpretations_v{version}.json"
+        interpretations_file = self._config.interpretations_file.parent / filename
+        
+        data = [
+            {
+                "message_id": interp.message_id,
+                "structured_data": interp.structured_data,
+                "schema_version": interp.schema_version,
+            }
+            for interp in interpretations
+        ]
+        self._save_json_file(interpretations_file, data)
+    
     def _load_json_file(self, file_path: Path) -> Any:
         """Load JSON data from file."""
         if not file_path.exists():

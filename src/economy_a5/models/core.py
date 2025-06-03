@@ -66,6 +66,16 @@ class InterpreterResult:
 
 
 @dataclass(frozen=True)
+class SchemaProposal:
+    """Proposed schema changes with validation results."""
+    
+    schema_system: SchemaSystem
+    version: str
+    validation_errors: list[str]
+    is_valid: bool
+
+
+@dataclass(frozen=True)
 class FileConfig:
     """Configuration for file paths used by the POC."""
     

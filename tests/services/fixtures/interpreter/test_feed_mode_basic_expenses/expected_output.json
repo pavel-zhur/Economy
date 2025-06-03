@@ -9,7 +9,7 @@
         "merchant": "Starbucks",
         "account": "checking",
         "description": "Bought coffee",
-        "date": "2023-10-31"
+        "date": "2023-10-03"
       },
       "schema_version": "1.0"
     },
@@ -19,10 +19,10 @@
         "transaction_type": "expense",
         "amount": 1200,
         "category": "housing",
-        "merchant": null,
+        "merchant": "",
         "account": "checking",
         "description": "Paid rent for January",
-        "date": "2023-10-31"
+        "date": "2023-10-03"
       },
       "schema_version": "1.0"
     },
@@ -35,7 +35,7 @@
         "merchant": "Safeway",
         "account": "checking",
         "description": "Grocery shopping",
-        "date": "2023-10-31"
+        "date": "2023-10-03"
       },
       "schema_version": "1.0"
     }
@@ -45,20 +45,20 @@
       "message_id": "MSG_0",
       "confidence_level": "high",
       "warnings": [],
-      "overall_notes": "Transaction details are clear and match the schema."
+      "overall_notes": "Successfully interpreted the coffee purchase."
     },
     {
       "message_id": "MSG_1",
       "confidence_level": "high",
       "warnings": [],
-      "overall_notes": "Transaction is classified as an expense for housing."
+      "overall_notes": "Rent payment interpreted correctly."
     },
     {
       "message_id": "MSG_2",
       "confidence_level": "high",
       "warnings": [],
-      "overall_notes": "Transaction is classified correctly as grocery shopping."
+      "overall_notes": "Grocery shopping interpreted correctly."
     }
   ],
-  "overall_feedback": "All messages were accurately interpreted and structured according to the provided schema."
+  "overall_feedback": "All messages were interpreted accurately with high confidence."
 }
