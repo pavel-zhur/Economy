@@ -140,3 +140,6 @@ The system uses two specialized AI roles with carefully crafted instructions:
 - **Testability**: Protocol-based interfaces allow easy mocking and testing
 - **Microservices Ready**: Clean separation supports future service boundaries
 - **File-Based POC**: Simple persistence for concept validation before database complexity
+
+## Development Memories
+- For running tests, use `source venv/bin/activate` command
