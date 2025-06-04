@@ -32,17 +32,20 @@ jobs:
       path: ~/.npm
     displayName: 'Cache npm dependencies'
   
-  - script: npm ci
+  - script: |
+      cd $(workingDirectory)
+      npm ci
     displayName: 'Install dependencies'
-    workingDirectory: $(workingDirectory)
   
-  - script: npm run build
+  - script: |
+      cd $(workingDirectory)
+      npm run build
     displayName: 'Build React application'
-    workingDirectory: $(workingDirectory)
     env:
       CI: false  # Отключаем обработку warnings как ошибок
   
   - script: |
+      cd $(workingDirectory)
       echo "Build completed successfully!"
       echo "Build artifacts:"
       ls -la build/
@@ -51,19 +54,18 @@ jobs:
       echo "Build size:"
       du -sh build/
     displayName: 'Display build info'
-    workingDirectory: $(workingDirectory)
   
   # Копируем статическую конфигурацию в build folder
   - task: CopyFiles@2
     inputs:
-      sourceFolder: '$(workingDirectory)'
+      sourceFolder: '$(System.DefaultWorkingDirectory)/$(workingDirectory)'
       contents: 'staticwebapp.config.json'
-      targetFolder: '$(buildPath)'
+      targetFolder: '$(System.DefaultWorkingDirectory)/$(buildPath)'
     displayName: 'Copy Static Web App config'
   
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: '$(buildPath)'
+      pathToPublish: '$(System.DefaultWorkingDirectory)/$(buildPath)'
       artifactName: 'react-build'
       publishLocation: 'Container'
     displayName: 'Publish build artifacts'
@@ -71,7 +73,7 @@ jobs:
   # Опционально: публикуем также package.json для информации о версии
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: '$(workingDirectory)/package.json'
+      pathToPublish: '$(System.DefaultWorkingDirectory)/$(workingDirectory)/package.json'
       artifactName: 'package-info'
       publishLocation: 'Container'
     displayName: 'Publish package info' 
