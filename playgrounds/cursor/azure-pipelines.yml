@@ -29,7 +29,7 @@ jobs:
   - task: Cache@2
     inputs:
       key: 'npm | "$(Agent.OS)" | $(workingDirectory)/package-lock.json'
-      path: ~/.npm
+      path: $(workingDirectory)/node_modules
     displayName: 'Cache npm dependencies'
   
   - script: npm ci
