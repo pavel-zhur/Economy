@@ -15,6 +15,7 @@ import {
   Typography,
   useTheme,
   useMediaQuery,
+  Divider,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -30,6 +31,11 @@ import {
   CalendarToday,
   FlagOutlined,
   Analytics,
+  AccountTree,
+  Receipt,
+  CompareArrows,
+  SwapHoriz,
+  AutoAwesome,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -53,24 +59,42 @@ import FinancialCalendar from './views/FinancialCalendar';
 import UnrealisticPlans from './views/UnrealisticPlans';
 import YearForecast from './views/YearForecast';
 import YearForecastWithChanges from './views/YearForecastWithChanges';
+import PlanTreeView from './views/PlanTreeView';
+import TransactionManagement from './views/TransactionManagement';
+import BalanceReconciliation from './views/BalanceReconciliation';
+import PlanActualization from './views/PlanActualization';
+import ScenarioManagement from './views/ScenarioManagement';
+import QuickPlanning from './views/QuickPlanning';
 
 const drawerWidth = 280;
 
 const menuItems = [
   { id: 'dashboard', label: 'Дашборд', icon: <Dashboard />, path: '/' },
+  { id: 'divider-1', divider: true },
+  { id: 'quick-planning', label: 'Быстрое планирование', icon: <AutoAwesome />, path: '/quick-planning' },
+  { id: 'plan-tree', label: 'Структура планов', icon: <AccountTree />, path: '/plan-tree' },
+  { id: 'transactions', label: 'Транзакции', icon: <Receipt />, path: '/transactions' },
+  { id: 'divider-2', divider: true },
+  { id: 'balance-reconciliation', label: 'Сверка балансов', icon: <CompareArrows />, path: '/balance-reconciliation' },
+  { id: 'plan-actualization', label: 'Актуализация планов', icon: <SwapHoriz />, path: '/plan-actualization' },
+  { id: 'scenario-management', label: 'Управление сценариями', icon: <Timeline />, path: '/scenario-management' },
+  { id: 'divider-3', divider: true },
   { id: 'planned-expenses', label: 'Планируемые расходы', icon: <Schedule />, path: '/planned-expenses' },
   { id: 'money-distribution', label: 'Распределение денег', icon: <PieChart />, path: '/money-distribution' },
   { id: 'future-distribution', label: 'Будущие накопления', icon: <TrendingUp />, path: '/future-distribution' },
   { id: 'income-distribution', label: 'Распределение доходов', icon: <MonetizationOn />, path: '/income-distribution' },
+  { id: 'divider-4', divider: true },
   { id: 'wallet-inventory', label: 'Инвентаризация кошельков', icon: <AccountBalance />, path: '/wallet-inventory' },
   { id: 'money-delay', label: 'Время задержки средств', icon: <Timeline />, path: '/money-delay' },
   { id: 'negative-plans', label: 'Планы с отриц. балансом', icon: <Assessment />, path: '/negative-plans' },
   { id: 'plan-balance', label: 'Баланс планов во времени', icon: <Analytics />, path: '/plan-balance' },
+  { id: 'divider-5', divider: true },
   { id: 'goals-progress', label: 'Прогресс по целям', icon: <FlagOutlined />, path: '/goals-progress' },
   { id: 'what-if', label: 'Что если', icon: <Settings />, path: '/what-if' },
   { id: 'variance-history', label: 'История отклонений', icon: <CalendarToday />, path: '/variance-history' },
   { id: 'cash-flow-analysis', label: 'Анализ остатка', icon: <Analytics />, path: '/cash-flow-analysis' },
   { id: 'planning-efficiency', label: 'Эффективность', icon: <TrendingUp />, path: '/planning-efficiency' },
+  { id: 'divider-6', divider: true },
   { id: 'irregular-transactions', label: 'Нерегулярные операции', icon: <MonetizationOn />, path: '/irregular-transactions' },
   { id: 'financial-calendar', label: 'Календарь', icon: <CalendarToday />, path: '/financial-calendar' },
   { id: 'unrealistic-plans', label: 'Нереалистичные планы', icon: <Settings />, path: '/unrealistic-plans' },
@@ -104,36 +128,42 @@ function App() {
         </Typography>
       </Toolbar>
       <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.id} disablePadding>
-            <ListItemButton
-              selected={location.pathname === item.path}
-              onClick={() => handleMenuClick(item.path)}
-              sx={{
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.light',
-                  color: 'primary.contrastText',
-                  '&:hover': {
-                    backgroundColor: 'primary.main',
+        {menuItems.map((item) => {
+          if (item.divider) {
+            return <Divider key={item.id} sx={{ my: 1 }} />;
+          }
+          
+          return (
+            <ListItem key={item.id} disablePadding>
+              <ListItemButton
+                selected={location.pathname === item.path}
+                onClick={() => handleMenuClick(item.path)}
+                sx={{
+                  '&.Mui-selected': {
+                    backgroundColor: 'primary.light',
+                    color: 'primary.contrastText',
+                    '&:hover': {
+                      backgroundColor: 'primary.main',
+                    },
                   },
-                },
-              }}
-            >
-              <ListItemIcon sx={{ 
-                color: location.pathname === item.path ? 'inherit' : 'inherit' 
-              }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText 
-                primary={item.label} 
-                primaryTypographyProps={{ 
-                  fontSize: '0.875rem',
-                  fontWeight: location.pathname === item.path ? 600 : 400
                 }}
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
+              >
+                <ListItemIcon sx={{ 
+                  color: location.pathname === item.path ? 'inherit' : 'inherit' 
+                }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={item.label} 
+                  primaryTypographyProps={{ 
+                    fontSize: '0.875rem',
+                    fontWeight: location.pathname === item.path ? 600 : 400
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
       </List>
     </div>
   );
@@ -203,6 +233,12 @@ function App() {
         <Toolbar />
         <Routes>
           <Route path="/" element={<DashboardView />} />
+          <Route path="/quick-planning" element={<QuickPlanning />} />
+          <Route path="/plan-tree" element={<PlanTreeView />} />
+          <Route path="/transactions" element={<TransactionManagement />} />
+          <Route path="/balance-reconciliation" element={<BalanceReconciliation />} />
+          <Route path="/plan-actualization" element={<PlanActualization />} />
+          <Route path="/scenario-management" element={<ScenarioManagement />} />
           <Route path="/planned-expenses" element={<PlannedExpenses />} />
           <Route path="/money-distribution" element={<MoneyDistribution />} />
           <Route path="/future-distribution" element={<FutureDistribution />} />
