@@ -10,10 +10,13 @@ public class FaqModel(ILogger<FaqModel> logger, IHostEnvironment hostEnvironment
 
     public void OnGet(string? filePath)
     {
-        // load all .md files (with the directory structure) under the docs/faq directory at the repository root.
-        var markdownsRoot = Path.Combine(hostEnvironment.ContentRootPath, "..", "docs", "faq");
+        // Try wwwroot/docs/faq first (for published/Azure scenarios), then fall back to repository root
+        var wwwrootPath = Path.Combine(hostEnvironment.ContentRootPath, "docs", "faq");
+        var repoRootPath = Path.Combine(hostEnvironment.ContentRootPath, "..", "docs", "faq");
+        
+        var markdownsRoot = Directory.Exists(wwwrootPath) ? wwwrootPath : repoRootPath;
 
-        // enumerate all files
+        // enumerate all .md files (with the directory structure) from the determined FAQ directory.
         var markdowns = Directory.EnumerateFiles(
                 markdownsRoot, 
                 "*.md", 
