@@ -32,6 +32,16 @@ npm start
 
 Приложение будет доступно по адресу: http://localhost:3000
 
+## ☁️ Деплой на Azure
+
+Проект настроен для автоматического деплоя на **Azure Static Web Apps** через Azure DevOps:
+
+- **Build Pipeline**: `azure-pipelines.yml` - собирает проект и публикует артефакты
+- **Release Pipeline**: настраивается в Azure DevOps для деплоя артефактов
+- **Конфигурация**: `staticwebapp.config.json` - настройки маршрутизации и безопасности
+
+Подробная инструкция: [📋 Azure Deployment Guide](docs/azure-deployment.md)
+
 ### Запуск с Docker (разработка)
 
 ```bash

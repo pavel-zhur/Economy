@@ -1,0 +1,76 @@
+# Build Pipeline для системы финансового планирования
+# Сборка React приложения и публикация артефакта для Release Pipeline
+
+trigger:
+- master
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  nodeVersion: '20.x'
+  buildPath: 'build'
+
+jobs:
+- job: BuildReactApp
+  displayName: 'Build React Application'
+  steps:
+  - checkout: self
+    displayName: 'Checkout source code'
+  
+  - task: NodeTool@0
+    inputs:
+      versionSpec: $(nodeVersion)
+    displayName: 'Install Node.js $(nodeVersion)'
+  
+  - task: Cache@2
+    inputs:
+      key: 'npm | "$(Agent.OS)" | package-lock.json'
+      restoreKeys: |
+        npm | "$(Agent.OS)"
+      path: ~/.npm
+    displayName: 'Cache npm dependencies'
+  
+  - script: |
+      npm ci
+    displayName: 'Install dependencies'
+  
+  - script: |
+      npm run build
+    displayName: 'Build React application'
+    env:
+      CI: false  # Отключаем обработку warnings как ошибок
+  
+  - script: |
+      echo "Build completed successfully!"
+      echo "Build artifacts:"
+      ls -la $(buildPath)/
+      echo "Package info:"
+      cat package.json | grep '"name"\|"version"'
+      echo "Build size:"
+      du -sh $(buildPath)/
+    displayName: 'Display build info'
+  
+  # Копируем статическую конфигурацию в build folder
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '$(System.DefaultWorkingDirectory)'
+      contents: 'staticwebapp.config.json'
+      targetFolder: '$(buildPath)'
+    displayName: 'Copy Static Web App config'
+  
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(buildPath)'
+      artifactName: 'react-build'
+      publishLocation: 'Container'
+    displayName: 'Publish build artifacts'
+  
+  # Опционально: публикуем также package.json для информации о версии
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: 'package.json'
+      artifactName: 'package-info'
+      publishLocation: 'Container'
+    displayName: 'Publish package info' 
