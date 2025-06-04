@@ -1,0 +1,19 @@
+# Dockerfile для разработки (более быстрый, без оптимизаций)
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Копируем package.json
+COPY package*.json ./
+
+# Устанавливаем зависимости
+RUN npm ci
+
+# Копируем исходный код
+COPY . .
+
+# Открываем порт
+EXPOSE 3000
+
+# Запускаем в режиме разработки
+CMD ["npm", "run", "dev"]
