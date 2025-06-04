@@ -13,6 +13,11 @@
 - ✅ Публикует артефакт `react-build` с собранным приложением
 - ✅ Публикует артефакт `package-info` с информацией о версии
 
+### Особенности:
+- Проект находится в подпапке `playgrounds/cursor/` репозитория
+- Все task'и выполняются с `workingDirectory: playgrounds/cursor`
+- CI=false отключает обработку ESLint warnings как ошибок
+
 ### Триггеры:
 - Push в ветки `master` или `main`
 - Ручной запуск из Azure DevOps
@@ -154,7 +159,20 @@ env:
 # Кэширование npm уже включено:
 - task: Cache@2
   inputs:
-    key: 'npm | "$(Agent.OS)" | package-lock.json'
+    key: 'npm | "$(Agent.OS)" | $(workingDirectory)/package-lock.json'
+    path: ~/.npm
+```
+
+**Проект в подпапке репозитория**:
+```yaml
+# Pipeline уже настроен для работы с проектом в playgrounds/cursor/:
+variables:
+  workingDirectory: 'playgrounds/cursor'
+  buildPath: 'playgrounds/cursor/build'
+
+# Все команды выполняются в правильной директории:
+- script: npm ci
+  workingDirectory: $(workingDirectory)
 ```
 
 ---

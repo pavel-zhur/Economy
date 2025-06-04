@@ -10,7 +10,8 @@ pool:
 
 variables:
   nodeVersion: '20.x'
-  buildPath: 'build'
+  buildPath: 'playgrounds/cursor/build'
+  workingDirectory: 'playgrounds/cursor'
 
 jobs:
 - job: BuildReactApp
@@ -24,38 +25,38 @@ jobs:
       versionSpec: $(nodeVersion)
     displayName: 'Install Node.js $(nodeVersion)'
   
+  # Кэширование npm зависимостей
   - task: Cache@2
     inputs:
-      key: 'npm | "$(Agent.OS)" | package-lock.json'
-      restoreKeys: |
-        npm | "$(Agent.OS)"
+      key: 'npm | "$(Agent.OS)" | $(workingDirectory)/package-lock.json'
       path: ~/.npm
     displayName: 'Cache npm dependencies'
   
-  - script: |
-      npm ci
+  - script: npm ci
     displayName: 'Install dependencies'
+    workingDirectory: $(workingDirectory)
   
-  - script: |
-      npm run build
+  - script: npm run build
     displayName: 'Build React application'
+    workingDirectory: $(workingDirectory)
     env:
       CI: false  # Отключаем обработку warnings как ошибок
   
   - script: |
       echo "Build completed successfully!"
       echo "Build artifacts:"
-      ls -la $(buildPath)/
+      ls -la build/
       echo "Package info:"
       cat package.json | grep '"name"\|"version"'
       echo "Build size:"
-      du -sh $(buildPath)/
+      du -sh build/
     displayName: 'Display build info'
+    workingDirectory: $(workingDirectory)
   
   # Копируем статическую конфигурацию в build folder
   - task: CopyFiles@2
     inputs:
-      sourceFolder: '$(System.DefaultWorkingDirectory)'
+      sourceFolder: '$(workingDirectory)'
       contents: 'staticwebapp.config.json'
       targetFolder: '$(buildPath)'
     displayName: 'Copy Static Web App config'
@@ -70,7 +71,7 @@ jobs:
   # Опционально: публикуем также package.json для информации о версии
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: 'package.json'
+      pathToPublish: '$(workingDirectory)/package.json'
       artifactName: 'package-info'
       publishLocation: 'Container'
     displayName: 'Publish package info' 
