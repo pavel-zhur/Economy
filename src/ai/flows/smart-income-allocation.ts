@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -6,22 +7,26 @@
  * - `smartAllocateIncome` - An async function that orchestrates the income allocation process.
  * - `SmartAllocateIncomeInput` - The input type definition for the `smartAllocateIncome` function.
  * - `SmartAllocateIncomeOutput` - The output type definition for the `smartAllocateIncome` function.
+ * - `SmartAllocateIncomePlanInput` - The input type for individual plans within the `SmartAllocateIncomeInput`.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+const SmartAllocateIncomePlanInputSchema = z.object({
+  planName: z.string().describe('The name of the financial plan.'),
+  currentBalance: z.number().describe('The current balance of the plan.'),
+  goalAmount: z.number().optional().describe('The target amount for the plan (if any).'),
+  goalDate: z.string().optional().describe('The target date for the plan (if any, YYYY-MM-DD format).'),
+  priority: z.enum(['high', 'medium', 'low']).describe('The priority of the plan.'),
+});
+export type SmartAllocateIncomePlanInput = z.infer<typeof SmartAllocateIncomePlanInputSchema>;
+
+
 const SmartAllocateIncomeInputSchema = z.object({
   incomeAmount: z.number().describe('The amount of income to allocate.'),
-  plans: z.array(
-    z.object({
-      planName: z.string().describe('The name of the financial plan.'),
-      currentBalance: z.number().describe('The current balance of the plan.'),
-      goalAmount: z.number().optional().describe('The target amount for the plan (if any).'),
-      goalDate: z.string().optional().describe('The target date for the plan (if any).'),
-      priority: z.enum(['high', 'medium', 'low']).describe('The priority of the plan.'),
-    })
-  ).describe('An array of financial plans with their current balances, goals, and priorities.'),
+  plans: z.array(SmartAllocateIncomePlanInputSchema)
+  .describe('An array of financial plans with their current balances, goals, and priorities.'),
   riskTolerance: z.enum(['low', 'medium', 'high']).describe('The user risk tolerance.'),
   shortTermGoals: z.string().describe('The user short term goals.'),
   longTermGoals: z.string().describe('The user long term goals.'),
