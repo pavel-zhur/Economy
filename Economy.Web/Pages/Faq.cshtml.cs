@@ -10,8 +10,8 @@ public class FaqModel(ILogger<FaqModel> logger, IHostEnvironment hostEnvironment
 
     public void OnGet(string? filePath)
     {
-        // load all .md files (with the directory structure) under the wwwroot/faq directory.
-        var markdownsRoot = Path.Combine(hostEnvironment.ContentRootPath, "FAQ");
+        // load all .md files (with the directory structure) under the docs/faq directory at the repository root.
+        var markdownsRoot = Path.Combine(hostEnvironment.ContentRootPath, "..", "docs", "faq");
 
         // enumerate all files
         var markdowns = Directory.EnumerateFiles(
