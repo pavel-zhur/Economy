@@ -1,0 +1,27 @@
+{
+  "id": "chatcmpl-BeO8UBKZ3ec2WvjZS2lllDepTgkF3",
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_EfAOUNY4J6FSMkJnbAmFH2ab",
+            "type": "function",
+            "function": {
+              "name": "propose_schema",
+              "arguments": "{\"cookbook_content\": \"# Test\\n\\n## Example JSON Object\\n\\nHere is an example of a valid JSON object based on the schema:\\n\\n```json\\n{\\n  \\\"name\\\": \\\"John Doe\\\",\\n  \\\"age\\\": 30,\\n  \\\"email\\\": \\\"john.doe@example.com\\\",\\n  \\\"isActive\\\": true,\\n  \\\"address\\\": {\\n    \\\"street\\\": \\\"123 Main St\\\",\\n    \\\"city\\\": \\\"Anytown\\\",\\n    \\\"state\\\": \\\"CA\\\",\\n    \\\"zip\\\": \\\"12345\\\"\\n  },\\n  \\\"tags\\\": [\\\"developer\\\", \\\"blogger\\\", \\\"photographer\\\"]\\n}\\n```\\n\\n## Field Descriptions\\n\\n- `name` (string): The full name of the person.\\n- `age` (integer): The age of the person. Must be a positive integer.\\n- `email` (string): The email address of the person. Must be in valid email format.\\n- `isActive` (boolean): Indicates if the person is currently active.\\n- `address` (object): The address of the person, which itself contains:\\n  - `street` (string): The street address.\\n  - `city` (string): The city of residence.\\n  - `state` (string): The state of residence.\\n  - `zip` (string): The postal code.\\n- `tags` (array of strings): A list of tags associated with the person.\"}"
+            }
+          }
+        ]
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "total_tokens": 713
+  }
+}

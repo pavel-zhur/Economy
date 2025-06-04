@@ -1,0 +1,17 @@
+{
+  "id": "chatcmpl-BeO7acmpA5G0HIS90lG2kGKrtuhuy",
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "```json\n{\n    \"interpretations\": [\n        {\n            \"message_id\": \"MSG_0\",\n            \"structured_data\": {\n                \"amount\": 3,\n                \"item\": \"coffee\"\n            }\n        }\n    ],\n    \"feedback\": [\n        {\n            \"message_id\": \"MSG_0\",\n            \"confidence_level\": \"high\",\n            \"warnings\": [],\n            \"notes\": \"The amount and item were clearly identified from the message.\"\n        }\n    ],\n    \"overall_feedback\": \"The message was straightforward and aligned well with the schema, resulting in a high confidence interpretation.\"\n}\n```"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "total_tokens": 326
+  }
+}

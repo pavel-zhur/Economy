@@ -1,0 +1,33 @@
+{
+  "user_request": "Can you propose a better schema that includes categories and merchant tracking?",
+  "ai_response": "I've proposed a new schema (version 2.0). Schema proposal version 2.0 created successfully and is ready for preview.",
+  "schema_extracted": true,
+  "proposed_schema": {
+    "type": "object",
+    "properties": {
+      "amount": {
+        "type": "number"
+      },
+      "note": {
+        "type": "string"
+      },
+      "category": {
+        "type": "string",
+        "enum": [
+          "Food & Drink",
+          "Groceries",
+          "Entertainment",
+          "Transportation",
+          "Utilities",
+          "Personal Care"
+        ]
+      },
+      "merchant": {
+        "type": "string"
+      }
+    }
+  },
+  "proposed_cookbook": "# Enhanced tracking with categories and merchants\n\n## Sample Messages:\n- MSG_0: Coffee at Starbucks $5\n- MSG_1: Groceries at Walmart $50\n\n## Sample Interpretations:\n- MSG_0: {\"amount\": 5.0, \"note\": \"Coffee\", \"category\": \"Food & Drink\", \"merchant\": \"Starbucks\"}\n- MSG_1: {\"amount\": 50.0, \"note\": \"Groceries\", \"category\": \"Groceries\", \"merchant\": \"Walmart\"}\n\n### Categories Enum Values:\n- Food & Drink\n- Groceries\n- Entertainment\n- Transportation\n- Utilities\n- Personal Care",
+  "schema_version": "2.0",
+  "conversation_turns": 5
+}

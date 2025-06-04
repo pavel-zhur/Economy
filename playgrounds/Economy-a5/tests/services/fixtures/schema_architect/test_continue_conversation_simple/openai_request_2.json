@@ -1,0 +1,45 @@
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Schema Architect AI specialized in personal finance tracking.\nYou analyze user data to understand their spending patterns and suggest meaningful improvements.\nAlways reference specific examples from their data when making suggestions.\n\n\nCURRENT SCHEMA:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"description\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"amount\"\n  ]\n}\n\nCURRENT COOKBOOK:\n# Personal Budget Tracking\nTrack expenses with amounts and optional descriptions\n\nSAMPLE MESSAGES:\nMSG_0: Coffee at Dunkin $4.50\nMSG_1: Groceries at Target $87.23\nMSG_2: Netflix subscription $15.99\n\nSAMPLE CURRENT INTERPRETATIONS:\nMSG_0: {\"amount\": 4.5, \"description\": \"Coffee at Dunkin\"}\nMSG_1: {\"amount\": 87.23, \"description\": \"Groceries at Target\"}\nMSG_2: {\"amount\": 15.99, \"description\": \"Netflix subscription\"}\n"
+    },
+    {
+      "role": "assistant",
+      "content": "Absolutely! Let's take a closer look at your current schema and see where enhancements can be made.\n\n### Current Schema Overview:\n- **Properties:**\n  - `amount`: A required number that represents the expense amount.\n  - `description`: An optional string that gives details about the expense.\n\n### Potential Enhancements:\n\n1. **Categorization of Expenses:**\n   - **Enhancement:** Add a `category` field to classify expenses (e.g., food, entertainment, utilities).\n   - **Benefit:** Helps in analyzing spending patterns by category, allowing you to identify areas where you might want to cut back.\n   - **Example:** \n     ```json\n     \"category\": \"Food\"\n     ```\n\n2. **Date Tracking:**\n   - **Enhancement:** Include a `date` field to record when the expense occurred.\n   - **Benefit:** Enables tracking of spending trends over time (daily, weekly, monthly).\n   - **Example:**\n     ```json\n     \"date\": \"2023-10-01\"\n     ```\n\n3. **Recurring Expenses:**\n   - **Enhancement:** Add a `recurring` field to indicate if an expense is a recurring one (e.g., monthly subscriptions).\n   - **Benefit:** Helps in budgeting by identifying predictable expenses.\n   - **Example:**\n     ```json\n     \"recurring\": true\n     ```\n\n4. **Payment Method:**\n   - **Enhancement:** Introduce a `paymentMethod` field to specify how the expense was paid (e.g., credit card, cash, debit).\n   - **Benefit:** Offers insights into payment habits and can help in managing cash flow.\n   - **Example:**\n     ```json\n     \"paymentMethod\": \"Credit Card\"\n     ```\n\n5. **Notes or Tags:**\n   - **Enhancement:** Add a `notes` field for any additional comments or tags related to the expense.\n   - **Benefit:** Provides context for specific expenses which can be useful for later reference.\n   - **Example:**\n     ```json\n     \"notes\": \"Special occasion\"\n     ```\n\n### Conclusion:\nBy implementing these enhancements, you can gain deeper insights into your personal finance habits, making it easier to identify areas for improvement. Would you like to proceed with a specific enhancement, or do you have any other ideas in mind?"
+    },
+    {
+      "role": "user",
+      "content": "I notice my expenses fall into different types - daily coffee, monthly subscriptions like Netflix, and variable shopping like Target groceries. Can you suggest adding expense categories to help me understand my spending patterns better?"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "propose_schema",
+        "description": "Submit a concrete schema proposal with both JSON schema object and cookbook content. BOTH parameters are required.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "schema_json": {
+              "type": "object",
+              "description": "The complete JSON schema definition as an object (not string). Must include 'type', 'properties', etc."
+            },
+            "cookbook_content": {
+              "type": "string",
+              "description": "The interpretation cookbook content in markdown format with examples"
+            }
+          },
+          "required": [
+            "schema_json",
+            "cookbook_content"
+          ]
+        }
+      }
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 2000
+}

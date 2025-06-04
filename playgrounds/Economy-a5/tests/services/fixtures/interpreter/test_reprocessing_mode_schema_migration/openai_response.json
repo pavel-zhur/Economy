@@ -1,0 +1,17 @@
+{
+  "id": "chatcmpl-BeO7UyhA6lyfFL1XCrAgQdCd3vzGP",
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "```json\n{\n    \"interpretations\": [\n        {\n            \"message_id\": \"MSG_0\",\n            \"structured_data\": {\n                \"transaction_type\": \"purchase\",\n                \"amount\": 4.5,\n                \"category\": \"food\",\n                \"subcategory\": \"beverage\",\n                \"merchant\": \"coffee shop\",\n                \"description\": \"Coffee\"\n            }\n        },\n        {\n            \"message_id\": \"MSG_1\",\n            \"structured_data\": {\n                \"transaction_type\": \"purchase\",\n                \"amount\": 12.0,\n                \"category\": \"food\",\n                \"subcategory\": \"meal\",\n                \"merchant\": \"restaurant\",\n                \"description\": \"Lunch\"\n            }\n        }\n    ],\n    \"feedback\": [\n        {\n            \"message_id\": \"MSG_0\",\n            \"confidence_level\": \"high\",\n            \"warnings\": [],\n            \"notes\": \"Categorization based on typical coffee purchases.\"\n        },\n        {\n            \"message_id\": \"MSG_1\",\n            \"confidence_level\": \"high\",\n            \"warnings\": [],\n            \"notes\": \"Categorization based on typical lunch purchases.\"\n        }\n    ],\n    \"overall_feedback\": \"The migration to the new schema has been successfully executed with high confidence in the interpretations. The additional fields have been populated based on common practices for categorizing food-related transactions.\"\n}\n```"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "total_tokens": 722
+  }
+}

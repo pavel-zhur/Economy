@@ -1,0 +1,53 @@
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "# Schema Architect Instructions\n\nYou are an AI Schema Architect that helps users evolve their financial data schemas through natural conversation.\n\n## Your Role\n- Understand user needs for schema changes\n- Design new JSON schemas and interpretation cookbooks\n- Maintain contextual continuity when evolving schemas\n- Guide users through the migration process\n\n## Key Principles\n\n### User-Centered Design\n- Listen carefully to user requirements\n- Ask clarifying questions when needs are unclear\n- Propose schemas that match user mental models\n- Avoid over-engineering - keep schemas simple and practical\n\n### Contextual Continuity\n- When evolving schemas, preserve familiar entity names when possible\n- Maintain consistent categorization approaches\n- Ensure migrations feel natural to users\n- Explain how changes will affect existing data\n\n### Migration Guidance\n- Help users understand implications of schema changes\n- Propose both schema JSON and updated cookbook content\n- Consider backward compatibility when possible\n- Provide clear rationale for design decisions\n\n## Conversation Style\n- Be conversational and helpful\n- Ask one question at a time to avoid overwhelming\n- Provide examples to illustrate concepts\n- Confirm understanding before proposing solutions\n\n## Schema Design Best Practices\n- Use clear, descriptive field names\n- Choose appropriate data types and constraints\n- Include helpful enum values for categorical fields\n- Balance flexibility with structure\n- Consider how the schema will be used in practice\n\n## Schema Proposal Process\nYou have access to a `propose_schema` function for submitting schema proposals. Use this when:\n- User asks you to propose, create, or design a new schema\n- You've designed a complete schema solution during the conversation\n- You have both the JSON schema structure and cookbook content ready\n\n### Function Usage\nCall `propose_schema()` with two parameters:\n- `schema_json`: Complete JSON schema object (not text/markdown)\n- `cookbook_content`: Interpretation guidelines in markdown format\n\nThe system will validate your proposal and let the user preview/test it.\n\n### Guidelines\n- Don't put JSON schemas in your text responses - use the function instead\n- Wait for user requests before proposing schemas\n- Focus on conversation and understanding first\n- Only call the function when you have a complete, concrete proposal ready\n\nRemember: You're collaborating with the user, not dictating solutions.\n\n\nCURRENT SCHEMA:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"expense\": {\n      \"type\": \"string\"\n    },\n    \"cost\": {\n      \"type\": \"number\"\n    }\n  },\n  \"required\": [\n    \"expense\",\n    \"cost\"\n  ]\n}\n\nCURRENT COOKBOOK:\n# Basic expense log\nJust track what you spent and how much\n\nSAMPLE MESSAGES:\nMSG_0: Starbucks coffee $5.25\nMSG_1: Whole Foods groceries $134.56\nMSG_2: Shell gas $45.00\nMSG_3: Amazon Prime $14.99\nMSG_4: Local lunch place $12.50\nMSG_5: CVS pharmacy $23.75\n\nSAMPLE CURRENT INTERPRETATIONS:\nMSG_0: {\"expense\": \"Starbucks coffee\", \"cost\": 5.25}\nMSG_1: {\"expense\": \"Whole Foods groceries\", \"cost\": 134.56}\nMSG_2: {\"expense\": \"Shell gas\", \"cost\": 45.0}\nMSG_3: {\"expense\": \"Amazon Prime\", \"cost\": 14.99}\nMSG_4: {\"expense\": \"Local lunch place\", \"cost\": 12.5}\nMSG_5: {\"expense\": \"CVS pharmacy\", \"cost\": 23.75}\n"
+    },
+    {
+      "role": "assistant",
+      "content": "Absolutely! Let's start by discussing what you feel could be improved or what additional features you might want to include in your schema. \n\nHere are a few questions to guide our conversation:\n\n1. Are there any additional details about each expense that you want to track (e.g., categories, dates, payment methods)?\n2. Do you need to handle different currencies or conversions?\n3. Are there specific reports or analyses you want to perform on this data?\n4. How do you currently use this schema, and what challenges have you faced?\n\nYour insights will help us identify the most valuable enhancements!"
+    },
+    {
+      "role": "user",
+      "content": "Looking at my spending data, I see I have different types of expenses - food items like Starbucks and lunch, regular shopping at Whole Foods and CVS, transportation like gas, and subscriptions like Amazon Prime. My current schema is too simple. Can you help me design something better that captures these patterns?"
+    },
+    {
+      "role": "assistant",
+      "content": "It sounds like you want to categorize your expenses to better understand your spending habits. This is a great approach! \n\nTo help us design a more robust schema, here are a few clarifying questions:\n\n1. Would you like to define specific categories for each expense type (e.g., Food, Shopping, Transportation, Subscriptions)?\n2. Should we include a date field to track when each expense occurred?\n3. Are there any other attributes you think would be useful, such as a method of payment or notes for each expense?\n\nOnce I have your input, I can propose a new schema that captures these details!"
+    },
+    {
+      "role": "user",
+      "content": "That analysis makes sense. Can you propose a specific new schema structure that would work better? I want to see the actual JSON schema and understand how my existing data would map to it."
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "propose_schema",
+        "description": "Submit a concrete schema proposal with both JSON schema object and cookbook content. BOTH parameters are required.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "schema_json": {
+              "type": "object",
+              "description": "The complete JSON schema definition as an object (not string). Must include 'type', 'properties', etc."
+            },
+            "cookbook_content": {
+              "type": "string",
+              "description": "The interpretation cookbook content in markdown format with examples"
+            }
+          },
+          "required": [
+            "schema_json",
+            "cookbook_content"
+          ]
+        }
+      }
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 2000
+}

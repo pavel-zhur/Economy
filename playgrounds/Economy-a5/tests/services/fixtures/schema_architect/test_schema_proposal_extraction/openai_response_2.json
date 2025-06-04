@@ -1,0 +1,27 @@
+{
+  "id": "chatcmpl-BeOjQZKhxcVde5ZoeZV0FKusFE5J3",
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "To enhance your current schema by including categories and merchant tracking, I propose a new schema structure that adds these fields. Here's the proposed schema:\n\n### Proposed Schema\n- **amount**: The amount of the transaction (number).\n- **note**: A brief description of the transaction (string).\n- **category**: A category to classify the transaction (string, with defined enum values).\n- **merchant**: The name of the merchant or place where the transaction occurred (string).\n\n### Proposed Cookbook Content\n# Enhanced tracking with categories and merchants\n\n## Sample Messages:\n- MSG_0: Coffee at Starbucks $5\n- MSG_1: Groceries at Walmart $50\n\n## Sample Interpretations:\n- MSG_0: {\"amount\": 5.0, \"note\": \"Coffee\", \"category\": \"Food & Drink\", \"merchant\": \"Starbucks\"}\n- MSG_1: {\"amount\": 50.0, \"note\": \"Groceries\", \"category\": \"Groceries\", \"merchant\": \"Walmart\"}\n\n### Categories Enum Values:\n- Food & Drink\n- Groceries\n- Entertainment\n- Transportation\n- Utilities\n- Personal Care\n\nNow, I'll submit this proposal. Please hold on for a moment.",
+        "tool_calls": [
+          {
+            "id": "call_TP6sGyiSEuf9xK8CkWOgWd1B",
+            "type": "function",
+            "function": {
+              "name": "propose_schema",
+              "arguments": "{\"schema_json\":{\"type\":\"object\",\"properties\":{\"amount\":{\"type\":\"number\"},\"note\":{\"type\":\"string\"},\"category\":{\"type\":\"string\",\"enum\":[\"Food & Drink\",\"Groceries\",\"Entertainment\",\"Transportation\",\"Utilities\",\"Personal Care\"]},\"merchant\":{\"type\":\"string\"}}},\"cookbook_content\":\"# Enhanced tracking with categories and merchants\\n\\n## Sample Messages:\\n- MSG_0: Coffee at Starbucks $5\\n- MSG_1: Groceries at Walmart $50\\n\\n## Sample Interpretations:\\n- MSG_0: {\\\"amount\\\": 5.0, \\\"note\\\": \\\"Coffee\\\", \\\"category\\\": \\\"Food & Drink\\\", \\\"merchant\\\": \\\"Starbucks\\\"}\\n- MSG_1: {\\\"amount\\\": 50.0, \\\"note\\\": \\\"Groceries\\\", \\\"category\\\": \\\"Groceries\\\", \\\"merchant\\\": \\\"Walmart\\\"}\\n\\n### Categories Enum Values:\\n- Food & Drink\\n- Groceries\\n- Entertainment\\n- Transportation\\n- Utilities\\n- Personal Care\"}"
+            }
+          }
+        ]
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "total_tokens": 1165
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "chatcmpl-BeOom9iBNLJ1ZT724aU18rjZHWsMj",
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_J1R1Tp74NZkcntrruTwIw5My",
+            "type": "function",
+            "function": {
+              "name": "propose_schema",
+              "arguments": "{\"schema_json\": {\"type\": \"object\", \"properties\": {\"amount\": {\"type\": \"number\"}, \"description\": {\"type\": \"string\"}, \"category\": {\"type\": \"string\", \"enum\": [\"food\", \"transport\", \"groceries\"]}, \"merchant\": {\"type\": \"string\"}}, \"required\": [\"amount\", \"category\", \"merchant\"]}, \"cookbook_content\": \"# Enhanced Expense Tracking\\nTrack amount, category, merchant, and optional description.\\n\\n## Sample Messages:\\n- Coffee at Starbucks $4.50, category: food\\n- Subway lunch $12, category: food\\n- Gas station fill-up $45, category: transport\\n- Groceries at Safeway $67.89, category: groceries\\n\\n## Sample Interpretations:\\n- MSG_0: {\\\"amount\\\": 4.5, \\\"description\\\": \\\"Coffee at Starbucks\\\", \\\"category\\\": \\\"food\\\", \\\"merchant\\\": \\\"Starbucks\\\"}\\n- MSG_1: {\\\"amount\\\": 12.0, \\\"description\\\": \\\"Subway lunch\\\", \\\"category\\\": \\\"food\\\", \\\"merchant\\\": \\\"Subway\\\"}\\n- MSG_2: {\\\"amount\\\": 45.0, \\\"description\\\": \\\"Gas station fill-up\\\", \\\"category\\\": \\\"transport\\\", \\\"merchant\\\": \\\"Gas station\\\"}\\n- MSG_3: {\\\"amount\\\": 67.89, \\\"description\\\": \\\"Groceries at Safeway\\\", \\\"category\\\": \\\"groceries\\\", \\\"merchant\\\": \\\"Safeway\\\"}\"}"
+            }
+          },
+          {
+            "id": "call_uEt61st5uG9BMnhKR0P1Kfhv",
+            "type": "function",
+            "function": {
+              "name": "propose_schema",
+              "arguments": "{\"schema_json\": {\"type\": \"object\", \"properties\": {\"amount\": {\"type\": \"number\"}, \"description\": {\"type\": \"string\"}, \"category\": {\"type\": \"string\", \"enum\": [\"food\", \"transport\", \"groceries\"]}, \"merchant\": {\"type\": \"string\"}}, \"required\": [\"amount\", \"category\", \"merchant\"]}, \"cookbook_content\": \"# Enhanced Expense Tracking\\nTrack amount, category, merchant, and optional description.\\n\\n## Sample Messages:\\n- Coffee at Starbucks $4.50, category: food\\n- Subway lunch $12, category: food\\n- Gas station fill-up $45, category: transport\\n- Groceries at Safeway $67.89, category: groceries\\n\\n## Sample Interpretations:\\n- MSG_0: {\\\"amount\\\": 4.5, \\\"description\\\": \\\"Coffee at Starbucks\\\", \\\"category\\\": \\\"food\\\", \\\"merchant\\\": \\\"Starbucks\\\"}\\n- MSG_1: {\\\"amount\\\": 12.0, \\\"description\\\": \\\"Subway lunch\\\", \\\"category\\\": \\\"food\\\", \\\"merchant\\\": \\\"Subway\\\"}\\n- MSG_2: {\\\"amount\\\": 45.0, \\\"description\\\": \\\"Gas station fill-up\\\", \\\"category\\\": \\\"transport\\\", \\\"merchant\\\": \\\"Gas station\\\"}\\n- MSG_3: {\\\"amount\\\": 67.89, \\\"description\\\": \\\"Groceries at Safeway\\\", \\\"category\\\": \\\"groceries\\\", \\\"merchant\\\": \\\"Safeway\\\"}\"}"
+            }
+          }
+        ]
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "total_tokens": 1763
+  }
+}

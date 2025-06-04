@@ -1,0 +1,27 @@
+{
+  "id": "chatcmpl-BeOqSUP21318GbnqIOUeRw43opjL9",
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_vcmGzcxyLlM61VPesTmU6dqP",
+            "type": "function",
+            "function": {
+              "name": "propose_schema",
+              "arguments": "{\"schema_json\":{\"type\":\"object\",\"properties\":{\"expense\":{\"type\":\"string\"},\"cost\":{\"type\":\"number\"},\"category\":{\"type\":\"string\",\"enum\":[\"Food\",\"Shopping\",\"Transportation\"]},\"date\":{\"type\":\"string\",\"format\":\"date\"}},\"required\":[\"expense\",\"cost\",\"category\",\"date\"]},\"cookbook_content\":\"# Enhanced expense log\\nThis log helps track your expenses with categories to better understand your spending habits.\\n\\n## Fields:\\n- **expense**: Description of the expense (e.g., Starbucks coffee).\\n- **cost**: Amount spent (e.g., 5.25).\\n- **category**: Type of expense (e.g., Food, Shopping, Transportation).\\n- **date**: Date of the expense in ISO format (YYYY-MM-DD).\\n\\n## Sample Messages:\\n- Starbucks coffee $5.25 on 2023-10-01\\n- Whole Foods groceries $134.56 on 2023-10-01\\n\\n## Sample Current Interpretations:\\n- Message: \\\"Starbucks coffee $5.25 on 2023-10-01\\\"\\n  - Interpretation: {\\\"expense\\\": \\\"Starbucks coffee\\\", \\\"cost\\\": 5.25, \\\"category\\\": \\\"Food\\\", \\\"date\\\": \\\"2023-10-01\\\"}\\n- Message: \\\"Whole Foods groceries $134.56 on 2023-10-01\\\"\\n  - Interpretation: {\\\"expense\\\": \\\"Whole Foods groceries\\\", \\\"cost\\\": 134.56, \\\"category\\\": \\\"Food\\\", \\\"date\\\": \\\"2023-10-01\\\"}\"}"
+            }
+          }
+        ]
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {
+    "total_tokens": 2506
+  }
+}

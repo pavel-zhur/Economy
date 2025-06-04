@@ -1,0 +1,41 @@
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Handle large datasets\n\n\nCURRENT SCHEMA:\n{\n  \"type\": \"object\"\n}\n\nCURRENT COOKBOOK:\n# Test\n\nSAMPLE MESSAGES:\nMSG_0: Message 0 with content\nMSG_1: Message 1 with content\nMSG_2: Message 2 with content\nMSG_3: Message 3 with content\nMSG_4: Message 4 with content\nMSG_5: Message 5 with content\nMSG_6: Message 6 with content\nMSG_7: Message 7 with content\nMSG_8: Message 8 with content\nMSG_9: Message 9 with content\n\nSAMPLE CURRENT INTERPRETATIONS:\nMSG_0: {\"index\": 0, \"content\": \"data_0\"}\nMSG_1: {\"index\": 1, \"content\": \"data_1\"}\nMSG_2: {\"index\": 2, \"content\": \"data_2\"}\nMSG_3: {\"index\": 3, \"content\": \"data_3\"}\nMSG_4: {\"index\": 4, \"content\": \"data_4\"}\nMSG_5: {\"index\": 5, \"content\": \"data_5\"}\nMSG_6: {\"index\": 6, \"content\": \"data_6\"}\nMSG_7: {\"index\": 7, \"content\": \"data_7\"}\nMSG_8: {\"index\": 8, \"content\": \"data_8\"}\nMSG_9: {\"index\": 9, \"content\": \"data_9\"}\n"
+    },
+    {
+      "role": "user",
+      "content": "Hi! I'm looking at my current schema and thinking about making some improvements. Can you help me understand what might be enhanced?"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "propose_schema",
+        "description": "Submit a concrete schema proposal with both JSON schema object and cookbook content. BOTH parameters are required.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "schema_json": {
+              "type": "object",
+              "description": "The complete JSON schema definition as an object (not string). Must include 'type', 'properties', etc."
+            },
+            "cookbook_content": {
+              "type": "string",
+              "description": "The interpretation cookbook content in markdown format with examples"
+            }
+          },
+          "required": [
+            "schema_json",
+            "cookbook_content"
+          ]
+        }
+      }
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 2000
+}

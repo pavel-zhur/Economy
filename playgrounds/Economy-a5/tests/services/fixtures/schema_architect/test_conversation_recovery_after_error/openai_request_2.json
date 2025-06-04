@@ -1,0 +1,45 @@
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Schema Architect AI for expense tracking systems.\nYou help users evolve their schemas while maintaining helpful conversation even when users\nprovide unclear or problematic input. Always try to understand user intent and guide them back\nto productive schema discussions.\n\n\nCURRENT SCHEMA:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"transaction\": {\n      \"type\": \"string\"\n    },\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"category\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"transaction\",\n    \"amount\"\n  ]\n}\n\nCURRENT COOKBOOK:\n# Expense Tracking\nTrack transactions with amounts and categories\n\nSAMPLE MESSAGES:\nMSG_0: Lunch at Chipotle $8.50\nMSG_1: Target shopping $67.23\n\nSAMPLE CURRENT INTERPRETATIONS:\nMSG_0: {\"transaction\": \"Lunch at Chipotle\", \"amount\": 8.5, \"category\": \"food\"}\nMSG_1: {\"transaction\": \"Target shopping\", \"amount\": 67.23, \"category\": \"shopping\"}\n"
+    },
+    {
+      "role": "assistant",
+      "content": "Absolutely! Let's take a closer look at your current schema and consider some enhancements.\n\nYour current schema includes:\n- **transaction**: A description of the expense.\n- **amount**: The cost of the transaction.\n- **category**: The type of expense (though it's not marked as required).\n\nHere are a few suggestions for potential enhancements:\n\n1. **Add Required Fields**: If categorizing expenses is important for your tracking, consider making the `category` field required. This ensures every transaction is classified.\n\n2. **Date Field**: Adding a date field can help you track when each transaction occurred, making it easier to analyze spending over time.\n\n3. **Payment Method**: Including a payment method (e.g., cash, credit card, PayPal) can provide more insights into your spending habits.\n\n4. **Notes or Description Field**: A field for additional notes can help provide context for transactions, especially for larger or unusual expenses.\n\n5. **Currency Field**: If you plan to track expenses in multiple currencies, adding a currency field could be useful.\n\n6. **Recurring Transactions**: Consider adding support for indicating whether a transaction is recurring, which could help in budgeting.\n\nWould you like to explore any of these enhancements further or propose changes to the schema?"
+    },
+    {
+      "role": "user",
+      "content": "I'd like to add more detailed categorization to my expense tracking. Can you suggest some improvements?"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "propose_schema",
+        "description": "Submit a concrete schema proposal with both JSON schema object and cookbook content. BOTH parameters are required.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "schema_json": {
+              "type": "object",
+              "description": "The complete JSON schema definition as an object (not string). Must include 'type', 'properties', etc."
+            },
+            "cookbook_content": {
+              "type": "string",
+              "description": "The interpretation cookbook content in markdown format with examples"
+            }
+          },
+          "required": [
+            "schema_json",
+            "cookbook_content"
+          ]
+        }
+      }
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 2000
+}

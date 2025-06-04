@@ -1,0 +1,1 @@
+"""Data models for the Economy A5 system."""

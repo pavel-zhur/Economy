@@ -1,0 +1,45 @@
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Test instructions\n\n\nCURRENT SCHEMA:\n{\n  \"type\": \"object\"\n}\n\nCURRENT COOKBOOK:\n# Test\n\nSAMPLE MESSAGES:\n\n\nSAMPLE CURRENT INTERPRETATIONS:\n\n"
+    },
+    {
+      "role": "assistant",
+      "content": "Sure! To provide you with the best advice on improving your schema, it would be helpful to know what kind of data you're working with and what your goals are for the schema. Generally, enhancements might include:\n\n1. **Adding Constraints**: You can add constraints to define the types of data that can be stored, such as minimum and maximum values for numbers, or specific formats for strings (like dates or email addresses).\n\n2. **Defining Required Fields**: Specify which fields are mandatory and which are optional.\n\n3. **Creating Nested Structures**: If your data has hierarchical relationships, consider using nested objects or arrays to represent those relationships clearly.\n\n4. **Using Descriptions**: Adding descriptions to fields can improve understanding and maintenance of the schema.\n\n5. **Schema Versioning**: If you're planning updates in the future, consider how you might version your schema to accommodate changes without breaking existing implementations.\n\n6. **Utilizing Enum Types**: If you have a fixed set of values for a field, using enums can make your schema more robust and self-descriptive.\n\n7. **Validation Rules**: Implementing validation rules can help ensure data integrity.\n\nIf you can provide more specific details about your current schema, its context, and your objectives, I can offer more tailored suggestions!"
+    },
+    {
+      "role": "user",
+      "content": "Test input"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "propose_schema",
+        "description": "Submit a concrete schema proposal with both JSON schema object and cookbook content. BOTH parameters are required.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "schema_json": {
+              "type": "object",
+              "description": "The complete JSON schema definition as an object (not string). Must include 'type', 'properties', etc."
+            },
+            "cookbook_content": {
+              "type": "string",
+              "description": "The interpretation cookbook content in markdown format with examples"
+            }
+          },
+          "required": [
+            "schema_json",
+            "cookbook_content"
+          ]
+        }
+      }
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 2000
+}
