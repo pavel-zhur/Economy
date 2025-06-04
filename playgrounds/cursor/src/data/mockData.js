@@ -351,9 +351,7 @@ export const getTransactions = () => mockTransactions;
 export const getWallets = () => mockWallets;
 export const getInventories = () => mockInventories;
 export const getGoals = () => mockGoals;
-export const getPlannedIncomes = () => mockPlannedIncomes;
 export const getPlannedExpenses = () => mockPlannedExpenses;
-export const getForecastData = () => mockForecastData;
 export const getMoneyDelayData = () => mockMoneyDelayData;
 
 // Утилиты для вычислений
@@ -378,4 +376,198 @@ export const calculatePlanBalance = (planId, date = new Date()) => {
     .filter(t => t.planId === planId && new Date(t.date) <= date);
   
   return relatedTransactions.reduce((sum, t) => sum + t.amount, 0);
-}; 
+};
+
+// Данные для прогнозов будущего распределения
+export const getForecastData = () => [
+  {
+    month: 'Апр 2024',
+    savings: 150000,
+    emergency: 30000,
+    vacation: 50000,
+    laptop: 15000,
+  },
+  {
+    month: 'Май 2024',
+    savings: 200000,
+    emergency: 40000,
+    vacation: 60000,
+    laptop: 20000,
+  },
+  {
+    month: 'Июн 2024',
+    savings: 250000,
+    emergency: 50000,
+    vacation: 70000,
+    laptop: 25000,
+  },
+  {
+    month: 'Июл 2024',
+    savings: 300000,
+    emergency: 60000,
+    vacation: 80000,
+    laptop: 30000,
+  },
+  {
+    month: 'Авг 2024',
+    savings: 350000,
+    emergency: 70000,
+    vacation: 90000,
+    laptop: 35000,
+  },
+  {
+    month: 'Сен 2024',
+    savings: 400000,
+    emergency: 80000,
+    vacation: 100000,
+    laptop: 40000,
+  },
+];
+
+// Данные для планируемых доходов
+export const getPlannedIncomes = () => [
+  {
+    id: 1,
+    name: 'Зарплата основная',
+    amount: 80000,
+    frequency: 'monthly',
+    nextDate: '2024-06-15',
+    category: 'Работа'
+  },
+  {
+    id: 2,
+    name: 'Фриланс проекты',
+    amount: 25000,
+    frequency: 'irregular',
+    nextDate: '2024-06-20',
+    category: 'Доп.доходы'
+  },
+  {
+    id: 3,
+    name: 'Дивиденды',
+    amount: 5000,
+    frequency: 'quarterly',
+    nextDate: '2024-07-01',
+    category: 'Инвестиции'
+  }
+];
+
+// Расширенные данные планов
+export const getPlansDetailed = () => [
+  {
+    id: 1,
+    name: 'Резервный фонд',
+    type: 'savings',
+    balance: 30000,
+    targetAmount: 150000,
+    targetDate: '2024-12-31',
+    autoDistribution: true,
+    distributionPercent: 10
+  },
+  {
+    id: 2,
+    name: 'Отпуск',
+    type: 'goal',
+    balance: 50000,
+    targetAmount: 100000,
+    targetDate: '2024-08-01',
+    autoDistribution: true,
+    distributionPercent: 10
+  },
+  {
+    id: 3,
+    name: 'Новый ноутбук',
+    type: 'goal',
+    balance: 15000,
+    targetAmount: 80000,
+    targetDate: '2024-06-30',
+    autoDistribution: false,
+    distributionPercent: 5
+  },
+  {
+    id: 4,
+    name: 'Ежемесячные расходы',
+    type: 'expenses',
+    balance: 40000,
+    targetAmount: 40000,
+    targetDate: 'ongoing',
+    autoDistribution: true,
+    distributionPercent: 50
+  }
+];
+
+// Данные для анализа эффективности
+export const getEfficiencyData = () => ({
+  overallScore: 87,
+  planCompletion: 92,
+  budgetAdherence: 85,
+  goalAchievement: 78,
+  forecastAccuracy: 91,
+  monthlyTrend: [
+    { month: 'Дек 2023', score: 82 },
+    { month: 'Янв 2024', score: 85 },
+    { month: 'Фев 2024', score: 87 },
+    { month: 'Мар 2024', score: 89 },
+    { month: 'Апр 2024', score: 87 },
+    { month: 'Май 2024', score: 92 }
+  ]
+});
+
+// Данные для календаря
+export const getCalendarEvents = () => [
+  {
+    id: 1,
+    title: 'Зарплата',
+    date: '2024-06-15',
+    amount: 80000,
+    type: 'income',
+    category: 'regular'
+  },
+  {
+    id: 2,
+    title: 'Аренда',
+    date: '2024-06-05',
+    amount: -25000,
+    type: 'expense',
+    category: 'mandatory'
+  },
+  {
+    id: 3,
+    title: 'Коммунальные услуги',
+    date: '2024-06-10',
+    amount: -8000,
+    type: 'expense',
+    category: 'mandatory'
+  }
+];
+
+// Данные для нерегулярных операций
+export const getIrregularTransactions = () => [
+  {
+    id: 1,
+    date: '2024-03-15',
+    description: 'Подарок на день рождения',
+    amount: 15000,
+    type: 'income',
+    frequency: 'yearly',
+    impact: 'positive'
+  },
+  {
+    id: 2,
+    date: '2024-02-20',
+    description: 'Ремонт автомобиля',
+    amount: -35000,
+    type: 'expense',
+    frequency: 'irregular',
+    impact: 'negative'
+  },
+  {
+    id: 3,
+    date: '2024-01-10',
+    description: 'Фриланс проект',
+    amount: 45000,
+    type: 'income',
+    frequency: 'quarterly',
+    impact: 'positive'
+  }
+]; 

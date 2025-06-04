@@ -44,6 +44,15 @@ import MoneyDelayTime from './views/MoneyDelayTime';
 import NegativeBalancePlans from './views/NegativeBalancePlans';
 import PlanBalanceOverTime from './views/PlanBalanceOverTime';
 import GoalsProgress from './views/GoalsProgress';
+import WhatIfAnalysis from './views/WhatIfAnalysis';
+import VarianceHistory from './views/VarianceHistory';
+import CashFlowAnalysis from './views/CashFlowAnalysis';
+import PlanningEfficiency from './views/PlanningEfficiency';
+import IrregularTransactions from './views/IrregularTransactions';
+import FinancialCalendar from './views/FinancialCalendar';
+import UnrealisticPlans from './views/UnrealisticPlans';
+import YearForecast from './views/YearForecast';
+import YearForecastWithChanges from './views/YearForecastWithChanges';
 
 const drawerWidth = 280;
 
@@ -58,6 +67,15 @@ const menuItems = [
   { id: 'negative-plans', label: 'Планы с отриц. балансом', icon: <Assessment />, path: '/negative-plans' },
   { id: 'plan-balance', label: 'Баланс планов во времени', icon: <Analytics />, path: '/plan-balance' },
   { id: 'goals-progress', label: 'Прогресс по целям', icon: <FlagOutlined />, path: '/goals-progress' },
+  { id: 'what-if', label: 'Что если', icon: <Settings />, path: '/what-if' },
+  { id: 'variance-history', label: 'История отклонений', icon: <CalendarToday />, path: '/variance-history' },
+  { id: 'cash-flow-analysis', label: 'Анализ остатка', icon: <Analytics />, path: '/cash-flow-analysis' },
+  { id: 'planning-efficiency', label: 'Эффективность', icon: <TrendingUp />, path: '/planning-efficiency' },
+  { id: 'irregular-transactions', label: 'Нерегулярные операции', icon: <MonetizationOn />, path: '/irregular-transactions' },
+  { id: 'financial-calendar', label: 'Календарь', icon: <CalendarToday />, path: '/financial-calendar' },
+  { id: 'unrealistic-plans', label: 'Нереалистичные планы', icon: <Settings />, path: '/unrealistic-plans' },
+  { id: 'year-forecast', label: 'Прогноз на год', icon: <Assessment />, path: '/year-forecast' },
+  { id: 'year-forecast-changes', label: 'Прогноз с изменениями', icon: <TrendingUp />, path: '/year-forecast-changes' },
 ];
 
 function App() {
@@ -194,6 +212,15 @@ function App() {
           <Route path="/negative-plans" element={<NegativeBalancePlans />} />
           <Route path="/plan-balance" element={<PlanBalanceOverTime />} />
           <Route path="/goals-progress" element={<GoalsProgress />} />
+          <Route path="/what-if" element={<WhatIfAnalysis />} />
+          <Route path="/variance-history" element={<VarianceHistory />} />
+          <Route path="/cash-flow-analysis" element={<CashFlowAnalysis />} />
+          <Route path="/planning-efficiency" element={<PlanningEfficiency />} />
+          <Route path="/irregular-transactions" element={<IrregularTransactions />} />
+          <Route path="/financial-calendar" element={<FinancialCalendar />} />
+          <Route path="/unrealistic-plans" element={<UnrealisticPlans />} />
+          <Route path="/year-forecast" element={<YearForecast />} />
+          <Route path="/year-forecast-changes" element={<YearForecastWithChanges />} />
         </Routes>
       </Box>
     </Box>
