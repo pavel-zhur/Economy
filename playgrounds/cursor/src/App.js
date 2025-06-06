@@ -36,6 +36,12 @@ import {
   CompareArrows,
   SwapHoriz,
   AutoAwesome,
+  Home,
+  Warning,
+  ShowChart,
+  Calculate,
+  QueryStats,
+  Event,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -65,6 +71,7 @@ import BalanceReconciliation from './views/BalanceReconciliation';
 import PlanActualization from './views/PlanActualization';
 import ScenarioManagement from './views/ScenarioManagement';
 import QuickPlanning from './views/QuickPlanning';
+import WhatIfModeling from './views/WhatIfModeling';
 
 const drawerWidth = 280;
 
@@ -248,7 +255,7 @@ function App() {
           <Route path="/negative-plans" element={<NegativeBalancePlans />} />
           <Route path="/plan-balance" element={<PlanBalanceOverTime />} />
           <Route path="/goals-progress" element={<GoalsProgress />} />
-          <Route path="/what-if" element={<WhatIfAnalysis />} />
+          <Route path="/what-if" element={<WhatIfModeling />} />
           <Route path="/variance-history" element={<VarianceHistory />} />
           <Route path="/cash-flow-analysis" element={<CashFlowAnalysis />} />
           <Route path="/planning-efficiency" element={<PlanningEfficiency />} />
