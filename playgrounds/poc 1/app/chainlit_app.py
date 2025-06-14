@@ -3,6 +3,11 @@ import asyncio
 import logging
 from datetime import datetime
 from typing import Dict, Any, Optional
+import sys
+import os
+
+# Add current directory to Python path for imports
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from ai_agents.graph_orchestrator import FinancialOrchestrator
 from database import DatabaseManager

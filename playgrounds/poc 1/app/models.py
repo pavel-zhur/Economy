@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Decimal, Boolean, Text, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey, Enum, Numeric
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -79,7 +79,7 @@ class PlannedOperation(Base):
     
     name = Column(String(255), nullable=False)
     description = Column(Text)
-    amount = Column(Decimal(15, 2), nullable=False)
+    amount = Column(Numeric(15, 2), nullable=False)
     operation_type = Column(Enum(TransactionType), nullable=False)
     
     # Scheduling
@@ -112,7 +112,7 @@ class Goal(Base):
     
     name = Column(String(255), nullable=False)
     description = Column(Text)
-    target_amount = Column(Decimal(15, 2), nullable=False)
+    target_amount = Column(Numeric(15, 2), nullable=False)
     target_date = Column(DateTime, nullable=False)
     
     # Goal status
@@ -139,14 +139,14 @@ class DistributionRule(Base):
     target_plan_id = Column(Integer, ForeignKey("plans.id"), nullable=False)
     
     # Distribution parameters
-    percentage = Column(Decimal(5, 2), nullable=True)  # Percentage of source
-    fixed_amount = Column(Decimal(15, 2), nullable=True)  # Fixed amount
+    percentage = Column(Numeric(5, 2), nullable=True)  # Percentage of source
+    fixed_amount = Column(Numeric(15, 2), nullable=True)  # Fixed amount
     priority = Column(Integer, default=0)  # Execution order
     
     # Conditions
     is_active = Column(Boolean, default=True)
-    min_source_amount = Column(Decimal(15, 2), nullable=True)
-    max_distribution_amount = Column(Decimal(15, 2), nullable=True)
+    min_source_amount = Column(Numeric(15, 2), nullable=True)
+    max_distribution_amount = Column(Numeric(15, 2), nullable=True)
     
     # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -172,7 +172,7 @@ class Wallet(Base):
     # Wallet properties
     currency = Column(String(3), default="USD")
     is_active = Column(Boolean, default=True)
-    withdrawal_coefficient = Column(Decimal(5, 4), default=1.0000)  # For fees/commissions
+    withdrawal_coefficient = Column(Numeric(5, 4), default=1.0000)  # For fees/commissions
     
     # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -194,7 +194,7 @@ class Transaction(Base):
     plan_id = Column(Integer, ForeignKey("plans.id"), nullable=True)  # Optional linking
     
     # Transaction details
-    amount = Column(Decimal(15, 2), nullable=False)
+    amount = Column(Numeric(15, 2), nullable=False)
     transaction_type = Column(Enum(TransactionType), nullable=False)
     description = Column(Text)
     category = Column(String(255), nullable=True)
@@ -219,7 +219,7 @@ class WalletInventory(Base):
     wallet_id = Column(Integer, ForeignKey("wallets.id"), nullable=False)
     
     # Inventory details
-    balance = Column(Decimal(15, 2), nullable=False)
+    balance = Column(Numeric(15, 2), nullable=False)
     inventory_date = Column(DateTime, nullable=False)
     notes = Column(Text)
     
@@ -243,14 +243,14 @@ class PlanBalance(Base):
     plan_id = Column(Integer, ForeignKey("plans.id"), nullable=False)
     
     # Balance data
-    balance = Column(Decimal(15, 2), nullable=False)
+    balance = Column(Numeric(15, 2), nullable=False)
     calculation_date = Column(DateTime, nullable=False)
     
     # Balance breakdown
-    income_total = Column(Decimal(15, 2), default=0)
-    expense_total = Column(Decimal(15, 2), default=0)
-    transfer_in_total = Column(Decimal(15, 2), default=0)
-    transfer_out_total = Column(Decimal(15, 2), default=0)
+    income_total = Column(Numeric(15, 2), default=0)
+    expense_total = Column(Numeric(15, 2), default=0)
+    transfer_in_total = Column(Numeric(15, 2), default=0)
+    transfer_out_total = Column(Numeric(15, 2), default=0)
     
     # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -294,7 +294,7 @@ class Asset(Base):
     asset_type = Column(String(100), nullable=False)  # 'real_estate', 'vehicle', etc.
     
     # Valuation
-    current_value = Column(Decimal(15, 2), nullable=False)
+    current_value = Column(Numeric(15, 2), nullable=False)
     currency = Column(String(3), default="USD")
     last_valuation_date = Column(DateTime, nullable=False)
     
@@ -314,8 +314,8 @@ class Debt(Base):
     description = Column(Text)
     
     # Debt details
-    principal_amount = Column(Decimal(15, 2), nullable=False)
-    current_balance = Column(Decimal(15, 2), nullable=False)
+    principal_amount = Column(Numeric(15, 2), nullable=False)
+    current_balance = Column(Numeric(15, 2), nullable=False)
     currency = Column(String(3), default="USD")
     
     # Dates

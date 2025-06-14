@@ -1,12 +1,17 @@
 from langchain_openai import ChatOpenAI
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
-from langchain.agents import create_sql_agent
+from langchain_community.agent_toolkits.sql.base import create_sql_agent
 from langchain.agents.agent_types import AgentType
 from langchain.memory import ConversationBufferMemory
-from langfuse.callback import CallbackHandler
+from langfuse import Langfuse
 from typing import Dict, Any, Optional
 import logging
+import sys
+import os
+
+# Add parent directory to Python path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config import settings
 from database import engine
@@ -32,16 +37,13 @@ class FinancialSQLAgent:
         
     def _init_llm(self) -> ChatOpenAI:
         """Initialize the LLM with LangFuse tracing."""
-        langfuse_handler = CallbackHandler(
-            host=settings.langfuse_host,
-            public_key=settings.langfuse_public_key,
-            secret_key=settings.langfuse_secret_key
-        )
+        # Note: LangFuse callback integration may need to be updated
+        # for the latest version. For now, we'll initialize without callbacks
+        # and can add tracing later if needed.
         
         return ChatOpenAI(
             model=settings.openai_model,
             temperature=0.1,
-            callbacks=[langfuse_handler],
             api_key=settings.openai_api_key
         )
     
