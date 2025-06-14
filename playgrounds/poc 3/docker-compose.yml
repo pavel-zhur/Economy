@@ -1,0 +1,192 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: poc3-postgres
+    environment:
+      POSTGRES_DB: poc3_db
+      POSTGRES_USER: poc3_user
+      POSTGRES_PASSWORD: poc3_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U poc3_user -d poc3_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin Web Interface
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: poc3-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@poc3.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  # Redis for Restack and caching
+  redis:
+    image: redis:7-alpine
+    container_name: poc3-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+  # MinIO S3-compatible storage
+  minio:
+    image: minio/minio:latest
+    container_name: poc3-minio
+    environment:
+      MINIO_ROOT_USER: poc3_minio
+      MINIO_ROOT_PASSWORD: poc3_minio_password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+
+  # Restack Engine
+  restack-engine:
+    image: restackio/restack:latest
+    container_name: poc3-restack-engine
+    environment:
+      RESTACK_ENGINE_ID: poc3-engine
+      RESTACK_ENGINE_ADDRESS: 0.0.0.0:5233
+      RESTACK_ENGINE_DATABASE_URL: postgres://poc3_user:poc3_password@postgres:5432/poc3_db
+      RESTACK_ENGINE_REDIS_URL: redis://redis:6379
+    ports:
+      - "5233:5233"
+      - "5234:5234" # Web UI
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5234/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Service (Python with Restack SDK)
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: poc3-ai-service
+    environment:
+      DATABASE_URL: postgresql://poc3_user:poc3_password@postgres:5432/poc3_db
+      RESTACK_ENGINE_ADDRESS: restack-engine:5233
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY}
+      LANGFUSE_HOST: http://langfuse:3000
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8000:8000"
+    depends_on:
+      restack-engine:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./ai-service:/app
+      - /app/node_modules
+
+  # React Flow UI
+  web-ui:
+    build:
+      context: ./web-ui
+      dockerfile: Dockerfile
+    container_name: poc3-web-ui
+    environment:
+      REACT_APP_AI_SERVICE_URL: http://localhost:8000
+      REACT_APP_RESTACK_URL: http://localhost:5234
+    ports:
+      - "3000:3000"
+    depends_on:
+      - ai-service
+    volumes:
+      - ./web-ui:/app
+      - /app/node_modules
+
+  # LangFuse for LLM tracing
+  langfuse:
+    image: langfuse/langfuse:latest
+    container_name: poc3-langfuse
+    environment:
+      DATABASE_URL: postgresql://poc3_user:poc3_password@postgres:5432/poc3_db
+      NEXTAUTH_SECRET: langfuse-secret-key-change-in-production
+      SALT: langfuse-salt-change-in-production
+      NEXTAUTH_URL: http://localhost:3001
+      TELEMETRY_ENABLED: false
+    ports:
+      - "3001:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: poc3-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: poc3-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3002:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+
+  # Jaeger for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: poc3-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+    ports:
+      - "16686:16686" # Web UI
+      - "14268:14268" # HTTP collector
+      - "14250:14250" # gRPC collector
+      - "6831:6831/udp" # Agent UDP
+      - "6832:6832/udp" # Agent UDP
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  default:
+    name: poc3-network

@@ -1,0 +1,22 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: poc3_db
+    user: poc3_user
+    secureJsonData:
+      password: poc3_password
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1600
+    editable: true
