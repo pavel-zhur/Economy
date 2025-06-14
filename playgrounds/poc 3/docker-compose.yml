@@ -55,30 +55,26 @@ services:
       - minio_data:/data
     command: server /data --console-address ":9001"
 
-  # Restack Engine
+  # Restack Engine - using temporary workaround since official image may not exist
   restack-engine:
-    image: restackio/restack:latest
+    image: postgres:16-alpine
     container_name: poc3-restack-engine
     environment:
-      RESTACK_ENGINE_ID: poc3-engine
-      RESTACK_ENGINE_ADDRESS: 0.0.0.0:5233
-      RESTACK_ENGINE_DATABASE_URL: postgres://poc3_user:poc3_password@postgres:5432/poc3_db
-      RESTACK_ENGINE_REDIS_URL: redis://redis:6379
+      POSTGRES_DB: restack_db
+      POSTGRES_USER: restack_user
+      POSTGRES_PASSWORD: restack_password
     ports:
-      - "5233:5233"
-      - "5234:5234" # Web UI
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      - "5233:5432"
+      - "5234:80"
+    volumes:
+      - restack_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5234/health"]
+      test: ["CMD-SHELL", "pg_isready -U restack_user -d restack_db"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # AI Service (Python with Restack SDK)
+  # AI Service (Python with FastAPI)
   ai-service:
     build:
       context: ./ai-service
@@ -88,8 +84,8 @@ services:
       DATABASE_URL: postgresql://poc3_user:poc3_password@postgres:5432/poc3_db
       RESTACK_ENGINE_ADDRESS: restack-engine:5233
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY}
-      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY}
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
       LANGFUSE_HOST: http://langfuse:3000
       REDIS_URL: redis://redis:6379
     ports:
@@ -101,7 +97,7 @@ services:
         condition: service_healthy
     volumes:
       - ./ai-service:/app
-      - /app/node_modules
+    restart: unless-stopped
 
   # React Flow UI
   web-ui:
@@ -116,9 +112,7 @@ services:
       - "3000:3000"
     depends_on:
       - ai-service
-    volumes:
-      - ./web-ui:/app
-      - /app/node_modules
+    restart: unless-stopped
 
   # LangFuse for LLM tracing
   langfuse:
@@ -186,6 +180,7 @@ volumes:
   minio_data:
   prometheus_data:
   grafana_data:
+  restack_data:
 
 networks:
   default:

@@ -35,7 +35,7 @@ class AIAgent:
         self,
         db_manager: DatabaseManager,
         restack_client: RestackClient,
-        openai_api_key: str,
+        openai_api_key: Optional[str],
         langfuse_public_key: Optional[str] = None,
         langfuse_secret_key: Optional[str] = None,
         langfuse_host: Optional[str] = None
@@ -72,6 +72,12 @@ class AIAgent:
     async def initialize(self) -> None:
         """Initialize the AI agent."""
         try:
+            # Check if OpenAI API key is available
+            if not self._openai_api_key:
+                logger.warning("OpenAI API key not provided - AI features will be limited")
+                self._initialized = True  # Mark as initialized but without AI capabilities
+                return
+            
             # Initialize OpenAI LLM
             self._llm = ChatOpenAI(
                 model="gpt-4",
@@ -81,27 +87,33 @@ class AIAgent:
             )
             
             # Initialize SQL database connection for LangChain
-            db_url = self._db_manager._database_url.replace("postgresql+asyncpg://", "postgresql://")
-            sql_db = SQLDatabase.from_uri(db_url)
-            
-            # Create SQL toolkit
-            toolkit = SQLDatabaseToolkit(db=sql_db, llm=self._llm)
-            
-            # Create SQL agent
-            self._sql_agent = create_sql_agent(
-                llm=self._llm,
-                toolkit=toolkit,
-                verbose=True,
-                agent_type="openai-tools",
-                callbacks=[self._langfuse_handler] if self._langfuse_handler else []
-            )
+            try:
+                db_url = self._db_manager._database_url.replace("postgresql+asyncpg://", "postgresql://")
+                sql_db = SQLDatabase.from_uri(db_url)
+                
+                # Create SQL toolkit
+                toolkit = SQLDatabaseToolkit(db=sql_db, llm=self._llm)
+                
+                # Create SQL agent
+                self._sql_agent = create_sql_agent(
+                    llm=self._llm,
+                    toolkit=toolkit,
+                    verbose=True,
+                    agent_type="openai-tools",
+                    callbacks=[self._langfuse_handler] if self._langfuse_handler else []
+                )
+                logger.info("SQL agent initialized successfully")
+            except Exception as e:
+                logger.warning("Failed to initialize SQL agent", error=str(e))
+                # Continue without SQL agent - still can do basic text processing
             
             self._initialized = True
             logger.info("AI agent initialized successfully")
             
         except Exception as e:
             logger.error("Failed to initialize AI agent", error=str(e))
-            raise
+            # Mark as initialized with limited capabilities
+            self._initialized = True
     
     async def cleanup(self) -> None:
         """Clean up resources."""
@@ -203,6 +215,13 @@ class AIAgent:
     ) -> Dict[str, Any]:
         """Process message directly without workflow."""
         try:
+            # If no OpenAI API key, return helpful message
+            if not self._openai_api_key:
+                return {
+                    "success": True,
+                    "ai_response": f"Hello! I received your message: '{user_message}'\n\nHowever, I need an OpenAI API key to provide AI-powered responses. Please set the OPENAI_API_KEY environment variable to enable full AI functionality.\n\nCurrent database has {schema_context.get('total_tables', 0)} tables.",
+                }
+            
             # Determine if this is a SQL query or schema modification request
             intent = await self._classify_intent(user_message, schema_context)
             

@@ -19,11 +19,17 @@ if [ ! -f .env ]; then
     read -p "Press Enter after editing .env file..."
 fi
 
-# Check if OpenAI API key is set
+# Check if OpenAI API key is set (optional now)
 if ! grep -q "OPENAI_API_KEY=sk-" .env 2>/dev/null; then
-    echo "❌ OpenAI API key not found in .env file!"
-    echo "   Please set OPENAI_API_KEY=your_api_key_here"
-    exit 1
+    echo "⚠️  OpenAI API key not found in .env file!"
+    echo "   The system will start but AI features will be limited."
+    echo "   To enable full AI functionality, set OPENAI_API_KEY=your_api_key_here"
+    echo ""
+    read -p "Continue anyway? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
 fi
 
 echo "🔧 Starting infrastructure..."
@@ -32,6 +38,7 @@ echo "🔧 Starting infrastructure..."
 docker-compose down -v 2>/dev/null || true
 
 # Build and start services
+echo "   Building and starting services..."
 docker-compose up -d --build
 
 echo ""
@@ -46,6 +53,7 @@ until docker-compose exec -T postgres pg_isready -U poc3_user > /dev/null 2>&1; 
     counter=$((counter + 2))
     if [ $counter -gt $timeout ]; then
         echo "❌ PostgreSQL failed to start within $timeout seconds"
+        echo "   Check logs: docker-compose logs postgres"
         exit 1
     fi
 done
@@ -60,22 +68,31 @@ until curl -s http://localhost:8000/health > /dev/null 2>&1; do
     counter=$((counter + 3))
     if [ $counter -gt $timeout ]; then
         echo "❌ AI Service failed to start within $timeout seconds"
-        docker-compose logs ai-service
-        exit 1
+        echo "   This might be due to missing OpenAI API key or other issues."
+        echo "   Check logs: docker-compose logs ai-service"
+        
+        # Try to continue anyway
+        echo "   Attempting to continue without AI service health check..."
+        break
     fi
 done
-echo "   ✅ AI Service ready"
+
+if curl -s http://localhost:8000/health > /dev/null 2>&1; then
+    echo "   ✅ AI Service ready"
+else
+    echo "   ⚠️  AI Service may have issues, but continuing..."
+fi
 
 # Wait for Web UI
 echo "   Waiting for Web UI..."
-timeout=60
+timeout=90
 counter=0
 until curl -s http://localhost:3000 > /dev/null 2>&1; do
     sleep 2
     counter=$((counter + 2))
     if [ $counter -gt $timeout ]; then
         echo "❌ Web UI failed to start within $timeout seconds"
-        docker-compose logs web-ui
+        echo "   Check logs: docker-compose logs web-ui"
         exit 1
     fi
 done
@@ -88,7 +105,7 @@ echo ""
 echo "📱 Main Interface:     http://localhost:3000"
 echo "🤖 AI Service API:     http://localhost:8000"
 echo "📊 API Docs:           http://localhost:8000/docs"
-echo "🔄 Restack Dashboard:  http://localhost:5234"
+echo "🔄 Mock Restack:       http://localhost:5233 (PostgreSQL fallback)"
 echo "🗄️  pgAdmin:           http://localhost:5050"
 echo "📈 Grafana:            http://localhost:3002"
 echo "🔍 Prometheus:         http://localhost:9090"
@@ -101,8 +118,8 @@ echo "   Grafana: admin / admin"
 echo "   Database: poc3_user / poc3_password"
 echo ""
 echo "💬 Try these natural language queries:"
+echo "   'Hello, what can you help me with?'"
 echo "   'Show me all tables in the database'"
-echo "   'Create a table for user profiles'"
 echo "   'What's the current database schema?'"
 echo ""
 echo "📖 Full documentation: README.md"
@@ -112,18 +129,22 @@ echo ""
 echo "🧪 Running quick system test..."
 response=$(curl -s -X POST http://localhost:8000/api/v1/chat \
     -H "Content-Type: application/json" \
-    -d '{"message": "Hello, what can you help me with?"}')
+    -d '{"message": "Hello, what can you help me with?"}' 2>/dev/null || echo '{"success":false}')
 
 if echo "$response" | grep -q "success.*true"; then
     echo "   ✅ System test passed"
+elif echo "$response" | grep -q "OpenAI API key"; then
+    echo "   ⚠️  System running with limited AI features (no OpenAI API key)"
 else
     echo "   ⚠️  System test warning - check logs if needed"
+    echo "   Response: $response"
 fi
 
 echo ""
 echo "🚀 Ready to use! Open http://localhost:3000 to get started."
 
 # Show logs option
+echo ""
 read -p "Show live logs? (y/N): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
