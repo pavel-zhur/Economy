@@ -1,0 +1,87 @@
+[project]
+# Whether to enable telemetry (default: true). No personal data is collected.
+enable_telemetry = false
+
+# List of environment variables to be provided by each user to use the app.
+user_env = []
+
+# Duration (in seconds) during which the session is saved when the connection is lost
+session_timeout = 3600
+
+# Enable third parties caching (e.g LangChain cache)
+cache = false
+
+# Authorized origins
+allow_origins = ["*"]
+
+# Follow symlink for asset mount (see https://github.com/Chainlit/chainlit/issues/317)
+# follow_symlink = false
+
+[features]
+# Show the prompt playground
+prompt_playground = true
+
+# Process and display HTML in messages. This can be a security risk (see https://stackoverflow.com/questions/19603097/why-is-it-dangerous-to-render-user-generated-html-or-javascript)
+unsafe_allow_html = false
+
+# Process and display mathematical expressions. This can clash with "$" characters in messages.
+latex = false
+
+# Automatically tag threads when an error occurs
+auto_tag_thread = true
+
+# Offer users to switch between Chainlit modes (chat, copilot) from the header. 
+multi_modal = false
+
+# Allows user to use speech to text
+[features.speech_to_text]
+enabled = false
+# See all languages here https://github.com/JamesBrill/react-speech-kit#readme
+# language = "en-US"
+
+[UI]
+# Name of the app and chatbot.
+name = "Economy POC - AI Financial Assistant"
+
+# Show the readme while the thread is empty.
+show_readme_as_default = true
+
+# Description of the app and chatbot. This is used for HTML tags.
+description = "AI-powered financial management system with dynamic database schemas"
+
+# Large size content are by default collapsed for a cleaner ui
+default_collapse_content = true
+
+# The default value for the expand messages settings.
+default_expand_messages = false
+
+# Hide the chain of thought details from the user in the UI.
+hide_cot = false
+
+# Link to your github repo. This will add a github button in the UI's header.
+# github = ""
+
+# Specify a CSS file that can be used to customize the user interface.
+# The CSS file can be served from the public directory or via an external link.
+# custom_css = "/public/test.css"
+
+# Override default MUI light theme. (Check theme.ts)
+[UI.theme]
+default_color = "linear-gradient(45deg, #2E8B57, #228B22)"
+#font_family = "Inter, sans-serif"
+# The primary color of the UI can be adjusted
+#primary_color = "#F80061"
+# The background color of the chat messages can be adjusted
+#background_color = "#FAFAFA"
+# The main text color can be adjusted
+#text_color = "#303030"
+
+# Chainlit will not cache the server assets for you. If you deploy using
+# Chainlit cloud, your assets will be served by a CDN automatically.
+[server]
+# List of files or URLs to include in the server
+# files = ["./chainlit.md"]
+
+[chatprofile]
+# The name and avatar of the default chatprofile
+default = "Economy Assistant"

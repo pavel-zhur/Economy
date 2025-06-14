@@ -1,0 +1,235 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: economy_poc
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - poc-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - poc-network
+    depends_on:
+      - postgres
+
+  # Redis for caching and queues
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - poc-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # MinIO for S3-compatible storage
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - poc-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # LangFuse for LLM tracing
+  langfuse-db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse
+      POSTGRES_DB: langfuse
+    volumes:
+      - langfuse_db_data:/var/lib/postgresql/data
+    networks:
+      - poc-network
+
+  langfuse:
+    image: langfuse/langfuse:latest
+    depends_on:
+      - langfuse-db
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://langfuse:langfuse@langfuse-db:5432/langfuse
+      NEXTAUTH_SECRET: mysecret
+      SALT: mysalt
+      NEXTAUTH_URL: http://localhost:3000
+      TELEMETRY_ENABLED: "false"
+    networks:
+      - poc-network
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - poc-network
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - poc-network
+
+  # Main FastAPI application
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Database
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/economy_poc
+      
+      # Redis
+      REDIS_URL: redis://redis:6379
+      
+      # MinIO
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      
+      # LangFuse
+      LANGFUSE_PUBLIC_KEY: pk-lf-...
+      LANGFUSE_SECRET_KEY: sk-lf-...
+      LANGFUSE_HOST: http://langfuse:3000
+      
+      # OpenAI
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      
+      # Application
+      APP_ENV: development
+      LOG_LEVEL: INFO
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+    networks:
+      - poc-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      langfuse:
+        condition: service_started
+    restart: unless-stopped
+    command: ["python", "-m", "src.main"]
+
+  # Chainlit chat interface
+  chainlit:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Database
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/economy_poc
+      
+      # Redis
+      REDIS_URL: redis://redis:6379
+      
+      # MinIO
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      
+      # LangFuse
+      LANGFUSE_PUBLIC_KEY: pk-lf-...
+      LANGFUSE_SECRET_KEY: sk-lf-...
+      LANGFUSE_HOST: http://langfuse:3000
+      
+      # OpenAI
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      
+      # Application
+      APP_ENV: development
+      LOG_LEVEL: INFO
+      
+      # Chainlit specific
+      CHAINLIT_HOST: 0.0.0.0
+      CHAINLIT_PORT: 8001
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./src:/app/src
+      - ./.chainlit:/app/.chainlit
+    networks:
+      - poc-network
+    depends_on:
+      - app
+    restart: unless-stopped
+    command: ["chainlit", "run", "src/chainlit_app.py", "--host", "0.0.0.0", "--port", "8001"]
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  redis_data:
+  minio_data:
+  langfuse_db_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  poc-network:
+    driver: bridge

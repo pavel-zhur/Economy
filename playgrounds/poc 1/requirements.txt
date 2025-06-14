@@ -1,0 +1,66 @@
+# Core AI/ML libraries
+langchain==0.3.7
+langchain-openai==0.2.8
+langchain-community==0.3.5
+langchain-experimental==0.3.3
+langgraph==0.2.34
+langsmith==0.1.140
+
+# Database and ORM
+sqlalchemy==2.0.35
+psycopg2-binary==2.9.9
+alembic==1.13.3
+
+# Async support
+asyncio==3.4.3
+asyncpg==0.29.0
+
+# Web framework and UI
+fastapi==0.115.4
+uvicorn==0.32.0
+chainlit==1.3.1
+streamlit==1.39.0
+
+# LLM and tracing
+openai==1.54.3
+langfuse==2.53.4
+tiktoken==0.8.0
+
+# Data processing
+pandas==2.2.3
+numpy==1.26.4
+pydantic==2.9.2
+pydantic-settings==2.6.1
+
+# Utilities
+python-dotenv==1.0.1
+python-multipart==0.0.12
+httpx==0.27.2
+aiofiles==24.1.0
+redis==5.2.0
+boto3==1.35.60
+minio==7.2.8
+
+# Monitoring and logging
+prometheus-client==0.21.0
+structlog==24.4.0
+rich==13.9.4
+
+# Development tools
+pytest==8.3.3
+pytest-asyncio==0.24.0
+black==24.10.0
+mypy==1.13.0
+ruff==0.7.4
+
+# Type stubs
+types-redis==4.6.0.20241004
+
+# Additional utilities
+click==8.1.7
+jinja2==3.1.4
+python-dateutil==2.9.0.post0
+pytz==2024.2
+
+# Dependency injection
+dependency-injector==4.42.0
