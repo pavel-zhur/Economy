@@ -1,0 +1,50 @@
+# Core AI/LLM dependencies
+langchain
+langchain-openai
+langchain-community
+langgraph
+langfuse
+
+# Database
+psycopg2-binary
+sqlalchemy
+alembic
+
+# Redis
+redis
+
+# MinIO/S3
+minio
+boto3
+
+# Web framework and UI
+chainlit
+fastapi
+uvicorn
+pydantic
+
+# Configuration and environment
+python-dotenv
+pydantic-settings
+
+# Monitoring and observability
+prometheus-client
+opentelemetry-api
+opentelemetry-sdk
+
+# Utilities
+httpx
+aiofiles
+python-multipart
+typing-extensions
+
+# Data processing - Python 3.13 compatible
+pandas>=2.2.3
+numpy>=2.1.0
+
+# Logging
+structlog
+
+# Testing (for development)
+pytest
+pytest-asyncio
