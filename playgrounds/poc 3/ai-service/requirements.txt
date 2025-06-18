@@ -1,0 +1,44 @@
+# Core Framework
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+pydantic==2.10.5
+pydantic-settings==2.9.1
+
+# AI and LLM
+openai==1.86.0
+langchain==0.3.25
+langchain-openai==0.3.23
+langchain-community==0.3.16
+langfuse==2.57.0
+
+# Database
+sqlalchemy==2.0.41
+asyncpg==0.30.0
+psycopg2-binary==2.9.10
+alembic==1.14.0
+
+# Redis
+redis==5.2.1
+aioredis==2.0.1
+
+# HTTP and API
+httpx==0.28.1
+requests==2.32.3
+websockets==14.1
+
+# Utilities
+python-dotenv==1.0.1
+structlog==24.4.0
+typer==0.15.1
+rich==13.9.4
+
+# Data processing
+pandas==2.3.0
+numpy==2.2.1
+pyyaml==6.0.2
+
+# Monitoring and observability
+prometheus-client==0.21.1
+opentelemetry-api==1.28.2
+opentelemetry-sdk==1.28.2
+opentelemetry-exporter-jaeger==1.21.0

@@ -1,0 +1,52 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "alert_rules.yml"
+
+scrape_configs:
+  # POC 3 AI Service metrics
+  - job_name: 'poc3-ai-service'
+    static_configs:
+      - targets: ['ai-service:9091']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+  
+  # PostgreSQL metrics (if using postgres_exporter)
+  - job_name: 'poc3-postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+  
+  # Redis metrics (if using redis_exporter)
+  - job_name: 'poc3-redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+  
+  # Restack metrics (if available)
+  - job_name: 'poc3-restack'
+    static_configs:
+      - targets: ['restack-engine:9090']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+  
+  # Node/system metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - "alertmanager:9093"
+
+# Storage configuration
+storage:
+  tsdb:
+    retention.time: 30d
+    retention.size: 10GB
