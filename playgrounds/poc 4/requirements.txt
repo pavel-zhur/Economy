@@ -1,0 +1,35 @@
+# Core LangChain dependencies
+langchain==0.3.25
+langchain-openai==0.3.23
+langchain-anthropic==0.3.15
+langchain-community==0.3.25
+langchain-experimental==0.3.4
+
+# Database
+psycopg2-binary==2.9.10
+sqlalchemy==2.0.41
+alembic==1.16.1
+
+# Web framework and UI
+chainlit==2.5.5
+fastapi==0.115.12
+uvicorn==0.34.3
+
+# Tracing and monitoring
+langfuse==3.0.1
+
+# Core utilities
+python-dotenv==1.1.0
+pydantic==2.11.7
+pydantic-settings==2.9.1
+httpx==0.28.1
+aiofiles==24.1.0
+asyncpg==0.30.0
+
+# Development and utilities
+rich==14.0.0
+loguru==0.7.3
+
+# Local stub of Uptrace to satisfy Chainlit without pulling conflicting deps
+-e ./vendor/uptrace_patched
+
